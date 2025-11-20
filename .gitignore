@@ -45,4 +45,4 @@ Thumbs.db
 # Output files
 output/
 *.json
-!example_config.json
+!example_output.json
