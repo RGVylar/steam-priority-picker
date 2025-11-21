@@ -15,12 +15,12 @@ Convert the existing Steam Priority Picker Python script into a full-stack web a
 ## Phase 1: MVP Frontend (Weeks 1-2)
 
 ### Objectives
-- [ ] Export cache data to `games.json` static file
-- [ ] Create React + Vite project in `/web` directory
-- [ ] Build core components: GameList, GameCard, FilterPanel, SearchBar
-- [ ] Implement filtering: playtime ranges, score, search
-- [ ] Add links to Steam Store and HowLongToBeat
-- [ ] Make responsive (mobile + desktop)
+- [x] Export cache data to `games.json` static file
+- [x] Create React + Vite project in `/web` directory
+- [x] Build core components: GameList, GameCard, FilterPanel, SearchBar
+- [x] Implement filtering: playtime ranges, score, search
+- [x] Add links to Steam Store and HowLongToBeat
+- [x] Make responsive (mobile + desktop)
 - [ ] Deploy to Vercel (auto-deploy from GitHub)
 
 ### Data Display
@@ -32,22 +32,28 @@ Each game shows:
 - Total reviews count
 - Links: Steam Store, HowLongToBeat page
 
-### Filtering/Sorting
-- **By Playtime:** 0-5 hrs, 5-10 hrs, 10+ hrs, custom range
-- **By Score:** 75-100, 50-75, below 50
-- **Search:** Real-time search by game name
-- **Sort:** Playtime asc/desc, Score asc/desc
+### Filtering/Sorting ✅ COMPLETED
+- **By Playtime:** 0-5 hrs, 5-10 hrs, 10-20 hrs, 20+ hrs ✅
+- **By Score:** 75-100%, 50-75%, below 50% ✅
+- **By Reviews:** Min/Max sliders ✅
+- **By Status:** All/Played/Unplayed (with localStorage persistence) ✅
+- **Search:** Real-time search by game name ✅
+- **Sort:** Playtime asc/desc, Score asc/desc (default: score_desc) ✅
+- **Collapsible Filters:** Para mejor UX ✅
 
-### User Interface
-- Header with logo and title
-- Search bar (top)
-- Filter sidebar (left) or collapsible on mobile
-- Main grid/table view with games
-- Game card: thumbnail, title, playtime, score, review count, action buttons
+### User Interface ✅ COMPLETED
+- [x] Header with logo and dark mode toggle
+- [x] Search bar (top) with real-time filtering
+- [x] Collapsible filter sidebar (left on desktop, mobile drawer)
+- [x] Infinite scroll grid (24 games at a time)
+- [x] Game card: Steam header image, title, playtime badge, score, reviews, action buttons
+- [x] Dark mode with system preference detection and localStorage persistence
+- [x] "Mark as Played" button on each card
+- [x] Played games counter in filter panel
 
 ---
 
-## Phase 2: Backend API (Weeks 3-4)
+## Phase 2: Backend API (Weeks 3-4) ⏳ IN PROGRESS
 
 ### Objectives
 - [ ] Create FastAPI project in `/backend` directory

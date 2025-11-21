@@ -6,20 +6,29 @@ A modern web application to help you prioritize which Steam games to play. Analy
 
 ## 🎯 Features
 
-### Core Application
-- 🎮 **Steam Integration**: Fetch your entire Steam library
-- ⏱️ **HowLongToBeat Data**: Get game completion time estimates
-- ⭐ **Review Scores**: Display Steam review ratings
-- 🔍 **Advanced Filtering**: Filter by playtime, score, and more
-- 🔄 **Intelligent Caching**: 24-hour TTL cache system
-- 📱 **Responsive Design**: Works on mobile, tablet, and desktop
-- 🌐 **Modern Tech Stack**: React, FastAPI, PostgreSQL
+### ✅ MVP - Currently Live
+- 🎮 **1080+ Games Display**: Browse your entire cataloged Steam library
+- 🖼️ **Game Headers**: Beautiful Steam store images for each game
+- 🔍 **Smart Filtering**:
+  - ⏱️ Playtime ranges (0-5, 5-10, 10-20, 20+ hours)
+  - ⭐ Steam Score ranges (75-100%, 50-75%, Below 50%)
+  - 📊 Review count slider (min/max)
+  - ✓ Played/Unplayed status tracker with counter
+- 🔤 **Real-time Search**: Instant search by game name
+- 📊 **Multiple Sort Options**: 
+  - Playtime (ascending/descending)
+  - Score (ascending/descending)
+- ♾️ **Infinite Scroll**: Load 24 games at a time
+- 🎨 **Dark Mode**: System preference detection with localStorage persistence
+- 📱 **Responsive Design**: Mobile, tablet, and desktop optimized
+- 🏷️ **Collapsible Filter Sections**: Keep UI clean, expand only what you need
+- 💾 **Game Tracking**: Mark games as played with localStorage persistence
+- 🌙 **Persistent Settings**: All preferences saved locally
 
-### Planned Features (Phase 2-3)
+### 🎯 Planned Features (Phase 2-3)
 - 👤 Steam account login (OAuth)
 - 🔄 Real-time library sync
 - 📊 Game statistics and insights
-- 💾 User favorites and custom lists
 - 🎲 Recommendation engine
 - 📈 Playtime analytics
 
@@ -48,15 +57,21 @@ npm install
 npm run dev
 ```
 
-Visit http://localhost:5173 to see your 1000+ games!
+Visit http://localhost:5173 to see your 1080+ games!
 
-**Features:**
-- ✅ Browse all cached games
-- ✅ Filter by playtime duration
-- ✅ Filter by Steam score
-- ✅ Real-time search
-- ✅ Sort by multiple criteria
-- ✅ Direct links to Steam and HowLongToBeat
+**MVP Features Currently Available:**
+- ✅ Browse all 1080+ cached games with Steam header images
+- ✅ Filter by playtime duration (4 ranges)
+- ✅ Filter by Steam score (3 ranges)
+- ✅ Filter by number of reviews (slider)
+- ✅ Mark games as played/unplayed (with counter)
+- ✅ View only played or unplayed games
+- ✅ Real-time search by game name
+- ✅ Sort by playtime or score
+- ✅ Dark mode with system preference auto-detection
+- ✅ Collapsible filter sections
+- ✅ All settings persist in localStorage
+- ✅ Infinite scroll loading
 
 ### 2. Backend Development
 
