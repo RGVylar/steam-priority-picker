@@ -5,7 +5,9 @@ export function useFilters() {
   const [playtimeMax, setPlaytimeMax] = useState(Infinity)
   const [scoreMin, setScoreMin] = useState(0)
   const [scoreMax, setScoreMax] = useState(100)
-  const [sortBy, setSortBy] = useState('playtime_asc')
+  const [reviewsMin, setReviewsMin] = useState(0)
+  const [reviewsMax, setReviewsMax] = useState(Infinity)
+  const [sortBy, setSortBy] = useState('score_desc')
   const [searchQuery, setSearchQuery] = useState('')
 
   return {
@@ -17,6 +19,10 @@ export function useFilters() {
     setScoreMin,
     scoreMax,
     setScoreMax,
+    reviewsMin,
+    setReviewsMin,
+    reviewsMax,
+    setReviewsMax,
     sortBy,
     setSortBy,
     searchQuery,

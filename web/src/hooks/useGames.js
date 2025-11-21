@@ -25,6 +25,14 @@ export function useGames(filters) {
         )
       }
 
+      // Filter by reviews
+      if (filters.reviewsMin !== undefined && filters.reviewsMax !== undefined) {
+        filtered = filtered.filter(
+          (game) => game.total_reviews >= filters.reviewsMin && 
+                    game.total_reviews <= filters.reviewsMax
+        )
+      }
+
       // Filter by search query
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase()
@@ -55,6 +63,8 @@ export function useGames(filters) {
     filters.playtimeMax,
     filters.scoreMin,
     filters.scoreMax,
+    filters.reviewsMin,
+    filters.reviewsMax,
     filters.searchQuery,
     filters.sortBy,
   ])

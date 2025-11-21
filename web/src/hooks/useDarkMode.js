@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react'
 
 export function useDarkMode() {
-  const [isDark, setIsDark] = useState(false)
+  const [isDark, setIsDark] = useState(() => {
+    // Leer el estado inicial del HTML (ya puesto por index.html)
+    return document.documentElement.classList.contains('dark')
+  })
 
-  // Sincronizar con el estado actual del HTML
-  useEffect(() => {
-    const isDarkMode = document.documentElement.classList.contains('dark')
-    setIsDark(isDarkMode)
-  }, [])
-
-  // Actualizar clase en HTML cuando cambia isDark
+  // Sincronizar cuando cambia isDark
   useEffect(() => {
     const html = document.documentElement
     if (isDark) {

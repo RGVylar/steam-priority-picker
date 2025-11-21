@@ -22,6 +22,7 @@ export function FilterPanel({ filters, onClose }) {
   const activeFilterCount = [
     filters.playtimeMin !== 0 || filters.playtimeMax !== Infinity,
     filters.scoreMin !== 0 || filters.scoreMax !== 100,
+    filters.reviewsMin !== 0 || filters.reviewsMax !== Infinity,
   ].filter(Boolean).length
 
   const handlePlaytimeToggle = (range) => {
@@ -98,6 +99,37 @@ export function FilterPanel({ filters, onClose }) {
         </div>
       </div>
 
+      {/* Reviews Filter */}
+      <div className="mt-6">
+        <h3 className="font-medium text-gray-900 dark:text-white mb-3">Reviews</h3>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-gray-600 dark:text-gray-400">Minimum: {filters.reviewsMin.toLocaleString()}</label>
+            <input
+              type="range"
+              min="0"
+              max="100000"
+              step="1000"
+              value={filters.reviewsMin}
+              onChange={(e) => filters.setReviewsMin(Number(e.target.value))}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-600 dark:text-gray-400">Maximum: {filters.reviewsMax === Infinity ? '∞' : filters.reviewsMax.toLocaleString()}</label>
+            <input
+              type="range"
+              min="0"
+              max="500000"
+              step="10000"
+              value={filters.reviewsMax === Infinity ? 500000 : filters.reviewsMax}
+              onChange={(e) => filters.setReviewsMax(Number(e.target.value))}
+              className="w-full"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Sort */}
       <div className="mt-6">
         <h3 className="font-medium text-gray-900 dark:text-white mb-3">Sort By</h3>
@@ -121,10 +153,12 @@ export function FilterPanel({ filters, onClose }) {
           filters.setPlaytimeMax(Infinity)
           filters.setScoreMin(0)
           filters.setScoreMax(100)
-          filters.setSortBy('playtime_asc')
+          filters.setReviewsMin(0)
+          filters.setReviewsMax(Infinity)
+          filters.setSortBy('score_desc')
           filters.setSearchQuery('')
         }}
-        className="w-full mt-8 px-4 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 font-medium transition-colors"
+        className="w-full mt-8 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors"
       >
         Reset Filters
       </button>
