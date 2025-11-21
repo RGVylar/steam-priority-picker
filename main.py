@@ -261,10 +261,10 @@ def main():
     picker = SteamPriorityPicker(steam_api_key, steam_id)
     
     # For testing, you can limit the number of games processed
-    # picker.run(max_games=10)
+    picker.run(max_games=10)
     
     # For full library processing
-    picker.run()
+    # picker.run()
 
 
 if __name__ == "__main__":

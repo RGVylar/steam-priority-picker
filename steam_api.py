@@ -31,12 +31,12 @@ class SteamAPI:
         Returns:
             List of game dictionaries with appid, name, playtime_forever, etc.
         """
-        url = f"{self.BASE_URL}/IPlayerService/GetOwnedGames/v0001/"
+        url = f"{self.BASE_URL}/IPlayerService/GetOwnedGames/v1/"
         params = {
             "key": self.api_key,
             "steamid": self.steam_id,
-            "include_appinfo": 1,
-            "include_played_free_games": 1,
+            "include_appinfo": True,
+            "include_played_free_games": True,
             "format": "json"
         }
         
