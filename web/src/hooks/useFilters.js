@@ -9,7 +9,7 @@ export function useFilters() {
   const [reviewsMax, setReviewsMax] = useState(Infinity)
   const [sortBy, setSortBy] = useState('score_desc')
   const [searchQuery, setSearchQuery] = useState('')
-  const [showPlayed, setShowPlayed] = useState('all') // 'all', 'played', 'unplayed'
+  const [showPlayed, setShowPlayed] = useState('unplayed') // 'all', 'played', 'unplayed'
 
   return {
     playtimeMin,
