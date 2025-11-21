@@ -3,6 +3,7 @@ import Header from './components/Header'
 import FilterPanel from './components/FilterPanel'
 import GameList from './components/GameList'
 import SearchBar from './components/SearchBar'
+import { BackendStatus } from './components/BackendStatus'
 import { useGames } from './hooks/useGames'
 import { useFilters } from './hooks/useFilters'
 import { useDarkMode } from './hooks/useDarkMode'
@@ -77,6 +78,9 @@ function App() {
           onClick={() => setShowMobileFilters(false)}
         />
       )}
+
+      {/* Backend Status Indicator */}
+      <BackendStatus />
     </div>
   )
 }
