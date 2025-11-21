@@ -7,49 +7,57 @@ export function GameCard({ game }) {
   }
 
   const badge = getPlaytimeBadge(game.playtime_hours)
+  const imageUrl = `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${game.appid}/library_600x900_2x.jpg`
 
   return (
-    <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden flex flex-col h-full">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg dark:shadow-gray-950 transition-shadow overflow-hidden flex flex-col h-full">
+      {/* Image Container - Rectangular 600x900 aspect ratio (2:3) */}
+      <div className="w-full aspect-[2/3] bg-gray-200 dark:bg-gray-700 overflow-hidden">
+        <img 
+          src={imageUrl}
+          alt={game.name}
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            e.target.src = `https://via.placeholder.com/300x450?text=${encodeURIComponent(game.name)}`
+          }}
+        />
+      </div>
+
       {/* Header */}
-      <div className="px-4 pt-4">
-        <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+      <div className="px-4 pt-3">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2">
           {game.name}
         </h3>
       </div>
 
       {/* Body */}
-      <div className="flex-1 px-4 py-3">
+      <div className="flex-1 px-4 py-2">
         {/* Badges */}
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className="flex flex-wrap gap-1 mb-2">
           <span className={`px-2 py-1 rounded text-xs font-medium ${badge.color}`}>
             ⏱️ {badge.text}
           </span>
-          <span className="px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
+          <span className="px-2 py-1 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
             ⭐ {game.score}%
           </span>
         </div>
 
         {/* Review Info */}
-        <div className="text-sm text-gray-600">
-          <p className="font-medium text-gray-900">{game.review_desc}</p>
-          <p className="text-xs text-gray-500">{game.total_reviews?.toLocaleString() || 0} reviews</p>
+        <div className="text-xs text-gray-600 dark:text-gray-400">
+          <p className="font-medium text-gray-900 dark:text-white">{game.review_desc}</p>
+          <p className="text-gray-500 dark:text-gray-400">{game.total_reviews?.toLocaleString() || 0} reviews</p>
         </div>
 
         {/* Additional Info */}
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <p className="text-xs text-gray-600">
-            Playtime: <span className="font-medium">{game.playtime_hours.toFixed(1)} hrs</span>
+        <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            Playtime: <span className="font-medium text-gray-900 dark:text-white">{game.playtime_hours.toFixed(1)} hrs</span>
           </p>
-          {game.hltb_name && (
-            <p className="text-xs text-gray-600 mt-1">
-              HLTB: <span className="font-medium">{game.hltb_name}</span>
-            </p>
-          )}
         </div>
       </div>
 
       {/* Footer - Links */}
-      <div className="border-t border-gray-200 p-4 flex gap-2">
+      <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex gap-2">
         <a
           href={game.steam_url}
           target="_blank"

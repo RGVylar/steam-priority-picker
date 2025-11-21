@@ -5,6 +5,16 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Steam Priority Picker</title>
+    <script>
+      // Aplicar tema antes de que React renderice para evitar flash
+      const isDark = localStorage.getItem('darkMode') !== null 
+        ? JSON.parse(localStorage.getItem('darkMode'))
+        : window.matchMedia('(prefers-color-scheme: dark)').matches
+      
+      if (isDark) {
+        document.documentElement.classList.add('dark')
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

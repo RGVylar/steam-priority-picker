@@ -24,15 +24,39 @@ export function FilterPanel({ filters, onClose }) {
     filters.scoreMin !== 0 || filters.scoreMax !== 100,
   ].filter(Boolean).length
 
+  const handlePlaytimeToggle = (range) => {
+    if (filters.playtimeMin === range.min && filters.playtimeMax === range.max) {
+      // Desselect
+      filters.setPlaytimeMin(0)
+      filters.setPlaytimeMax(Infinity)
+    } else {
+      // Select
+      filters.setPlaytimeMin(range.min)
+      filters.setPlaytimeMax(range.max)
+    }
+  }
+
+  const handleScoreToggle = (range) => {
+    if (filters.scoreMin === range.min && filters.scoreMax === range.max) {
+      // Desselect
+      filters.setScoreMin(0)
+      filters.setScoreMax(100)
+    } else {
+      // Select
+      filters.setScoreMin(range.min)
+      filters.setScoreMax(range.max)
+    }
+  }
+
   return (
-    <div className="p-4 lg:p-6">
-      <div className="flex justify-between items-center mb-6 lg:mb-0 pb-4 lg:pb-0 border-b lg:border-0">
-        <h2 className="text-lg font-semibold text-gray-900">
-          Filters {activeFilterCount > 0 && <span className="text-blue-600">({activeFilterCount})</span>}
+    <div className="p-4 lg:p-6 dark:bg-gray-800">
+      <div className="flex justify-between items-center mb-6 lg:mb-0 pb-4 lg:pb-0 border-b lg:border-0 dark:border-gray-700">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Filters {activeFilterCount > 0 && <span className="text-blue-600 dark:text-blue-400">({activeFilterCount})</span>}
         </h2>
         <button 
           onClick={onClose}
-          className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+          className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
         >
           ✕
         </button>
@@ -40,20 +64,17 @@ export function FilterPanel({ filters, onClose }) {
 
       {/* Playtime Filter */}
       <div className="mt-6">
-        <h3 className="font-medium text-gray-900 mb-3">Playtime</h3>
+        <h3 className="font-medium text-gray-900 dark:text-white mb-3">Playtime</h3>
         <div className="space-y-2">
           {playtimeRanges.map((range) => (
-            <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
+            <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded transition-colors">
               <input
                 type="checkbox"
                 checked={filters.playtimeMin === range.min && filters.playtimeMax === range.max}
-                onChange={() => {
-                  filters.setPlaytimeMin(range.min)
-                  filters.setPlaytimeMax(range.max)
-                }}
+                onChange={() => handlePlaytimeToggle(range)}
                 className="w-4 h-4 text-blue-600 rounded"
               />
-              <span className="text-sm text-gray-700">{range.label}</span>
+              <span className="text-sm text-gray-700 dark:text-gray-300">{range.label}</span>
             </label>
           ))}
         </div>
@@ -61,20 +82,17 @@ export function FilterPanel({ filters, onClose }) {
 
       {/* Score Filter */}
       <div className="mt-6">
-        <h3 className="font-medium text-gray-900 mb-3">Steam Score</h3>
+        <h3 className="font-medium text-gray-900 dark:text-white mb-3">Steam Score</h3>
         <div className="space-y-2">
           {scoreRanges.map((range) => (
-            <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
+            <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded transition-colors">
               <input
                 type="checkbox"
                 checked={filters.scoreMin === range.min && filters.scoreMax === range.max}
-                onChange={() => {
-                  filters.setScoreMin(range.min)
-                  filters.setScoreMax(range.max)
-                }}
+                onChange={() => handleScoreToggle(range)}
                 className="w-4 h-4 text-blue-600 rounded"
               />
-              <span className="text-sm text-gray-700">{range.label}</span>
+              <span className="text-sm text-gray-700 dark:text-gray-300">{range.label}</span>
             </label>
           ))}
         </div>
@@ -82,11 +100,11 @@ export function FilterPanel({ filters, onClose }) {
 
       {/* Sort */}
       <div className="mt-6">
-        <h3 className="font-medium text-gray-900 mb-3">Sort By</h3>
+        <h3 className="font-medium text-gray-900 dark:text-white mb-3">Sort By</h3>
         <select
           value={filters.sortBy}
           onChange={(e) => filters.setSortBy(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {sortOptions.map((option) => (
             <option key={option.value} value={option.value}>
