@@ -23,6 +23,7 @@ export function FilterPanel({ filters, onClose }) {
     filters.playtimeMin !== 0 || filters.playtimeMax !== Infinity,
     filters.scoreMin !== 0 || filters.scoreMax !== 100,
     filters.reviewsMin !== 0 || filters.reviewsMax !== Infinity,
+    filters.showPlayed !== 'all',
   ].filter(Boolean).length
 
   const handlePlaytimeToggle = (range) => {
@@ -146,6 +147,46 @@ export function FilterPanel({ filters, onClose }) {
         </select>
       </div>
 
+      {/* Played Games Filter */}
+      <div className="mt-6">
+        <h3 className="font-medium text-gray-900 dark:text-white mb-3">Played Status</h3>
+        <div className="space-y-2">
+          <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded transition-colors">
+            <input
+              type="radio"
+              name="playedStatus"
+              value="all"
+              checked={filters.showPlayed === 'all'}
+              onChange={() => filters.setShowPlayed('all')}
+              className="w-4 h-4 text-blue-600"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">All Games</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded transition-colors">
+            <input
+              type="radio"
+              name="playedStatus"
+              value="played"
+              checked={filters.showPlayed === 'played'}
+              onChange={() => filters.setShowPlayed('played')}
+              className="w-4 h-4 text-blue-600"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">Played</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded transition-colors">
+            <input
+              type="radio"
+              name="playedStatus"
+              value="unplayed"
+              checked={filters.showPlayed === 'unplayed'}
+              onChange={() => filters.setShowPlayed('unplayed')}
+              className="w-4 h-4 text-blue-600"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">Unplayed</span>
+          </label>
+        </div>
+      </div>
+
       {/* Reset Button */}
       <button
         onClick={() => {
@@ -157,6 +198,7 @@ export function FilterPanel({ filters, onClose }) {
           filters.setReviewsMax(Infinity)
           filters.setSortBy('score_desc')
           filters.setSearchQuery('')
+          filters.setShowPlayed('all')
         }}
         className="w-full mt-8 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors"
       >

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import gamesData from '../data/games.json'
 
-export function useGames(filters) {
+export function useGames(filters, played) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -31,6 +31,13 @@ export function useGames(filters) {
           (game) => game.total_reviews >= filters.reviewsMin && 
                     game.total_reviews <= filters.reviewsMax
         )
+      }
+
+      // Filter by played status
+      if (filters.showPlayed === 'played') {
+        filtered = filtered.filter((game) => played.has(game.appid))
+      } else if (filters.showPlayed === 'unplayed') {
+        filtered = filtered.filter((game) => !played.has(game.appid))
       }
 
       // Filter by search query
@@ -67,6 +74,8 @@ export function useGames(filters) {
     filters.reviewsMax,
     filters.searchQuery,
     filters.sortBy,
+    filters.showPlayed,
+    played,
   ])
 
   return {

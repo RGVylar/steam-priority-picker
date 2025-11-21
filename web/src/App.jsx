@@ -6,13 +6,15 @@ import SearchBar from './components/SearchBar'
 import { useGames } from './hooks/useGames'
 import { useFilters } from './hooks/useFilters'
 import { useDarkMode } from './hooks/useDarkMode'
+import { usePlayed } from './hooks/usePlayed'
 
 function App() {
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const { isDark, toggle: toggleDarkMode } = useDarkMode()
   
   const filters = useFilters()
-  const { games, total, loading, error } = useGames(filters)
+  const { played, togglePlayed, isPlayed } = usePlayed()
+  const { games, total, loading, error } = useGames(filters, played)
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -60,6 +62,8 @@ function App() {
               total={total}
               loading={loading}
               filters={filters}
+              togglePlayed={togglePlayed}
+              isPlayed={isPlayed}
             />
           </div>
         </div>
