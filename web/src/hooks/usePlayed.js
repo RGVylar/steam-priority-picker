@@ -5,9 +5,16 @@ export function usePlayed() {
     // Inicializar desde localStorage
     try {
       const saved = localStorage.getItem('playedGames')
-      return new Set(saved ? JSON.parse(saved) : [])
+      if (!saved) return new Set()
+      const parsed = JSON.parse(saved)
+      // Ensure it's an array of valid app_ids (numbers)
+      const validIds = Array.isArray(parsed) 
+        ? parsed.filter(id => typeof id === 'number' || !isNaN(parseInt(id)))
+        : []
+      return new Set(validIds.map(id => parseInt(id)))
     } catch (e) {
       console.error('Error loading played games:', e)
+      localStorage.removeItem('playedGames') // Clean up corrupted data
       return new Set()
     }
   })

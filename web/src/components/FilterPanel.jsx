@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
-export function FilterPanel({ filters, onClose, playedCount = 0 }) {
+export function FilterPanel({ filters, onClose, played }) {
   const [expandedSections, setExpandedSections] = useState({
     playtime: true,
     score: true,
@@ -8,6 +8,9 @@ export function FilterPanel({ filters, onClose, playedCount = 0 }) {
     sort: false,
     played: false,
   })
+
+  // Calculate played count dynamically from the played Set
+  const playedCount = useMemo(() => played ? played.size : 0, [played])
 
   const toggleSection = (section) => {
     setExpandedSections((prev) => ({

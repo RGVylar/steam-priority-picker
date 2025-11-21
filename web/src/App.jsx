@@ -38,7 +38,7 @@ function App() {
           <FilterPanel 
             filters={filters}
             onClose={() => setShowMobileFilters(false)}
-            playedCount={getPlayedCount()}
+            played={played}
           />
         </div>
 

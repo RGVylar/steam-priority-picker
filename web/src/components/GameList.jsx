@@ -46,10 +46,10 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {displayedItems.map((game) => (
           <GameCard 
-            key={game.appid || game.app_id} 
+            key={game.app_id} 
             game={game} 
-            isPlayed={isPlayed(game.appid)}
-            onTogglePlayed={() => togglePlayed(game.appid)}
+            isPlayed={isPlayed(game.app_id)}
+            onTogglePlayed={() => togglePlayed(game.app_id)}
           />
         ))}
       </div>

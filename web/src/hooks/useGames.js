@@ -35,9 +35,9 @@ export function useGames(filters, played) {
 
       // Filter by played status
       if (filters.showPlayed === 'played') {
-        filtered = filtered.filter((game) => played.has(game.appid))
+        filtered = filtered.filter((game) => played.has(game.app_id))
       } else if (filters.showPlayed === 'unplayed') {
-        filtered = filtered.filter((game) => !played.has(game.appid))
+        filtered = filtered.filter((game) => !played.has(game.app_id))
       }
 
       // Filter by search query
