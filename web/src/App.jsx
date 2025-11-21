@@ -13,7 +13,7 @@ function App() {
   const { isDark, toggle: toggleDarkMode } = useDarkMode()
   
   const filters = useFilters()
-  const { played, togglePlayed, isPlayed } = usePlayed()
+  const { played, togglePlayed, isPlayed, getPlayedCount } = usePlayed()
   const { games, total, loading, error } = useGames(filters, played)
 
   return (
@@ -38,6 +38,7 @@ function App() {
           <FilterPanel 
             filters={filters}
             onClose={() => setShowMobileFilters(false)}
+            playedCount={getPlayedCount()}
           />
         </div>
 

@@ -31,5 +31,7 @@ export function usePlayed() {
 
   const isPlayed = useCallback((appid) => played.has(appid), [played])
 
-  return { played, togglePlayed, isPlayed }
+  const getPlayedCount = useCallback(() => played.size, [played])
+
+  return { played, togglePlayed, isPlayed, getPlayedCount }
 }

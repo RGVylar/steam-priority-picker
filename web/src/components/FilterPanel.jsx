@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export function FilterPanel({ filters, onClose }) {
+export function FilterPanel({ filters, onClose, playedCount = 0 }) {
   const [expandedSections, setExpandedSections] = useState({
     playtime: true,
     score: true,
@@ -211,6 +211,9 @@ export function FilterPanel({ filters, onClose }) {
               className="w-4 h-4 text-blue-600"
             />
             <span className="text-sm text-gray-700 dark:text-gray-300">Played</span>
+            <span className="ml-auto text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-0.5 rounded-full">
+              {playedCount}
+            </span>
           </label>
           <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded transition-colors">
             <input
