@@ -3,11 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from .middleware.cors import setup_cors
 from .config import settings
 from .routes.games import router as games_router
+from .database import engine
+from .models import Base
 import logging
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Create database tables
+Base.metadata.create_all(bind=engine)
 
 # Create FastAPI app
 app = FastAPI(
