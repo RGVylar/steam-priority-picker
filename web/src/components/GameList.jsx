@@ -39,7 +39,7 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
       <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
         Showing <span className="font-medium text-gray-900 dark:text-white">{displayedItems.length}</span> of <span className="font-medium text-gray-900 dark:text-white">{games.length}</span> games
         {games.length < total && (
-          <span className="text-gray-400 dark:text-gray-500 ml-2">({games.length} after filters)</span>
+          <span className="text-gray-400 dark:text-gray-500 ml-2">({total} before filters)</span>
         )}
       </div>
       

@@ -6,31 +6,34 @@ A modern web application to help you prioritize which Steam games to play. Analy
 
 ## 🎯 Features
 
-### ✅ MVP - Currently Live
-- 🎮 **1080+ Games Display**: Browse your entire cataloged Steam library
-- 🖼️ **Game Headers**: Beautiful Steam store images for each game
-- 🔍 **Smart Filtering**:
+## ✨ MVP Features (Phase 1 - Complete!)
+
+### ✅ Currently Available
+- 🎮 **1080+ Games Display**: Browse your full cataloged Steam library  
+- 🖼️ **Steam Header Images**: Beautiful game artwork from Steam store
+- 🔍 **Advanced Filtering**:
   - ⏱️ Playtime ranges (0-5, 5-10, 10-20, 20+ hours)
-  - ⭐ Steam Score ranges (75-100%, 50-75%, Below 50%)
-  - 📊 Review count slider (min/max)
+  - ⭐ Steam score ranges (75-100%, 50-75%, Below 50%)
+  - 📊 Review count slider (min/max filtering)
   - ✓ Played/Unplayed status tracker with counter
-- 🔤 **Real-time Search**: Instant search by game name
-- 📊 **Multiple Sort Options**: 
+- 🔤 **Real-time Search**: Instant filtering by game name
+- 📊 **Sorting Options**: 
   - Playtime (ascending/descending)
   - Score (ascending/descending)
+  - Default: Highest score first
 - ♾️ **Infinite Scroll**: Load 24 games at a time
-- 🎨 **Dark Mode**: System preference detection with localStorage persistence
-- 📱 **Responsive Design**: Mobile, tablet, and desktop optimized
-- 🏷️ **Collapsible Filter Sections**: Keep UI clean, expand only what you need
-- 💾 **Game Tracking**: Mark games as played with localStorage persistence
+- 🎨 **Dark Mode**: Auto-detect system preference, toggle manually
+- 📱 **Responsive Design**: Optimized for mobile, tablet, and desktop
+- 🏷️ **Collapsible Filters**: Keep UI clean, expand only needed sections
+- 💾 **Game Tracking**: Mark games as played (persists in localStorage)
 - 🌙 **Persistent Settings**: All preferences saved locally
 
 ### 🎯 Planned Features (Phase 2-3)
-- 👤 Steam account login (OAuth)
-- 🔄 Real-time library sync
+- 👤 Steam account login (OAuth)  
+- 🔄 Real-time library sync without manual export
 - 📊 Game statistics and insights
-- 🎲 Recommendation engine
-- 📈 Playtime analytics
+- 🎲 Recommendation engine based on your preferences
+- 📈 Playtime analytics and trends
 
 ## 🏗️ Architecture
 
@@ -42,57 +45,50 @@ The project has three main components:
 | **Backend** | FastAPI | 🏗️ Scaffolded |
 | **Database** | PostgreSQL | 📅 Phase 3 |
 
-## 📋 Quick Start
+## 🔧 Full Setup Guide
 
-### Prerequisites
-- Node.js 16+ (frontend)
-- Python 3.11+ (backend)
-- Git
-
-### 1. Frontend Development
+### Initial Setup (First Time)
 
 ```bash
-cd web
-npm install
+# 1. Clone repository
+git clone https://github.com/RGVylar/steam-priority-picker.git
+cd steam-priority-picker
+
+# 2. Create .env with your Steam credentials
+cp .env.example .env
+# Edit .env and add:
+#   STEAM_API_KEY=your_key_from_steamcommunity.com
+#   STEAM_ID=your_steamid64_number
+
+# 3. Install Python dependencies
+pip install -r requirements.txt
+
+# 4. Fetch all your Steam games
+python main.py  # Takes 5-10 minutes (API rate limiting)
+
+# 5. Export to frontend format
+python scripts/cache_to_json.py
+
+# 6. Install frontend dependencies
+cd web && npm install
+
+# 7. Start development server
 npm run dev
 ```
 
-Visit http://localhost:5173 to see your 1080+ games!
+**Result:** http://localhost:5173 shows all your Steam games! 🎮
 
-**MVP Features Currently Available:**
-- ✅ Browse all 1080+ cached games with Steam header images
-- ✅ Filter by playtime duration (4 ranges)
-- ✅ Filter by Steam score (3 ranges)
-- ✅ Filter by number of reviews (slider)
-- ✅ Mark games as played/unplayed (with counter)
-- ✅ View only played or unplayed games
-- ✅ Real-time search by game name
-- ✅ Sort by playtime or score
-- ✅ Dark mode with system preference auto-detection
-- ✅ Collapsible filter sections
-- ✅ All settings persist in localStorage
-- ✅ Infinite scroll loading
+### Update Game Data (Recurring)
 
-### 2. Backend Development
+After your first setup, to refresh the game list:
 
 ```bash
-cd backend
-pip install -r requirements.txt
-cp .env.example .env
-python main.py
+python main.py && python scripts/cache_to_json.py
 ```
 
-Backend API: http://localhost:8000
-- Docs: http://localhost:8000/docs
-- Health: http://localhost:8000/health
+**Note:** First run takes 5-10 minutes due to API rate limiting. Subsequent runs use cache (24-hour TTL).
 
-### 3. Export Cache Data
 
-Generate JSON from your cached game data:
-
-```bash
-python scripts/cache_to_json.py
-```
 
 ## 📚 Documentation
 

@@ -12,15 +12,34 @@ export function GameCard({ game, isPlayed, onTogglePlayed }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg dark:shadow-gray-950 transition-shadow overflow-hidden flex flex-col h-full">
       {/* Image Container - Header image horizontal aspect ratio */}
-      <div className="w-full aspect-video bg-gray-200 dark:bg-gray-700 overflow-hidden">
+      <div className="w-full aspect-video bg-gray-200 dark:bg-gray-700 overflow-hidden relative group">
         <img 
           src={imageUrl}
           alt={game.name}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           onError={(e) => {
             e.target.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='460' height='215'%3E%3Crect fill='%23333' width='460' height='215'/%3E%3Ctext x='50%' y='50%' fill='%23999' text-anchor='middle' dominant-baseline='middle' font-size='18' font-family='sans-serif'%3EImage not available%3C/text%3E%3C/svg%3E`
           }}
         />
+        {/* Play Button Overlay */}
+        <a
+          href={`steam://launch/${game.app_id}/Dialog`}
+          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300"
+          title="Click to play or install on Steam"
+          onClick={(e) => {
+            // Fallback to Steam store if steam:// protocol doesn't work
+            if (!navigator.userAgent.includes('Windows') && !navigator.userAgent.includes('Mac') && !navigator.userAgent.includes('Linux')) {
+              e.preventDefault()
+              window.open(game.steam_url, '_blank')
+            }
+          }}
+        >
+          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center shadow-lg transform scale-0 group-hover:scale-100 transition-transform duration-300 hover:bg-blue-700">
+            <svg className="w-8 h-8 text-white fill-current ml-1" viewBox="0 0 24 24">
+              <polygon points="5 3 19 12 5 21"/>
+            </svg>
+          </div>
+        </a>
       </div>
 
       {/* Header */}
