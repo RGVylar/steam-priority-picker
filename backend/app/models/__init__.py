@@ -28,7 +28,7 @@ class Game(Base):
     app_id = Column(Integer, unique=True, nullable=False, index=True)
     name = Column(String(500), nullable=False)
     header_image = Column(String(500), nullable=True)
-    playtime_hours = Column(Float, default=0)
+    playtime_hours = Column(Float, default=0)  # Generic/average playtime
     score = Column(Float, default=0)
     total_reviews = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -47,6 +47,33 @@ class Game(Base):
     
     def __repr__(self):
         return f"<Game {self.name} ({self.app_id})>"
+
+
+class UserGame(Base):
+    """User's game with personal playtime and stats"""
+    __tablename__ = "user_games"
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    app_id = Column(Integer, ForeignKey("games.app_id", ondelete="CASCADE"), nullable=False)
+    playtime_hours = Column(Float, default=0)  # User's personal playtime
+    last_played = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def to_dict(self, game: 'Game' = None):
+        """Convert to dictionary for API responses"""
+        return {
+            "app_id": self.app_id,
+            "name": game.name if game else "Unknown",
+            "header_image": game.header_image if game else "",
+            "playtime_hours": self.playtime_hours,  # User's personal playtime
+            "score": game.score if game else 0,
+            "total_reviews": game.total_reviews if game else 0
+        }
+    
+    def __repr__(self):
+        return f"<UserGame user={self.user_id} app={self.app_id}>"
 
 
 class Favorite(Base):

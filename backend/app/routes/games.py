@@ -100,7 +100,8 @@ async def get_my_games(
     authorization: str = Header(None),
     db: Session = Depends(get_db)
 ):
-    """Get authenticated user's games from Steam library"""
+    """Get authenticated user's games from Steam library with personal playtime"""
+    from ..models import UserGame, Game as GameModel
     
     if not authorization:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -128,37 +129,93 @@ async def get_my_games(
             "message": "Could not fetch games from Steam API"
         }
     
-    # Get list of app_ids owned by user
-    owned_app_ids = set()
+    # Get list of owned games with playtime
+    owned_app_ids = {}
     if "games" in owned_games_data:
-        owned_app_ids = {game["appid"] for game in owned_games_data["games"]}
+        for game in owned_games_data["games"]:
+            owned_app_ids[game["appid"]] = game.get("playtime_forever", 0) / 60  # Convert minutes to hours
     
     logger.info(f"User owns {len(owned_app_ids)} games")
     
-    # Filter our games database to only show owned games
-    user_games = [g for g in game_service.games if g.get("app_id") in owned_app_ids]
+    # Get or create user_game records for all owned games
+    user_games_response = []
+    
+    for app_id, playtime_hours in owned_app_ids.items():
+        # Get game info from database
+        game = db.query(GameModel).filter(GameModel.app_id == app_id).first()
+        
+        # Get or create user_game record
+        user_game = db.query(UserGame).filter(
+            UserGame.user_id == user.id,
+            UserGame.app_id == app_id
+        ).first()
+        
+        if not user_game:
+            user_game = UserGame(
+                user_id=user.id,
+                app_id=app_id,
+                playtime_hours=playtime_hours
+            )
+            db.add(user_game)
+        else:
+            # Update playtime if changed
+            user_game.playtime_hours = playtime_hours
+        
+        # Build response with user's personal playtime
+        if game:
+            game_dict = {
+                "app_id": game.app_id,
+                "name": game.name,
+                "header_image": game.header_image,
+                "playtime_hours": playtime_hours,  # User's personal playtime
+                "score": game.score,
+                "total_reviews": game.total_reviews
+            }
+        else:
+            # Unknown game - will be fetched
+            game_dict = {
+                "app_id": app_id,
+                "name": f"Game {app_id}",
+                "header_image": "",
+                "playtime_hours": playtime_hours,
+                "score": 0,
+                "total_reviews": 0
+            }
+        
+        user_games_response.append(game_dict)
     
     # Find unknown games
     known_app_ids = {g.get("app_id") for g in game_service.games}
-    unknown_app_ids = [aid for aid in owned_app_ids if aid not in known_app_ids]
+    unknown_app_ids = [aid for aid in owned_app_ids.keys() if aid not in known_app_ids]
     
-    logger.info(f"Found {len(user_games)} known games, {len(unknown_app_ids)} unknown games")
+    logger.info(f"Found {len(owned_app_ids) - len(unknown_app_ids)} known games, {len(unknown_app_ids)} unknown games")
     
-    # Fetch unknown games info if any
-    unknown_games = []
+    # Fetch and save unknown games
     if unknown_app_ids:
         logger.info(f"Fetching info for {len(unknown_app_ids)} unknown games...")
         unknown_games = await auth_service.fetch_unknown_games_info(unknown_app_ids)
         
-        # Save unknown games to database
         if unknown_games:
             game_service.add_games(unknown_games)
+            
+            # Update response with newly fetched game info
+            for game_dict in user_games_response:
+                if game_dict["app_id"] in unknown_app_ids:
+                    for unknown_game in unknown_games:
+                        if unknown_game["app_id"] == game_dict["app_id"]:
+                            # Update with fetched info, but keep user's playtime
+                            personal_playtime = game_dict["playtime_hours"]
+                            game_dict.update(unknown_game)
+                            game_dict["playtime_hours"] = personal_playtime
+                            break
+            
             logger.info(f"Added {len(unknown_games)} new games to database. Total: {len(game_service.games)}")
-        
-        user_games.extend(unknown_games)
+    
+    # Commit all user_game changes
+    db.commit()
     
     return {
-        "total": len(user_games),
-        "games": user_games,
+        "total": len(user_games_response),
+        "games": user_games_response,
         "db_total": len(game_service.games)  # Send total DB count for UI
     }
