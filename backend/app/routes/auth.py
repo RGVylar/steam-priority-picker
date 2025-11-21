@@ -1,11 +1,13 @@
 """
 Authentication routes
 """
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, Header
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..services.auth_service import SteamAuthService
 from ..models import User
+from ..config import settings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -32,7 +34,8 @@ async def auth_callback(
     
     if not steam_id:
         logger.error("Steam ID verification failed")
-        raise HTTPException(status_code=400, detail="Steam authentication failed")
+        # Redirect to frontend with error
+        return RedirectResponse(url=f"{settings.app_url}?error=steam_auth_failed")
     
     logger.info(f"Steam ID verified: {steam_id}")
     
@@ -41,7 +44,8 @@ async def auth_callback(
     
     if not steam_profile:
         logger.error(f"Could not fetch profile for {steam_id}")
-        raise HTTPException(status_code=400, detail="Could not fetch Steam profile")
+        # Redirect to frontend with error
+        return RedirectResponse(url=f"{settings.app_url}?error=profile_fetch_failed")
     
     logger.info(f"Steam profile fetched: {steam_profile['username']}")
     
@@ -52,20 +56,12 @@ async def auth_callback(
     # Create session
     token, session = auth_service.create_session(db, user)
     
-    # Return token (in production, this would be done via redirect with token in hash)
-    return {
-        "token": token,
-        "user": {
-            "id": user.id,
-            "steam_id": user.steam_id,
-            "username": user.username,
-            "avatar_url": user.avatar_url,
-        }
-    }
+    # Redirect to frontend with token
+    return RedirectResponse(url=f"{settings.app_url}?token={token}")
 
 @router.get("/user")
 async def get_current_user(
-    authorization: str = None,
+    authorization: str = Header(None),
     db: Session = Depends(get_db)
 ):
     """Get current authenticated user"""
@@ -94,7 +90,7 @@ async def get_current_user(
 
 @router.post("/logout")
 async def logout(
-    authorization: str = None,
+    authorization: str = Header(None),
     db: Session = Depends(get_db)
 ):
     """Logout user"""

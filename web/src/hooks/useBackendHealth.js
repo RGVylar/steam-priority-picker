@@ -36,8 +36,8 @@ export function useBackendHealth() {
 
     checkHealth();
 
-    // Check every 10 seconds (more frequent detection)
-    const interval = setInterval(checkHealth, 10000);
+    // Check every 60 seconds (balance between detection and resource usage)
+    const interval = setInterval(checkHealth, 60000);
     return () => clearInterval(interval);
   }, []);
 

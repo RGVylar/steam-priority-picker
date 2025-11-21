@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import FilterPanel from './components/FilterPanel'
 import GameList from './components/GameList'
@@ -8,14 +8,36 @@ import { useGames } from './hooks/useGames'
 import { useFilters } from './hooks/useFilters'
 import { useDarkMode } from './hooks/useDarkMode'
 import { usePlayed } from './hooks/usePlayed'
+import { useAuthContext } from './context/AuthContext'
+import { useSearchParams } from 'react-router-dom'
 
 function App() {
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const { isDark, toggle: toggleDarkMode } = useDarkMode()
+  const [searchParams, setSearchParams] = useSearchParams()
   
   const filters = useFilters()
   const { played, togglePlayed, isPlayed, getPlayedCount } = usePlayed()
   const { games, total, loading, error } = useGames(filters, played)
+
+  // Handle auth token from URL
+  useEffect(() => {
+    const token = searchParams.get('token')
+    const errorParam = searchParams.get('error')
+    
+    if (token) {
+      console.log('Token found in URL, saving:', token.substring(0, 20) + '...')
+      localStorage.setItem('auth_token', token)
+      // Trigger a refresh so AuthContext picks up the new token
+      window.location.href = '/'
+    }
+    
+    if (errorParam) {
+      console.error('Auth error:', errorParam)
+      // Clean URL
+      setSearchParams({})
+    }
+  }, [searchParams, setSearchParams])
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

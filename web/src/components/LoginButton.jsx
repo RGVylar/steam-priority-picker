@@ -1,7 +1,7 @@
-import { useAuth } from '../hooks/useAuth';
+import { useAuthContext } from '../context/AuthContext';
 
 export function LoginButton() {
-  const { user, isAuthenticated, loading, error, loginWithSteam, logout } = useAuth();
+  const { user, isAuthenticated, loading, error, loginWithSteam, logout } = useAuthContext();
 
   if (isAuthenticated && user) {
     return (
