@@ -59,6 +59,29 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
   const games = useMemo(() => {
     let filtered = [...allGames]
 
+    // Filter by search query
+    if (filters.searchQuery) {
+      filtered = filtered.filter((game) =>
+        game.name.toLowerCase().includes(filters.searchQuery.toLowerCase())
+      )
+    }
+
+    // Filter by playtime
+    if (filters.playtimeMin !== undefined && filters.playtimeMax !== undefined) {
+      filtered = filtered.filter(
+        (game) => game.playtime_hours >= filters.playtimeMin && 
+                  game.playtime_hours <= filters.playtimeMax
+      )
+    }
+
+    // Filter by score
+    if (filters.scoreMin !== undefined && filters.scoreMax !== undefined) {
+      filtered = filtered.filter(
+        (game) => game.score >= filters.scoreMin && 
+                  game.score <= filters.scoreMax
+      )
+    }
+
     // Filter by reviews
     if (filters.reviewsMin !== undefined && filters.reviewsMax !== undefined) {
       filtered = filtered.filter(
@@ -88,6 +111,11 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
     return filtered
   }, [
     allGames,
+    filters.searchQuery,
+    filters.playtimeMin,
+    filters.playtimeMax,
+    filters.scoreMin,
+    filters.scoreMax,
     filters.reviewsMin,
     filters.reviewsMax,
     filters.sortBy,
