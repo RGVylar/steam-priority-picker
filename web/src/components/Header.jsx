@@ -1,4 +1,6 @@
 import icon from '../image/icon.svg'
+import { LoginButton } from './LoginButton'
+
 export function Header({ onMenuClick, onDarkModeToggle, isDarkMode }) {
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
@@ -15,6 +17,8 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode }) {
         </div>
                 
         <div className="flex items-center gap-2">
+          <LoginButton />
+          
           <button 
             onClick={onDarkModeToggle}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
