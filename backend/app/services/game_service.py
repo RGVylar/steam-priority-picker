@@ -11,19 +11,30 @@ class GameService:
     
     def load_games(self):
         """Load games from JSON file"""
-        data_dir = Path(__file__).parent.parent.parent / "data"
-        games_file = data_dir / "games.json"
+        # Try multiple possible locations
+        possible_paths = [
+            Path(__file__).parent.parent.parent / "data" / "games.json",  # backend/data/games.json
+            Path(__file__).parent.parent.parent.parent / "web" / "src" / "data" / "games.json",  # web/src/data/games.json
+            Path("/opt/render/project/src/web/src/data/games.json"),  # Render production path
+            Path("/opt/render/project/src/backend/data/games.json"),  # Render alt path
+        ]
         
-        if games_file.exists():
+        games_file = None
+        for path in possible_paths:
+            if path.exists():
+                games_file = path
+                break
+        
+        if games_file:
             try:
                 with open(games_file, 'r', encoding='utf-8') as f:
                     self.games = json.load(f)
                 print(f"Loaded {len(self.games)} games from {games_file}")
             except Exception as e:
-                print(f"Error loading games: {e}")
+                print(f"Error loading games from {games_file}: {e}")
                 self.games = []
         else:
-            print(f"Games file not found: {games_file}")
+            print(f"Games file not found in any of these locations: {possible_paths}")
     
     def get_all_games(self, limit: int = None, offset: int = 0) -> tuple[List[dict], int]:
         """Get all games with pagination"""
