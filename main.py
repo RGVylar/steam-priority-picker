@@ -67,6 +67,7 @@ class SteamPriorityPicker:
     def enrich_game_data(self, game: Dict) -> Dict:
         """
         Enrich a single game with HLTB and review data.
+        Falls back to Steam data if HLTB is not available.
         
         Args:
             game: Game data from Steam API
@@ -94,13 +95,21 @@ class SteamPriorityPicker:
             # Rate limiting to be nice to HLTB
             time.sleep(0.5)
         
-        # Check if it's a "not found" sentinel
+        # Check if it's a "not found" sentinel - use default values
         if isinstance(hltb_data, dict) and hltb_data.get("not_found"):
-            return None
+            hltb_data = None
         
-        # Skip games without HLTB data
+        # If HLTB data is None, use default values instead of skipping
         if not hltb_data:
-            return None
+            logger.warning(f"HLTB data not available for {name}, using defaults")
+            hltb_data = {
+                "id": None,
+                "name": name,
+                "main_story_hours": 0,
+                "main_extra_hours": 0,
+                "completionist_hours": 0,
+                "url": ""
+            }
         
         # Fetch review score
         cache_key_review = f"review_{appid}"
@@ -127,7 +136,8 @@ class SteamPriorityPicker:
             "review_desc": review_data.get("review_desc", "No reviews") if review_data else "No reviews",
             "steam_url": self.steam.get_store_url(appid),
             "hltb_url": hltb_data.get("url", ""),
-            "hltb_name": hltb_data.get("name", name)
+            "hltb_name": hltb_data.get("name", name),
+            "hltb_available": hltb_data.get("main_story_hours", 0) > 0
         }
         
         return enriched
