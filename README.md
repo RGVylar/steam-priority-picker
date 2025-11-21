@@ -1,185 +1,347 @@
-# Steam Priority Picker
+# Steam Priority Picker - Web Application
 
-A Python tool that analyzes your Steam library, fetches game completion times from HowLongToBeat, retrieves review scores, and generates a sorted list of short, high-quality games to help you decide what to play next.
+A modern web application to help you prioritize which Steam games to play. Analyzes your Steam library, fetches game completion times from HowLongToBeat, and retrieves review scores to help you decide what to play next.
 
-## Features
+🔗 **Live Demo (Coming Soon):** https://steam-priority-picker.vercel.app
 
-- 🎮 **Fetch Steam Library**: Automatically retrieves your entire Steam library using the Steam Web API
-- ⏱️ **HowLongToBeat Integration**: Queries completion times for each game
-- ⭐ **Review Scores**: Fetches review scores from Steam (percentage-based user ratings)
-- 🔍 **Smart Filtering**: Automatically filters out games without HowLongToBeat data
-- 📊 **Intelligent Sorting**: Prioritizes games by shortest playtime first, then highest score
-- 💾 **Caching**: Avoids repeated API calls with intelligent caching system (24-hour TTL)
-- 📝 **Multiple Output Formats**: Human-readable text and structured JSON output
+## 🎯 Features
 
-## Prerequisites
+### Core Application
+- 🎮 **Steam Integration**: Fetch your entire Steam library
+- ⏱️ **HowLongToBeat Data**: Get game completion time estimates
+- ⭐ **Review Scores**: Display Steam review ratings
+- 🔍 **Advanced Filtering**: Filter by playtime, score, and more
+- 🔄 **Intelligent Caching**: 24-hour TTL cache system
+- 📱 **Responsive Design**: Works on mobile, tablet, and desktop
+- 🌐 **Modern Tech Stack**: React, FastAPI, PostgreSQL
 
-- Python 3.7+
-- Steam Web API key ([Get one here](https://steamcommunity.com/dev/apikey))
-- Your Steam ID ([Find yours here](https://steamid.io/))
+### Planned Features (Phase 2-3)
+- 👤 Steam account login (OAuth)
+- 🔄 Real-time library sync
+- 📊 Game statistics and insights
+- 💾 User favorites and custom lists
+- 🎲 Recommendation engine
+- 📈 Playtime analytics
 
-## Installation
+## 🏗️ Architecture
 
-1. Clone the repository:
+The project has three main components:
+
+| Component | Technology | Status |
+|-----------|-----------|--------|
+| **Frontend** | React 18 + Vite | 🚀 MVP Ready |
+| **Backend** | FastAPI | 🏗️ Scaffolded |
+| **Database** | PostgreSQL | 📅 Phase 3 |
+
+## 📋 Quick Start
+
+### Prerequisites
+- Node.js 16+ (frontend)
+- Python 3.11+ (backend)
+- Git
+
+### 1. Frontend Development
+
 ```bash
-git clone https://github.com/RGVylar/steam-priority-picker.git
-cd steam-priority-picker
+cd web
+npm install
+npm run dev
 ```
 
-2. Install dependencies:
+Visit http://localhost:5173 to see your 1000+ games!
+
+**Features:**
+- ✅ Browse all cached games
+- ✅ Filter by playtime duration
+- ✅ Filter by Steam score
+- ✅ Real-time search
+- ✅ Sort by multiple criteria
+- ✅ Direct links to Steam and HowLongToBeat
+
+### 2. Backend Development
+
 ```bash
+cd backend
 pip install -r requirements.txt
-```
-
-3. Configure your credentials:
-```bash
 cp .env.example .env
-```
-
-4. Edit `.env` and add your Steam API key and Steam ID:
-```
-STEAM_API_KEY=your_steam_api_key_here
-STEAM_ID=your_steam_id_here
-```
-
-## Usage
-
-### Basic Usage
-
-Run the script to process your entire Steam library:
-
-```bash
 python main.py
 ```
 
-This will:
-1. Fetch your Steam library
-2. Query HowLongToBeat for each game
-3. Fetch review scores from Steam
-4. Filter games without HLTB data
-5. Sort by playtime and score
-6. Output results to console and `priority_games.json`
+Backend API: http://localhost:8000
+- Docs: http://localhost:8000/docs
+- Health: http://localhost:8000/health
 
-### Testing with Limited Games
+### 3. Export Cache Data
 
-To test with a smaller subset of games (recommended for first run):
+Generate JSON from your cached game data:
 
-```python
-# Edit main.py and uncomment:
-picker.run(max_games=10)
+```bash
+python scripts/cache_to_json.py
 ```
 
-### Output
+## 📚 Documentation
 
-The tool generates two outputs:
+- **[DEVELOPMENT_PLAN.md](./DEVELOPMENT_PLAN.md)** - Complete 3-phase roadmap and specifications
+- **[PROMPTS.md](./PROMPTS.md)** - GitHub Copilot prompts for guided development
+- **Original Python Script** - See `main.py`, `steam_api.py`, `hltb_api.py` for the original CLI tool
 
-1. **Console Output**: Human-readable list with game details
-2. **JSON File** (`priority_games.json`): Structured data for further processing
+## 🚀 Deployment (100% Free)
 
-Example output:
+### Frontend → Vercel
+```bash
+# Auto-deploy from GitHub (requires GitHub connection)
+# Environment: VITE_API_URL=https://api.onrender.com
+# Free tier: ✅ Unlimited deployments, auto-scaling
 ```
-================================================================================
-STEAM PRIORITY PICKER - RECOMMENDED GAMES
-================================================================================
+**URL:** https://steam-priority-picker.vercel.app
 
-1. Portal
-   Playtime: 3.5 hours (main story)
-   Score: 95.2% (Steam) - Overwhelmingly Positive
-   Reviews: 50,234
-   Steam: https://store.steampowered.com/app/400/
-   HLTB: https://howlongtobeat.com/game/7231
+### Backend → Render
+```bash
+# Auto-deploy from GitHub (Docker)
+# Environment: DATABASE_URL, STEAM_API_KEY
+# Free tier: ✅ One instance (sleeps after 15min inactivity)
+```
+**URL:** https://steam-priority-picker-api.onrender.com
 
-2. Portal 2
-   Playtime: 8.5 hours (main story)
-   Score: 98.1% (Steam) - Overwhelmingly Positive
-   Reviews: 125,456
-   Steam: https://store.steampowered.com/app/620/
-   HLTB: https://howlongtobeat.com/game/7232
+### Database → Neon
+```bash
+# Free PostgreSQL
+# Limits: 1 project, 3 branches, 100k rows
+# Connection string: postgresql://user:pass@host/db
 ```
 
-## Project Structure
+## 🏗️ Project Structure
 
 ```
 steam-priority-picker/
-├── main.py           # Main application script
-├── steam_api.py      # Steam Web API module
-├── hltb_api.py       # HowLongToBeat API module
-├── review_api.py     # Review score fetching module
-├── cache.py          # Caching system
-├── requirements.txt  # Python dependencies
-├── .env.example      # Example environment configuration
-├── .gitignore        # Git ignore rules
-└── README.md         # This file
+├── 📄 DEVELOPMENT_PLAN.md              # Complete roadmap & specs
+├── 📄 PROMPTS.md                       # GitHub Copilot prompts
+├── 📁 web/                             # React Frontend (Vercel)
+│   ├── src/
+│   │   ├── components/                 # React components
+│   │   ├── hooks/                      # Custom hooks
+│   │   ├── utils/                      # Helper functions
+│   │   ├── data/games.json             # Static game data
+│   │   └── App.jsx
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── vercel.json                     # Vercel config
+│   └── tailwind.config.js
+├── 📁 backend/                         # FastAPI Backend (Render)
+│   ├── app/
+│   │   ├── api/                        # API endpoints (stub)
+│   │   ├── db/                         # Database models (stub)
+│   │   ├── schemas/                    # Pydantic models (stub)
+│   │   ├── services/                   # Business logic (stub)
+│   │   ├── main.py                     # FastAPI app
+│   │   └── config.py
+│   ├── requirements.txt
+│   ├── Dockerfile
+│   ├── main.py
+│   └── .env.example
+├── 📁 scripts/                         # Utility scripts
+│   └── cache_to_json.py               # Export cache to JSON
+├── 📁 cache/                           # Game data cache (1000+ games)
+└── [Original Python files]
+    ├── main.py                         # CLI script
+    ├── steam_api.py
+    ├── hltb_api.py
+    ├── review_api.py
+    ├── cache.py
+    └── requirements.txt
 ```
 
-## How It Works
+## 🤖 GitHub Copilot Workflow
 
-1. **Steam Library Fetch**: Uses Steam Web API to retrieve all owned games
-2. **HLTB Query**: For each game, searches HowLongToBeat for completion time data
-3. **Review Score**: Fetches Steam user review percentage
-4. **Filtering**: Removes games without HowLongToBeat data
-5. **Sorting**: Orders by playtime (shortest first), then score (highest first)
-6. **Caching**: Stores API responses locally to avoid redundant calls
+The recommended way to develop this project is using GitHub Copilot with the provided prompts:
 
-## Configuration
+1. **Read** `PROMPTS.md` - Choose a phase
+2. **Copy** the prompt for that phase
+3. **Paste** into GitHub Copilot
+4. **Generate** code following the prompt specifications
+5. **Test** the implementation
+6. **Iterate** until complete
 
-### Cache Settings
+**Phases:**
+- **Phase 1 (Weeks 1-2):** Frontend MVP with Copilot Prompts 1-2
+- **Phase 2 (Weeks 3-4):** Backend API with Copilot Prompts 3-4
+- **Phase 3 (Weeks 5-7):** Database & Auth with Copilot Prompts 5-6
 
-The cache system stores API responses for 24 hours by default. Cached data is stored in the `cache/` directory.
+## 🔄 Development Branch Workflow
 
-To clear the cache manually:
+```bash
+# Work on development branch (never push to main)
+git checkout development
+git pull origin development
+
+# Make changes, commit frequently
+git add .
+git commit -m "feat: description"
+git push origin development
+
+# When ready: create a Pull Request to main
+# After testing and review: merge to main
+```
+
+## 📊 Data Format
+
+Games stored in cache and database:
+
+```json
+{
+  "app_id": 400,
+  "name": "Portal",
+  "playtime_hours": 3.5,
+  "score": 95,
+  "score_source": "Steam",
+  "total_reviews": 50234,
+  "review_desc": "Overwhelmingly Positive",
+  "steam_url": "https://store.steampowered.com/app/400/",
+  "hltb_url": "https://howlongtobeat.com/game/7231",
+  "hltb_name": "Portal"
+}
+```
+
+## 🧪 Testing
+
+### Frontend Tests
+```bash
+cd web
+npm run lint      # ESLint
+npm run format    # Prettier
+```
+
+### Backend Tests (to be implemented)
+```bash
+cd backend
+pytest            # Unit tests
+```
+
+## 🔧 Environment Variables
+
+### Frontend (.env in `web/`)
+```
+VITE_API_URL=http://localhost:8000    # Dev
+# VITE_API_URL=https://api.onrender.com  # Prod
+```
+
+### Backend (.env in `backend/`)
+```
+DATABASE_URL=sqlite:///./test.db      # Dev
+# DATABASE_URL=postgresql://...         # Prod
+STEAM_API_KEY=your_key_here
+DEBUG=True
+```
+
+## 💾 Using the Original Python Script
+
+The original Python CLI tool still works for generating cache data:
+
+```bash
+# Fetch Steam library and enriched data
+python main.py
+
+# This generates:
+# - cache/ directory with JSON files
+# - priority_games.json with final output
+```
+
+Then export to frontend:
+```bash
+python scripts/cache_to_json.py
+```
+
+## 🚧 Roadmap
+
+- [x] ✅ Initial planning and architecture design
+- [x] ✅ Project structure scaffolding (web, backend, scripts)
+- [x] ✅ Frontend components created (React + Vite)
+- [x] ✅ Backend FastAPI setup
+- [x] ✅ GitHub Copilot prompts documentation
+- [ ] **Phase 1 (Weeks 1-2):** Implement frontend
+  - Use Prompts 1-2 in GitHub Copilot
+  - Deploy to Vercel
+- [ ] **Phase 2 (Weeks 3-4):** Implement backend API
+  - Use Prompts 3-4 in GitHub Copilot
+  - Deploy to Render
+- [ ] **Phase 3 (Weeks 5-7):** Database & Advanced Features
+  - Use Prompts 5-6 in GitHub Copilot
+  - PostgreSQL (Neon)
+  - Steam OAuth
+  - Real-time sync with WebSocket
+- [ ] Beta testing
+- [ ] Public release
+
+## 🐛 Troubleshooting
+
+### Frontend won't start
+```bash
+cd web
+rm -rf node_modules package-lock.json
+npm install
+npm run dev
+```
+
+### Backend won't start
+```bash
+cd backend
+pip install --upgrade -r requirements.txt
+python main.py
+```
+
+### Games data missing
+```bash
+python scripts/cache_to_json.py
+# Verify web/src/data/games.json exists with ~1000 games
+```
+
+### Cache needs refresh
 ```bash
 rm -rf cache/
+python main.py  # Re-fetch all data
+python scripts/cache_to_json.py
 ```
 
-### Rate Limiting
+## 📚 Original Python Tool
 
-The script includes built-in delays between API calls:
-- 0.5 seconds between HowLongToBeat queries
-- 0.3 seconds between review score fetches
+The original Python CLI tool is still fully functional:
 
-## Error Handling
+**Features:**
+- 🎮 Fetch Steam library (1000+ games)
+- ⏱️ Query HowLongToBeat API
+- ⭐ Fetch Steam reviews
+- 💾 24-hour cache system
+- 📊 JSON output
+- 🔄 Rate-limited API calls
 
-- **Network Errors**: Logged and skipped; processing continues with remaining games
-- **Missing Data**: Games without HLTB data are automatically filtered out
-- **API Failures**: Individual game failures don't stop the entire process
+**Usage:**
+```bash
+python main.py            # Process entire library
+# Results: cache/ + priority_games.json
+```
 
-## Limitations
+## 🔗 Resources
 
-- HowLongToBeat search may not find exact matches for all games
-- Review scores are currently limited to Steam user reviews
-- Processing large libraries (1000+ games) may take significant time
-- Rate limiting ensures responsible API usage but slows down processing
+- [Steam Web API](https://steamcommunity.com/dev)
+- [HowLongToBeat](https://howlongtobeat.com/)
+- [React Documentation](https://react.dev)
+- [FastAPI Documentation](https://fastapi.tiangolo.com)
+- [Vite Documentation](https://vitejs.dev)
+- [Vercel Documentation](https://vercel.com/docs)
+- [Render Documentation](https://render.com/docs)
+- [Neon Documentation](https://neon.tech/docs)
 
-## Future Enhancements
+## 🤝 Contributing
 
-- [ ] Add Metacritic and OpenCritic score integration
-- [ ] Implement parallel processing for faster library scanning
-- [ ] Add web interface for easier configuration
-- [ ] Support for additional sorting options
-- [ ] Game genre and tag filtering
-- [ ] Export to different formats (CSV, HTML)
+This is a personal project. Feel free to fork and create your own version!
 
-## License
+## 📄 License
 
-MIT License - Feel free to use and modify as needed.
+Personal use only
 
-## Contributing
+---
 
-Contributions are welcome! Please feel free to submit issues or pull requests.
-
-## Troubleshooting
-
-### "No games found with HLTB data"
-- Check that your Steam profile is public
-- Verify your Steam ID is correct
-- Try running with `max_games=10` to test with a smaller subset
-
-### API Errors
-- Verify your Steam API key is valid
-- Check your internet connection
-- Review logs for specific error messages
-
-### Cache Issues
-- Clear the cache directory: `rm -rf cache/`
-- Disable caching by modifying the code: `use_cache=False`
+**Current Status:** 🚀 MVP Phase - Scaffolded and ready for development
+**Current Branch:** `development` (all changes go here)
+**Last Updated:** November 21, 2025
+**Version:** 0.1.0-MVP
