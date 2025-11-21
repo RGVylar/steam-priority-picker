@@ -88,10 +88,15 @@ class SteamPriorityPicker:
         
         if hltb_data is None:
             hltb_data = self.hltb.search_game(name)
-            if self.cache and hltb_data:
-                self.cache.set(cache_key_hltb, hltb_data)
+            if self.cache:
+                # Cache even if not found (with sentinel value)
+                self.cache.set(cache_key_hltb, hltb_data if hltb_data else {"not_found": True})
             # Rate limiting to be nice to HLTB
             time.sleep(0.5)
+        
+        # Check if it's a "not found" sentinel
+        if isinstance(hltb_data, dict) and hltb_data.get("not_found"):
+            return None
         
         # Skip games without HLTB data
         if not hltb_data:
