@@ -7,6 +7,7 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [total, setTotal] = useState(0)
+  const [dbTotal, setDbTotal] = useState(0)
 
   // Fetch games from API based on filters
   useEffect(() => {
@@ -43,6 +44,7 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
         const data = await response.json()
         setAllGames(data.games)
         setTotal(data.total)
+        setDbTotal(data.db_total || 0)
       } catch (err) {
         setError(err.message)
         console.error('Error fetching games:', err)
@@ -128,5 +130,6 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
     total: total,
     loading,
     error,
+    dbTotal,
   }
 }

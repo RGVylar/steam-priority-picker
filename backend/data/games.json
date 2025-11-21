@@ -12790,5 +12790,45 @@
     "image_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg",
     "hltb_url": "https://howlongtobeat.com/game/1957",
     "hltb_name": "Counter-Strike 2"
+  },
+  {
+    "app_id": 590830,
+    "name": "s&box",
+    "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/590830/header.jpg?t=1737710736",
+    "playtime_hours": 0,
+    "score": 0,
+    "total_reviews": 0
+  },
+  {
+    "app_id": 1422450,
+    "name": "Deadlock",
+    "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1422450/header.jpg?t=1755551046",
+    "playtime_hours": 0,
+    "score": 0,
+    "total_reviews": 0
+  },
+  {
+    "app_id": 266310,
+    "name": "GameGuru Classic",
+    "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/266310/header.jpg?t=1749910805",
+    "playtime_hours": 0,
+    "score": 0,
+    "total_reviews": 0
+  },
+  {
+    "app_id": 424840,
+    "name": "Little Nightmares",
+    "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/424840/facf9a7a675c6d7f210d96d6b111caffe0386cd5/header.jpg?t=1760535166",
+    "playtime_hours": 0,
+    "score": 0,
+    "total_reviews": 0
+  },
+  {
+    "app_id": 2149010,
+    "name": "Little Nightmares Enhanced Edition",
+    "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2149010/8f1da102713653906647c5024843479395be3394/header.jpg?t=1760951366",
+    "playtime_hours": 0,
+    "score": 0,
+    "total_reviews": 0
   }
 ]

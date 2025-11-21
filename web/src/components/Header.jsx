@@ -2,7 +2,7 @@ import icon from '../image/icon.svg'
 import { LoginButton } from './LoginButton'
 import { useAuthContext } from '../context/AuthContext'
 
-export function Header({ onMenuClick, onDarkModeToggle, isDarkMode }) {
+export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, dbTotal = 0 }) {
   const { isAuthenticated } = useAuthContext()
   
   return (
@@ -18,11 +18,18 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode }) {
             <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               Steam Priority Picker
             </h1>
-            {isAuthenticated && (
-              <p className="text-xs text-green-600 dark:text-green-400 font-medium">
-                📚 Mostrando tu librería Steam
-              </p>
-            )}
+            <div className="flex items-center gap-4 mt-1">
+              {isAuthenticated && (
+                <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+                  📚 Tu librería Steam
+                </p>
+              )}
+              {dbTotal > 0 && (
+                <p className="text-xs text-blue-500 dark:text-blue-400 font-medium">
+                  🌍 Catálogo: {dbTotal.toLocaleString()} juegos
+                </p>
+              )}
+            </div>
           </div>
         </div>
                 

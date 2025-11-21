@@ -87,6 +87,14 @@ async def get_filters():
     }
 
 
+@router.get("/stats")
+async def get_stats():
+    """Get database statistics"""
+    return {
+        "total_games": len(game_service.games)
+    }
+
+
 @router.get("/my-games")
 async def get_my_games(
     authorization: str = Header(None),
@@ -130,9 +138,27 @@ async def get_my_games(
     # Filter our games database to only show owned games
     user_games = [g for g in game_service.games if g.get("app_id") in owned_app_ids]
     
-    logger.info(f"Found {len(user_games)} games in our database for user {user.username}")
+    # Find unknown games
+    known_app_ids = {g.get("app_id") for g in game_service.games}
+    unknown_app_ids = [aid for aid in owned_app_ids if aid not in known_app_ids]
+    
+    logger.info(f"Found {len(user_games)} known games, {len(unknown_app_ids)} unknown games")
+    
+    # Fetch unknown games info if any
+    unknown_games = []
+    if unknown_app_ids:
+        logger.info(f"Fetching info for {len(unknown_app_ids)} unknown games...")
+        unknown_games = await auth_service.fetch_unknown_games_info(unknown_app_ids)
+        
+        # Save unknown games to database
+        if unknown_games:
+            game_service.add_games(unknown_games)
+            logger.info(f"Added {len(unknown_games)} new games to database. Total: {len(game_service.games)}")
+        
+        user_games.extend(unknown_games)
     
     return {
         "total": len(user_games),
-        "games": user_games
+        "games": user_games,
+        "db_total": len(game_service.games)  # Send total DB count for UI
     }

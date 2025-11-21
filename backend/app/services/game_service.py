@@ -7,6 +7,7 @@ from pathlib import Path
 class GameService:
     def __init__(self):
         self.games: List[dict] = []
+        self.games_file_path = None
         self.load_games()
     
     def load_games(self):
@@ -29,12 +30,38 @@ class GameService:
             try:
                 with open(games_file, 'r', encoding='utf-8') as f:
                     self.games = json.load(f)
+                self.games_file_path = games_file
                 print(f"Loaded {len(self.games)} games from {games_file}")
             except Exception as e:
                 print(f"Error loading games from {games_file}: {e}")
                 self.games = []
         else:
             print(f"Games file not found in any of these locations: {possible_paths}")
+    
+    def add_games(self, new_games: List[dict]) -> bool:
+        """Add new games to the database and save to file"""
+        if not new_games or not self.games_file_path:
+            return False
+        
+        try:
+            # Add only new games (avoid duplicates)
+            existing_app_ids = {g.get("app_id") for g in self.games}
+            games_to_add = [g for g in new_games if g.get("app_id") not in existing_app_ids]
+            
+            if not games_to_add:
+                return False
+            
+            self.games.extend(games_to_add)
+            
+            # Save to file
+            with open(self.games_file_path, 'w', encoding='utf-8') as f:
+                json.dump(self.games, f, indent=2, ensure_ascii=False)
+            
+            print(f"Added {len(games_to_add)} new games. Total: {len(self.games)}")
+            return True
+        except Exception as e:
+            print(f"Error saving games to file: {e}")
+            return False
     
     def get_all_games(self, limit: int = None, offset: int = 0) -> tuple[List[dict], int]:
         """Get all games with pagination"""

@@ -19,7 +19,7 @@ function App() {
   
   const filters = useFilters()
   const { played, togglePlayed, isPlayed, getPlayedCount } = usePlayed()
-  const { games, total, loading, error } = useGames(filters, played, isAuthenticated, token)
+  const { games, total, loading, error, dbTotal } = useGames(filters, played, isAuthenticated, token)
 
   // Handle auth token from URL
   useEffect(() => {
@@ -46,6 +46,7 @@ function App() {
         onMenuClick={() => setShowMobileFilters(!showMobileFilters)}
         onDarkModeToggle={toggleDarkMode}
         isDarkMode={isDark}
+        dbTotal={dbTotal}
       />
       
       <div className="flex">

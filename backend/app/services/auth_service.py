@@ -263,4 +263,82 @@ class SteamAuthService:
         except Exception as e:
             logger.error(f"Error fetching owned games: {e}")
             return None
+    
+    async def get_game_info_from_steam(self, app_id: int) -> Optional[dict]:
+        """Get basic game info from Steam Store API"""
+        if not self.steam_api_key or self.steam_api_key == "your_steam_api_key_here":
+            return None
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"https://store.steampowered.com/api/appdetails?appids={app_id}",
+                    timeout=5
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if str(app_id) in data and data[str(app_id)].get("success"):
+                        game_data = data[str(app_id)]["data"]
+                        return {
+                            "app_id": app_id,
+                            "name": game_data.get("name", "Unknown"),
+                            "header_image": game_data.get("header_image", ""),
+                        }
+        except Exception as e:
+            logger.warning(f"Error fetching Steam info for app {app_id}: {e}")
+        
+        return None
+    
+    async def get_hltb_playtime(self, game_name: str) -> Optional[float]:
+        """Get playtime from HowLongToBeat"""
+        try:
+            async with httpx.AsyncClient() as client:
+                # HowLongToBeat search
+                response = await client.post(
+                    "https://howlongtobeat.com/api/search",
+                    json={"searchType": "games", "searchQuery": game_name},
+                    timeout=5
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("data") and len(data["data"]) > 0:
+                        # Get main story playtime
+                        playtime = data["data"][0].get("gameplayMain")
+                        return float(playtime) if playtime else 0
+        except Exception as e:
+            logger.warning(f"Error fetching HLTB info for {game_name}: {e}")
+        
+        return None
+    
+    async def fetch_unknown_games_info(self, unknown_app_ids: list) -> list:
+        """Fetch info for unknown games from Steam and HowLongToBeat"""
+        import asyncio
+        
+        unknown_games = []
+        
+        # Fetch Steam info in parallel
+        steam_tasks = [self.get_game_info_from_steam(app_id) for app_id in unknown_app_ids]
+        steam_results = await asyncio.gather(*steam_tasks, return_exceptions=True)
+        
+        # Process results
+        for app_id, steam_info in zip(unknown_app_ids, steam_results):
+            if isinstance(steam_info, dict) and steam_info:
+                # Try to get HLTB playtime
+                playtime = await self.get_hltb_playtime(steam_info["name"])
+                
+                game = {
+                    "app_id": app_id,
+                    "name": steam_info["name"],
+                    "header_image": steam_info["header_image"],
+                    "playtime_hours": playtime or 0,
+                    "score": 0,  # No score for unknown games
+                    "total_reviews": 0
+                }
+                unknown_games.append(game)
+                logger.info(f"Added unknown game: {game['name']} ({app_id})")
+        
+        return unknown_games
+
 
