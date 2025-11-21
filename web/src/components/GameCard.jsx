@@ -66,14 +66,26 @@ export function GameCard({ game, isPlayed, onTogglePlayed }) {
         >
           Steam
         </a>
-        <a
-          href={game.hltb_url || `https://howlongtobeat.com/search?q=${encodeURIComponent(game.hltb_name || game.name)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 px-3 py-2 bg-gray-600 text-white text-sm font-medium rounded hover:bg-gray-700 transition-colors text-center"
-        >
-          HLTB
-        </a>
+        {game.hltb_url ? (
+          <a
+            href={game.hltb_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 px-3 py-2 bg-gray-600 text-white text-sm font-medium rounded hover:bg-gray-700 transition-colors text-center"
+          >
+            HLTB
+          </a>
+        ) : (
+          <a
+            href="https://howlongtobeat.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 px-3 py-2 bg-gray-500 text-white text-sm font-medium rounded hover:bg-gray-600 transition-colors text-center"
+            title="HLTB page not found for this game"
+          >
+            HLTB
+          </a>
+        )}
         <button
           onClick={onTogglePlayed}
           className={`px-3 py-2 rounded text-sm font-medium transition-colors ${

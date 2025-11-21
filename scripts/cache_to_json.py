@@ -76,7 +76,8 @@ def cache_to_json():
                     game_name = stem.replace("hltb_", "")
                     # Skip if marked as not found
                     if not (isinstance(value, dict) and value.get("not_found")):
-                        hltb_data[game_name] = value
+                        norm_name = normalize_name(game_name)
+                        hltb_data[norm_name] = value
         except Exception as e:
             pass  # Silently skip errors
     
@@ -112,8 +113,8 @@ def cache_to_json():
                 "review_desc": review_info.get('review_desc', 'Not rated'),
                 "steam_url": f"https://steamcommunity.com/app/{app_id}",
                 "image_url": f"https://cdn.cloudflare.steamstatic.com/steam/apps/{app_id}/header.jpg",
-                "hltb_url": hltb_info.get('hltb_url', '') if isinstance(hltb_info, dict) else "",
-                "hltb_name": hltb_info.get('game_name', game_name) if isinstance(hltb_info, dict) else "",
+                "hltb_url": hltb_info.get('url', '') if isinstance(hltb_info, dict) else "",
+                "hltb_name": hltb_info.get('name', game_name) if isinstance(hltb_info, dict) else "",
             }
             
             games.append(game)
