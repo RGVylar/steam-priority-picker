@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .middleware.cors import setup_cors
 from .config import settings
 from .routes.games import router as games_router
+from .routes.auth import router as auth_router
 from .database import engine
 from .models import Base
 import logging
@@ -26,6 +27,7 @@ setup_cors(app)
 
 # Include routers
 app.include_router(games_router)
+app.include_router(auth_router)
 
 # Health check endpoint
 @app.get("/health")
