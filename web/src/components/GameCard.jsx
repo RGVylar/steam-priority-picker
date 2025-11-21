@@ -7,18 +7,18 @@ export function GameCard({ game }) {
   }
 
   const badge = getPlaytimeBadge(game.playtime_hours)
-  const imageUrl = `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${game.appid}/library_600x900_2x.jpg`
+  const imageUrl = `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${game.appid}/header.jpg`
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg dark:shadow-gray-950 transition-shadow overflow-hidden flex flex-col h-full">
-      {/* Image Container - Rectangular 600x900 aspect ratio (2:3) */}
-      <div className="w-full aspect-[2/3] bg-gray-200 dark:bg-gray-700 overflow-hidden">
+      {/* Image Container - Header image horizontal aspect ratio */}
+      <div className="w-full aspect-video bg-gray-200 dark:bg-gray-700 overflow-hidden">
         <img 
           src={imageUrl}
           alt={game.name}
           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
           onError={(e) => {
-            e.target.src = `https://via.placeholder.com/300x450?text=${encodeURIComponent(game.name)}`
+            e.target.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='460' height='215'%3E%3Crect fill='%23333' width='460' height='215'/%3E%3Ctext x='50%' y='50%' fill='%23999' text-anchor='middle' dominant-baseline='middle' font-size='18' font-family='sans-serif'%3EImage not available%3C/text%3E%3C/svg%3E`
           }}
         />
       </div>
