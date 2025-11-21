@@ -2,16 +2,46 @@ import json
 import os
 from typing import List, Optional
 from pathlib import Path
+from sqlalchemy.orm import Session
+from ..models import Game
+from ..database import SessionLocal
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class GameService:
     def __init__(self):
         self.games: List[dict] = []
         self.games_file_path = None
+        self.db_session = None
         self.load_games()
     
+    def _get_db_session(self) -> Session:
+        """Get a database session"""
+        if self.db_session is None:
+            self.db_session = SessionLocal()
+        return self.db_session
+    
     def load_games(self):
-        """Load games from JSON file"""
+        """Load games from database, fallback to JSON if needed"""
+        try:
+            db = self._get_db_session()
+            games_from_db = db.query(Game).all()
+            
+            if games_from_db:
+                self.games = [game.to_dict() for game in games_from_db]
+                logger.info(f"✅ Loaded {len(self.games)} games from database")
+                return
+            else:
+                logger.info("📂 Database is empty, trying to load from JSON...")
+                self._load_from_json_and_migrate()
+        except Exception as e:
+            logger.warning(f"⚠️ Could not load from database: {e}, trying JSON...")
+            self._load_from_json_and_migrate()
+    
+    def _load_from_json_and_migrate(self):
+        """Load games from JSON file and migrate to database"""
         # Try multiple possible locations
         possible_paths = [
             Path(__file__).parent.parent.parent / "data" / "games.json",  # backend/data/games.json
@@ -29,38 +59,77 @@ class GameService:
         if games_file:
             try:
                 with open(games_file, 'r', encoding='utf-8') as f:
-                    self.games = json.load(f)
+                    json_games = json.load(f)
+                
+                # Migrate to database
+                db = self._get_db_session()
+                for game_data in json_games:
+                    # Check if game already exists
+                    existing = db.query(Game).filter(Game.app_id == game_data.get("app_id")).first()
+                    if not existing:
+                        game = Game(
+                            app_id=game_data.get("app_id"),
+                            name=game_data.get("name", "Unknown"),
+                            header_image=game_data.get("header_image") or game_data.get("image_url"),
+                            playtime_hours=game_data.get("playtime_hours", 0),
+                            score=game_data.get("score", 0),
+                            total_reviews=game_data.get("total_reviews", 0)
+                        )
+                        db.add(game)
+                
+                db.commit()
+                self.games = [game.to_dict() for game in db.query(Game).all()]
+                logger.info(f"✅ Migrated {len(self.games)} games from JSON to database")
                 self.games_file_path = games_file
-                print(f"Loaded {len(self.games)} games from {games_file}")
+                
             except Exception as e:
-                print(f"Error loading games from {games_file}: {e}")
+                logger.error(f"❌ Error loading games from {games_file}: {e}")
                 self.games = []
         else:
-            print(f"Games file not found in any of these locations: {possible_paths}")
+            logger.warning(f"⚠️ Games file not found in any of these locations: {possible_paths}")
     
     def add_games(self, new_games: List[dict]) -> bool:
-        """Add new games to the database and save to file"""
-        if not new_games or not self.games_file_path:
+        """Add new games to the database"""
+        if not new_games:
             return False
         
         try:
-            # Add only new games (avoid duplicates)
-            existing_app_ids = {g.get("app_id") for g in self.games}
-            games_to_add = [g for g in new_games if g.get("app_id") not in existing_app_ids]
+            db = self._get_db_session()
+            games_added = 0
             
-            if not games_to_add:
-                return False
+            for game_data in new_games:
+                app_id = game_data.get("app_id")
+                
+                # Check if game already exists
+                existing = db.query(Game).filter(Game.app_id == app_id).first()
+                if existing:
+                    logger.debug(f"Game {app_id} already exists, skipping")
+                    continue
+                
+                # Create and add new game
+                game = Game(
+                    app_id=app_id,
+                    name=game_data.get("name", "Unknown"),
+                    header_image=game_data.get("header_image", ""),
+                    playtime_hours=game_data.get("playtime_hours", 0),
+                    score=game_data.get("score", 0),
+                    total_reviews=game_data.get("total_reviews", 0)
+                )
+                db.add(game)
+                games_added += 1
+                logger.info(f"➕ Added game to DB: {game.name} ({app_id})")
             
-            self.games.extend(games_to_add)
+            if games_added > 0:
+                db.commit()
+                # Refresh in-memory cache
+                self.games = [game.to_dict() for game in db.query(Game).all()]
+                logger.info(f"✅ Saved {games_added} new games to database. Total: {len(self.games)}")
+                return True
             
-            # Save to file
-            with open(self.games_file_path, 'w', encoding='utf-8') as f:
-                json.dump(self.games, f, indent=2, ensure_ascii=False)
+            return False
             
-            print(f"Added {len(games_to_add)} new games. Total: {len(self.games)}")
-            return True
         except Exception as e:
-            print(f"Error saving games to file: {e}")
+            logger.error(f"❌ Error saving games to database: {e}")
             return False
     
     def get_all_games(self, limit: int = None, offset: int = 0) -> tuple[List[dict], int]:
