@@ -15,58 +15,69 @@ def cache_to_json():
     
     games = []
     review_data = {}
-    hltb_data = {}
     
     print(f"Reading cache from: {cache_dir}")
     
-    # First pass: read review data
-    for filename in cache_dir.glob("review_*.json"):
+    # First pass: read all files to build a map
+    # Files are named like: review_GameName.json or hltb_GameName.json
+    for filename in cache_dir.glob("*.json"):
+        if filename.name == "steam_library_76561198137938956.json":
+            continue  # Skip library file
+            
         try:
             with open(filename, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                if 'value' in data:
-                    review_info = data['value']
-                    # Extract game name from filename: review_GameName.json
-                    game_name = filename.stem.replace("review_", "")
-                    review_data[game_name] = review_info
-        except Exception as e:
-            print(f"Error reading {filename}: {e}")
-    
-    # Second pass: read HLTB data and create game objects
-    for filename in cache_dir.glob("hltb_*.json"):
-        try:
-            with open(filename, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                # Extract game name from filename: hltb_GameName.json
-                game_name = filename.stem.replace("hltb_", "")
                 
-                if 'value' in data:
-                    value = data['value']
-                    # Skip if not found
-                    if isinstance(value, dict) and value.get("not_found"):
-                        continue
+                if 'value' not in data:
+                    continue
                     
-                    # Get review data for this game
-                    review_info = review_data.get(game_name, {})
+                value = data['value']
+                
+                # Extract game name and type from filename
+                stem = filename.stem
+                if stem.startswith("review_"):
+                    game_name = stem.replace("review_", "")
+                    if game_name not in review_data:
+                        review_data[game_name] = {}
+                    review_data[game_name]['review'] = value
                     
-                    # Create game object
-                    game = {
-                        "app_id": review_info.get("app_id", 0),
-                        "name": game_name.replace("_", " "),
-                        "playtime_hours": review_info.get("playtime_hours", 0),
-                        "score": review_info.get("score", 0),
-                        "score_source": "Steam",
-                        "total_reviews": review_info.get("total_reviews", 0),
-                        "review_desc": review_info.get("review_desc", "Not rated"),
-                        "steam_url": review_info.get("steam_url", ""),
-                        "hltb_url": review_info.get("hltb_url", ""),
-                        "hltb_name": value.get("name", game_name.replace("_", " ")) if isinstance(value, dict) else "",
-                    }
-                    
-                    if game["app_id"] and game["steam_url"]:  # Only add if valid
-                        games.append(game)
+                elif stem.startswith("hltb_"):
+                    game_name = stem.replace("hltb_", "")
+                    if game_name not in review_data:
+                        review_data[game_name] = {}
+                    # Skip if marked as not found
+                    if not (isinstance(value, dict) and value.get("not_found")):
+                        review_data[game_name]['hltb'] = value
         except Exception as e:
-            print(f"Error reading {filename}: {e}")
+            pass  # Silently skip errors
+    
+    # Second pass: create game objects from collected data
+    for game_name, data in review_data.items():
+        try:
+            review_info = data.get('review', {})
+            hltb_info = data.get('hltb', {})
+            
+            # Only include if we have review data
+            if not review_info or not review_info.get("app_id"):
+                continue
+            
+            game = {
+                "app_id": review_info.get("app_id", 0),
+                "name": game_name.replace("_", " "),
+                "playtime_hours": review_info.get("playtime_hours", 0),
+                "score": review_info.get("score", 0),
+                "score_source": "Steam",
+                "total_reviews": review_info.get("total_reviews", 0),
+                "review_desc": review_info.get("review_desc", "Not rated"),
+                "steam_url": review_info.get("steam_url", ""),
+                "hltb_url": hltb_info.get("hltb_url", "") if isinstance(hltb_info, dict) else "",
+                "hltb_name": hltb_info.get("game_name", game_name.replace("_", " ")) if isinstance(hltb_info, dict) else "",
+            }
+            
+            if game["app_id"] and game["steam_url"]:
+                games.append(game)
+        except Exception as e:
+            pass  # Silently skip errors
     
     # Sort by playtime ascending
     games.sort(key=lambda g: g["playtime_hours"])

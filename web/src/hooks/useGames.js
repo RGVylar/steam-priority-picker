@@ -7,9 +7,7 @@ export function useGames(filters) {
 
   const games = useMemo(() => {
     try {
-      setLoading(true)
-      
-      let filtered = gamesData.games || []
+      let filtered = Array.isArray(gamesData) ? gamesData : (gamesData.games || [])
 
       // Filter by playtime
       if (filters.playtimeMin !== undefined && filters.playtimeMax !== undefined) {
@@ -46,18 +44,24 @@ export function useGames(filters) {
         filtered.sort((a, b) => b.score - a.score)
       }
 
-      setLoading(false)
+      setError(null)
       return filtered
     } catch (err) {
       setError(err.message)
-      setLoading(false)
       return []
     }
-  }, [filters])
+  }, [
+    filters.playtimeMin,
+    filters.playtimeMax,
+    filters.scoreMin,
+    filters.scoreMax,
+    filters.searchQuery,
+    filters.sortBy,
+  ])
 
   return {
     games,
-    total: gamesData.games?.length || 0,
+    total: (Array.isArray(gamesData) ? gamesData : gamesData.games)?.length || 0,
     loading,
     error,
   }
