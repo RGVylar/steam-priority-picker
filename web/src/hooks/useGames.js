@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
-export function useGames(filters, played) {
+export function useGames(filters, played, isAuthenticated = false, token = null) {
   const [allGames, setAllGames] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -11,37 +11,30 @@ export function useGames(filters, played) {
   // Fetch games from API based on filters
   useEffect(() => {
     const fetchGames = async () => {
+      // If not authenticated, don't fetch any games
+      if (!isAuthenticated || !token) {
+        setAllGames([])
+        setTotal(0)
+        setError(null)
+        setLoading(false)
+        return
+      }
+
       setLoading(true)
       setError(null)
       try {
-        const queryParams = new URLSearchParams()
+        let url
+        let options = {}
         
-        // Add search query
-        if (filters.searchQuery) {
-          queryParams.append('q', filters.searchQuery)
-        }
-        
-        // Add filter ranges (convert Infinity to a large number)
-        if (filters.playtimeMin !== undefined) {
-          queryParams.append('playtime_min', Math.max(0, filters.playtimeMin))
-        }
-        if (filters.playtimeMax !== undefined) {
-          // Use a large but reasonable number instead of Infinity
-          const maxPlaytime = filters.playtimeMax === Infinity ? 10000 : filters.playtimeMax
-          queryParams.append('playtime_max', maxPlaytime)
-        }
-        if (filters.scoreMin !== undefined) {
-          queryParams.append('score_min', Math.max(0, filters.scoreMin))
-        }
-        if (filters.scoreMax !== undefined) {
-          queryParams.append('score_max', Math.min(100, filters.scoreMax))
+        // Use /my-games endpoint (user is authenticated)
+        url = `${API_URL}/my-games`
+        options = {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         }
         
-        // Always fetch all results for client-side filtering
-        queryParams.append('limit', '10000')
-        queryParams.append('offset', '0')
-        
-        const response = await fetch(`${API_URL}/search?${queryParams}`)
+        const response = await fetch(url, options)
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
           throw new Error(`API error: ${response.status} - ${errorData.detail || 'Unknown error'}`)
@@ -61,7 +54,7 @@ export function useGames(filters, played) {
     }
 
     fetchGames()
-  }, [filters.searchQuery, filters.playtimeMin, filters.playtimeMax, filters.scoreMin, filters.scoreMax])
+  }, [filters.searchQuery, filters.playtimeMin, filters.playtimeMax, filters.scoreMin, filters.scoreMax, isAuthenticated, token])
 
   const games = useMemo(() => {
     let filtered = [...allGames]

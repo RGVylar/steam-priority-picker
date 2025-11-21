@@ -9,14 +9,14 @@ export function LoginButton() {
         <img 
           src={user.avatar_url} 
           alt={user.username}
-          className="w-8 h-8 rounded-full"
+          className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600"
         />
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{user.username}</span>
+          <span className="text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{user.username}</span>
           <button
             onClick={logout}
             disabled={loading}
-            className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition disabled:opacity-50"
+            className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 text-white font-medium rounded-lg transition disabled:opacity-50 shadow-sm"
           >
             {loading ? 'Logging out...' : 'Logout'}
           </button>

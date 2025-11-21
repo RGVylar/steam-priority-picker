@@ -224,3 +224,34 @@ class SteamAuthService:
             return True
         
         return False
+    
+    async def get_user_owned_games(self, steam_id: str) -> Optional[dict]:
+        """Get user's owned games from Steam API"""
+        if not self.steam_api_key or self.steam_api_key == "your_steam_api_key_here":
+            logger.warning("Steam API key not configured for GetOwnedGames")
+            return None
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/",
+                    params={
+                        "key": self.steam_api_key,
+                        "steamid": steam_id,
+                        "include_appinfo": True,
+                        "include_played_free_games": True,
+                        "format": "json"
+                    },
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    return data.get("response", {})
+                else:
+                    logger.error(f"Steam API error: {response.status_code}")
+                    return None
+        except Exception as e:
+            logger.error(f"Error fetching owned games: {e}")
+            return None
+

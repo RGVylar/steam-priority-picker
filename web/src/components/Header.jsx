@@ -1,7 +1,10 @@
 import icon from '../image/icon.svg'
 import { LoginButton } from './LoginButton'
+import { useAuthContext } from '../context/AuthContext'
 
 export function Header({ onMenuClick, onDarkModeToggle, isDarkMode }) {
+  const { isAuthenticated } = useAuthContext()
+  
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -11,9 +14,16 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode }) {
             alt="App icon" 
             className="w-8 h-8 select-none drop-shadow-sm"
           />
-          <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-            Steam Priority Picker
-          </h1>
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              Steam Priority Picker
+            </h1>
+            {isAuthenticated && (
+              <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+                📚 Mostrando tu librería Steam
+              </p>
+            )}
+          </div>
         </div>
                 
         <div className="flex items-center gap-2">

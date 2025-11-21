@@ -97,6 +97,7 @@ export function AuthProvider({ children }) {
       setToken(null);
       setUser(null);
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('playedGames'); // Clear played games cache on logout
       setError(null);
     } catch (err) {
       setError(err.message);
