@@ -4,6 +4,7 @@ import FilterPanel from './components/FilterPanel'
 import GameList from './components/GameList'
 import SearchBar from './components/SearchBar'
 import { BackendStatus } from './components/BackendStatus'
+import { KofiButton } from './components/KofiButton'
 import { useGames } from './hooks/useGames'
 import { useFilters } from './hooks/useFilters'
 import { useDarkMode } from './hooks/useDarkMode'
@@ -124,6 +125,9 @@ function App() {
 
       {/* Backend Status Indicator */}
       <BackendStatus />
+      
+      {/* Ko-fi Support Button */}
+      <KofiButton />
     </div>
   )
 }
