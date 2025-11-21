@@ -111,6 +111,7 @@ def cache_to_json():
                 "total_reviews": review_info.get('total_reviews', 0),
                 "review_desc": review_info.get('review_desc', 'Not rated'),
                 "steam_url": f"https://steamcommunity.com/app/{app_id}",
+                "image_url": f"https://cdn.cloudflare.steamstatic.com/steam/apps/{app_id}/header.jpg",
                 "hltb_url": hltb_info.get('hltb_url', '') if isinstance(hltb_info, dict) else "",
                 "hltb_name": hltb_info.get('game_name', game_name) if isinstance(hltb_info, dict) else "",
             }

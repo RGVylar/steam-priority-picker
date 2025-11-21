@@ -7,7 +7,7 @@ export function GameCard({ game, isPlayed, onTogglePlayed }) {
   }
 
   const badge = getPlaytimeBadge(game.playtime_hours)
-  const imageUrl = `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${game.appid}/header.jpg`
+  const imageUrl = game.image_url || `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.app_id}/header.jpg`
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg dark:shadow-gray-950 transition-shadow overflow-hidden flex flex-col h-full">
