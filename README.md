@@ -27,13 +27,29 @@ A modern web application to help you prioritize which Steam games to play. Analy
 - 🏷️ **Collapsible Filters**: Keep UI clean, expand only needed sections
 - 💾 **Game Tracking**: Mark games as played (persists in localStorage)
 - 🌙 **Persistent Settings**: All preferences saved locally
+- ▶️ **Play Button Overlay**: Launch games directly via Steam protocol
 
-### 🎯 Planned Features (Phase 2-3)
+## ✅ Phase 2 Features (Backend API - Complete!)
+
+### ✅ API Backend (FastAPI)
+- 🚀 **FastAPI Server** on port 8000 with auto-reload
+- 📡 **REST Endpoints**:
+  - `GET /api/games` - Paginated game list
+  - `GET /api/games/{app_id}` - Single game details
+  - `GET /api/search` - Advanced search with filtering
+  - `GET /api/filters` - Available filter ranges
+  - `GET /health` - Health check endpoint
+- 🔄 **Frontend Integration**: React hooks consume API instead of static JSON
+- 🔐 **CORS Middleware**: Configured for development and production
+- 📚 **Auto-generated Docs**: Swagger UI at `/docs`
+
+### 🎯 Planned Features (Phase 3)
 - 👤 Steam account login (OAuth)  
 - 🔄 Real-time library sync without manual export
 - 📊 Game statistics and insights
 - 🎲 Recommendation engine based on your preferences
 - 📈 Playtime analytics and trends
+- 🗄️ PostgreSQL Database integration
 
 ## 🏗️ Architecture
 
@@ -69,24 +85,48 @@ python main.py  # Takes 5-10 minutes (API rate limiting)
 # 5. Export to frontend format
 python scripts/cache_to_json.py
 
-# 6. Install frontend dependencies
-cd web && npm install
+# 6. Copy data to backend
+cp web/src/data/games.json backend/data/games.json
 
-# 7. Start development server
-npm run dev
+# 7. Install backend dependencies
+cd backend && pip install -r requirements.txt && cd ..
+
+# 8. Install frontend dependencies
+cd web && npm install
 ```
 
-**Result:** http://localhost:5173 shows all your Steam games! 🎮
+### Development (Running Both Servers)
+
+**Terminal 1 - Backend (FastAPI on port 8000):**
+```bash
+python -m uvicorn backend.app.main:app --reload --port 8000
+```
+
+**Terminal 2 - Frontend (Vite on port 5173):**
+```bash
+cd web && npm run dev
+```
+
+**Result:** 
+- Frontend: http://localhost:5173
+- Backend API Docs: http://localhost:8000/docs
 
 ### Update Game Data (Recurring)
 
 After your first setup, to refresh the game list:
 
 ```bash
-python main.py && python scripts/cache_to_json.py
+python main.py
+python scripts/cache_to_json.py
+cp web/src/data/games.json backend/data/games.json
 ```
 
 **Note:** First run takes 5-10 minutes due to API rate limiting. Subsequent runs use cache (24-hour TTL).
+
+### Production Deployment
+
+See [DEPLOYMENT.md](#deployment-guide) for detailed instructions on deploying to Vercel (frontend) and Render (backend).
+
 
 
 
