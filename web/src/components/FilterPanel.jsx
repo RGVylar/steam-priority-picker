@@ -1,4 +1,21 @@
+import { useState } from 'react'
+
 export function FilterPanel({ filters, onClose }) {
+  const [expandedSections, setExpandedSections] = useState({
+    playtime: true,
+    score: true,
+    reviews: false,
+    sort: false,
+    played: false,
+  })
+
+  const toggleSection = (section) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }))
+  }
+
   const playtimeRanges = [
     { label: '0-5 hours', min: 0, max: 5 },
     { label: '5-10 hours', min: 5, max: 10 },
@@ -28,11 +45,9 @@ export function FilterPanel({ filters, onClose }) {
 
   const handlePlaytimeToggle = (range) => {
     if (filters.playtimeMin === range.min && filters.playtimeMax === range.max) {
-      // Desselect
       filters.setPlaytimeMin(0)
       filters.setPlaytimeMax(Infinity)
     } else {
-      // Select
       filters.setPlaytimeMin(range.min)
       filters.setPlaytimeMax(range.max)
     }
@@ -40,36 +55,52 @@ export function FilterPanel({ filters, onClose }) {
 
   const handleScoreToggle = (range) => {
     if (filters.scoreMin === range.min && filters.scoreMax === range.max) {
-      // Desselect
       filters.setScoreMin(0)
       filters.setScoreMax(100)
     } else {
-      // Select
       filters.setScoreMin(range.min)
       filters.setScoreMax(range.max)
     }
   }
 
+  const CollapsibleSection = ({ title, section, children, activeCount = 0 }) => (
+    <div className="border-b border-gray-200 dark:border-gray-700">
+      <button
+        onClick={() => toggleSection(section)}
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-gray-900 dark:text-white">{title}</span>
+          {activeCount > 0 && (
+            <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">
+              {activeCount}
+            </span>
+          )}
+        </div>
+        <span className={`text-gray-500 dark:text-gray-400 transition-transform ${expandedSections[section] ? 'rotate-180' : ''}`}>
+          ▼
+        </span>
+      </button>
+      {expandedSections[section] && (
+        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 space-y-3">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+
   return (
-    <div className="p-4 lg:p-6 dark:bg-gray-800">
-      <div className="flex justify-between items-center mb-6 lg:mb-0 pb-4 lg:pb-0 border-b lg:border-0 dark:border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Filters {activeFilterCount > 0 && <span className="text-blue-600 dark:text-blue-400">({activeFilterCount})</span>}
-        </h2>
-        <button 
-          onClick={onClose}
-          className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-        >
-          ✕
-        </button>
-      </div>
+    <div className="dark:bg-gray-800">
 
       {/* Playtime Filter */}
-      <div className="mt-6">
-        <h3 className="font-medium text-gray-900 dark:text-white mb-3">Playtime</h3>
+      <CollapsibleSection 
+        title="Playtime" 
+        section="playtime"
+        activeCount={filters.playtimeMin !== 0 || filters.playtimeMax !== Infinity ? 1 : 0}
+      >
         <div className="space-y-2">
           {playtimeRanges.map((range) => (
-            <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded transition-colors">
+            <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded transition-colors">
               <input
                 type="checkbox"
                 checked={filters.playtimeMin === range.min && filters.playtimeMax === range.max}
@@ -80,14 +111,17 @@ export function FilterPanel({ filters, onClose }) {
             </label>
           ))}
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Score Filter */}
-      <div className="mt-6">
-        <h3 className="font-medium text-gray-900 dark:text-white mb-3">Steam Score</h3>
+      <CollapsibleSection 
+        title="Steam Score" 
+        section="score"
+        activeCount={filters.scoreMin !== 0 || filters.scoreMax !== 100 ? 1 : 0}
+      >
         <div className="space-y-2">
           {scoreRanges.map((range) => (
-            <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded transition-colors">
+            <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded transition-colors">
               <input
                 type="checkbox"
                 checked={filters.scoreMin === range.min && filters.scoreMax === range.max}
@@ -98,14 +132,17 @@ export function FilterPanel({ filters, onClose }) {
             </label>
           ))}
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Reviews Filter */}
-      <div className="mt-6">
-        <h3 className="font-medium text-gray-900 dark:text-white mb-3">Reviews</h3>
+      <CollapsibleSection 
+        title="Reviews" 
+        section="reviews"
+        activeCount={filters.reviewsMin !== 0 || filters.reviewsMax !== Infinity ? 1 : 0}
+      >
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-gray-600 dark:text-gray-400">Minimum: {filters.reviewsMin.toLocaleString()}</label>
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Minimum: {filters.reviewsMin.toLocaleString()}</label>
             <input
               type="range"
               min="0"
@@ -117,7 +154,7 @@ export function FilterPanel({ filters, onClose }) {
             />
           </div>
           <div>
-            <label className="text-xs text-gray-600 dark:text-gray-400">Maximum: {filters.reviewsMax === Infinity ? '∞' : filters.reviewsMax.toLocaleString()}</label>
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Maximum: {filters.reviewsMax === Infinity ? '∞' : filters.reviewsMax.toLocaleString()}</label>
             <input
               type="range"
               min="0"
@@ -129,11 +166,10 @@ export function FilterPanel({ filters, onClose }) {
             />
           </div>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Sort */}
-      <div className="mt-6">
-        <h3 className="font-medium text-gray-900 dark:text-white mb-3">Sort By</h3>
+      <CollapsibleSection title="Sort By" section="sort">
         <select
           value={filters.sortBy}
           onChange={(e) => filters.setSortBy(e.target.value)}
@@ -145,13 +181,16 @@ export function FilterPanel({ filters, onClose }) {
             </option>
           ))}
         </select>
-      </div>
+      </CollapsibleSection>
 
       {/* Played Games Filter */}
-      <div className="mt-6">
-        <h3 className="font-medium text-gray-900 dark:text-white mb-3">Played Status</h3>
+      <CollapsibleSection 
+        title="Played Status" 
+        section="played"
+        activeCount={filters.showPlayed !== 'all' ? 1 : 0}
+      >
         <div className="space-y-2">
-          <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded transition-colors">
+          <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded transition-colors">
             <input
               type="radio"
               name="playedStatus"
@@ -162,7 +201,7 @@ export function FilterPanel({ filters, onClose }) {
             />
             <span className="text-sm text-gray-700 dark:text-gray-300">All Games</span>
           </label>
-          <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded transition-colors">
+          <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded transition-colors">
             <input
               type="radio"
               name="playedStatus"
@@ -173,7 +212,7 @@ export function FilterPanel({ filters, onClose }) {
             />
             <span className="text-sm text-gray-700 dark:text-gray-300">Played</span>
           </label>
-          <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded transition-colors">
+          <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded transition-colors">
             <input
               type="radio"
               name="playedStatus"
@@ -185,25 +224,27 @@ export function FilterPanel({ filters, onClose }) {
             <span className="text-sm text-gray-700 dark:text-gray-300">Unplayed</span>
           </label>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Reset Button */}
-      <button
-        onClick={() => {
-          filters.setPlaytimeMin(0)
-          filters.setPlaytimeMax(Infinity)
-          filters.setScoreMin(0)
-          filters.setScoreMax(100)
-          filters.setReviewsMin(0)
-          filters.setReviewsMax(Infinity)
-          filters.setSortBy('score_desc')
-          filters.setSearchQuery('')
-          filters.setShowPlayed('all')
-        }}
-        className="w-full mt-8 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors"
-      >
-        Reset Filters
-      </button>
+      <div className="p-4">
+        <button
+          onClick={() => {
+            filters.setPlaytimeMin(0)
+            filters.setPlaytimeMax(Infinity)
+            filters.setScoreMin(0)
+            filters.setScoreMax(100)
+            filters.setReviewsMin(0)
+            filters.setReviewsMax(Infinity)
+            filters.setSortBy('score_desc')
+            filters.setSearchQuery('')
+            filters.setShowPlayed('all')
+          }}
+          className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors"
+        >
+          Reset Filters
+        </button>
+      </div>
     </div>
   )
 }
