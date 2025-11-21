@@ -1,0 +1,73 @@
+import { useState } from 'react'
+import Header from './components/Header'
+import FilterPanel from './components/FilterPanel'
+import GameList from './components/GameList'
+import SearchBar from './components/SearchBar'
+import { useGames } from './hooks/useGames'
+import { useFilters } from './hooks/useFilters'
+
+function App() {
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
+  
+  const filters = useFilters()
+  const { games, total, loading, error } = useGames(filters)
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header onMenuClick={() => setShowMobileFilters(!showMobileFilters)} />
+      
+      <div className="flex">
+        {/* Filter Panel */}
+        <div className={`
+          fixed lg:relative lg:block
+          ${showMobileFilters ? 'block' : 'hidden'}
+          inset-0 z-40 lg:z-0
+          bg-white lg:bg-transparent
+          w-full lg:w-64 lg:min-h-[calc(100vh-64px)]
+          overflow-y-auto lg:overflow-y-visible
+          border-r border-gray-200
+        `}>
+          <FilterPanel 
+            filters={filters}
+            onClose={() => setShowMobileFilters(false)}
+          />
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 w-full">
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            {/* Search Bar */}
+            <SearchBar 
+              value={filters.searchQuery}
+              onChange={filters.setSearchQuery}
+            />
+
+            {/* Games List */}
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
+              </div>
+            )}
+
+            <GameList 
+              games={games}
+              total={total}
+              loading={loading}
+              filters={filters}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile overlay */}
+      {showMobileFilters && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          onClick={() => setShowMobileFilters(false)}
+        />
+      )}
+    </div>
+  )
+}
+
+export default App
