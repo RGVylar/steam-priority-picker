@@ -12,6 +12,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+logger.info(f"🚀 FastAPI app initialized")
+logger.info(f"📍 APP_URL configured as: {settings.app_url}")
+logger.info(f"🔑 STEAM_API_KEY set: {'Yes' if settings.steam_api_key else 'No'}")
+
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
