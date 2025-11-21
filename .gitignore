@@ -50,4 +50,12 @@ output/
 !vercel.json
 !backend/data/games.json
 !web/src/data/games.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Test files
+test_*.py
 !web/src/data/games.json
