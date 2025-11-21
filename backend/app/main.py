@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .middleware.cors import setup_cors
 from .config import settings
+from .routes.games import router as games_router
 import logging
 
 # Setup logging
@@ -17,6 +18,9 @@ app = FastAPI(
 
 # Setup CORS
 setup_cors(app)
+
+# Include routers
+app.include_router(games_router)
 
 # Health check endpoint
 @app.get("/health")
