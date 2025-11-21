@@ -2,7 +2,7 @@
 
 A modern web application to help you prioritize which Steam games to play. Analyzes your Steam library, fetches game completion times from HowLongToBeat, and retrieves review scores to help you decide what to play next.
 
-🔗 **Live Demo (Coming Soon):** https://steam-priority-picker.vercel.app
+🔗 **Live Demo:** https://steam-priority-picker.vercel.app (Deploy to Vercel - See VERCEL_DEPLOYMENT.md)
 
 ## 🎯 Features
 
@@ -97,7 +97,23 @@ python scripts/cache_to_json.py
 ## 📚 Documentation
 
 - **[DEVELOPMENT_PLAN.md](./DEVELOPMENT_PLAN.md)** - Complete 3-phase roadmap and specifications
+- **[VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)** - Instructions to deploy to Vercel for a live demo
 - **[PROMPTS.md](./PROMPTS.md)** - GitHub Copilot prompts for guided development
+
+## 🚀 Deploy to Vercel
+
+To make the app publicly available as a demo:
+
+1. **One-Click Deploy:** 
+   - Click the Vercel button below
+   - Connect GitHub account
+   - Select this repository
+   - Deploy!
+
+2. **Manual Deploy:**
+   - See detailed instructions in [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FRGVylar%2Fsteam-priority-picker&project-name=steam-priority-picker&repository-name=steam-priority-picker)
 - **Original Python Script** - See `main.py`, `steam_api.py`, `hltb_api.py` for the original CLI tool
 
 ## 🚀 Deployment (100% Free)
