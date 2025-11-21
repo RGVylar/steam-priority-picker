@@ -20,9 +20,18 @@ class SteamAuthService:
     STEAM_INFO_URL = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/"
     
     def __init__(self):
-        self.app_url = settings.app_url or "http://localhost:5173"
-        self.api_url = settings.api_url or "http://localhost:8000"
+        # Don't cache these - read from settings each time to get production values
         self.steam_api_key = settings.steam_api_key
+    
+    @property
+    def app_url(self):
+        """Get app_url from settings (not cached to allow env override)"""
+        return settings.app_url or "http://localhost:5173"
+    
+    @property
+    def api_url(self):
+        """Get api_url from settings (not cached to allow env override)"""
+        return settings.api_url or "http://localhost:8000"
     
     def get_login_url(self) -> str:
         """Generate Steam login redirect URL"""
