@@ -48,3 +48,4 @@ output/
 !example_output.json
 !package.json
 !vercel.json
+!web/src/data/games.json
