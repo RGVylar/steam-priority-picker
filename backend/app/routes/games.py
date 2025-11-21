@@ -33,10 +33,10 @@ async def get_game(app_id: int):
 async def search_games(
     q: Optional[str] = Query(None, min_length=1),
     playtime_min: float = Query(0, ge=0),
-    playtime_max: float = Query(float('inf'), ge=0),
+    playtime_max: float = Query(10000, ge=0),
     score_min: float = Query(0, ge=0, le=100),
     score_max: float = Query(100, ge=0, le=100),
-    limit: int = Query(24, ge=1, le=100),
+    limit: int = Query(24, ge=1, le=10000),
     offset: int = Query(0, ge=0),
 ):
     """Search and filter games"""
