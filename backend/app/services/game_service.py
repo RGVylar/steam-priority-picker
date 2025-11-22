@@ -33,13 +33,18 @@ class GameService:
             logger.warning(f"⚠️ Could not load games from database: {e}")
             self.games = []
     
-    def add_games(self, new_games: List[dict]) -> bool:
-        """Add new games to the database"""
+    def add_games(self, new_games: List[dict], db: Optional[Session] = None) -> bool:
+        """Add new games to the database. If db session not provided, uses internal session"""
         if not new_games:
             return False
         
-        try:
+        # Use provided session or get internal one
+        should_commit = False
+        if db is None:
             db = self._get_db_session()
+            should_commit = True
+        
+        try:
             games_added = 0
             
             for game_data in new_games:
@@ -69,20 +74,22 @@ class GameService:
             
             if games_added > 0:
                 try:
-                    db.commit()
-                    # Refresh in-memory cache
-                    self.games = [game.to_dict() for game in db.query(Game).all()]
-                    logger.info(f"✅ Saved {games_added} new games to database. Total: {len(self.games)}")
+                    if should_commit:
+                        db.commit()
+                        # Refresh in-memory cache
+                        self.games = [game.to_dict() for game in db.query(Game).all()]
+                    logger.info(f"✅ Saved {games_added} new games to database")
                     return True
                 except Exception as e:
-                    db.rollback()
-                    logger.error(f"❌ Error committing games to database: {e}")
+                    if should_commit:
+                        db.rollback()
+                    logger.error(f"❌ Error saving games to database: {e}")
                     return False
             
             return False
             
         except Exception as e:
-            logger.error(f"❌ Error saving games to database: {e}")
+            logger.error(f"❌ Error processing games: {e}")
             return False
     
     def get_all_games(self, limit: int = None, offset: int = 0) -> tuple[List[dict], int]:

@@ -151,7 +151,8 @@ async def get_my_games(
         unknown_games = await auth_service.fetch_unknown_games_info(unknown_app_ids_to_fetch)
         
         if unknown_games:
-            game_service.add_games(unknown_games)
+            # Pass the db session to add_games so it uses the same transaction
+            game_service.add_games(unknown_games, db=db)
             logger.info(f"Added {len(unknown_games)} new games to database")
     
     # NOW create user_game records for all owned games (after unknown games are in DB)
