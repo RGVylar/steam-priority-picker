@@ -1,6 +1,7 @@
 """
 Steam OAuth authentication service
 """
+import asyncio
 import httpx
 from urllib.parse import urlencode
 from typing import Optional
@@ -273,55 +274,72 @@ class SteamAuthService:
             return None
         
         try:
-            async with httpx.AsyncClient() as client:
+            # Use proper headers to avoid being blocked
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                "Accept-Language": "en-US,en;q=0.9",
+            }
+            
+            async with httpx.AsyncClient(headers=headers) as client:
                 response = await client.get(
                     f"https://store.steampowered.com/api/appdetails?appids={app_id}",
-                    timeout=5
+                    timeout=10  # Increased timeout from 5s to 10s
                 )
                 
                 if response.status_code == 200:
                     data = response.json()
-                    logger.debug(f"Steam API response for {app_id}: {data}")
+                    logger.debug(f"Steam API response for {app_id}: keys={list(data.keys())}")
+                    
                     if str(app_id) in data:
                         app_data = data[str(app_id)]
                         success = app_data.get("success", False)
-                        logger.debug(f"App data for {app_id}: success={success}, keys={app_data.keys()}, data type={type(app_data.get('data'))}")
+                        has_data = "data" in app_data
+                        data_value = app_data.get("data")
+                        
+                        logger.debug(f"App {app_id}: success={success}, has_data={has_data}, data_type={type(data_value).__name__}")
                         
                         # Try to get game data even if success is False
                         # (some games are delisted but still have data, or have empty data but might have name elsewhere)
-                        if "data" in app_data:
-                            game_data = app_data["data"]
-                            # Even if data is empty dict {}, it's still valid - Steam found the game
-                            if isinstance(game_data, dict):
-                                name = game_data.get("name")
-                                if name:  # Has a real name from Steam
-                                    game_info = {
-                                        "app_id": app_id,
-                                        "name": name,
-                                        "header_image": game_data.get("header_image", ""),
-                                    }
-                                    if success:
-                                        logger.info(f"✅ Fetched Steam info for app {app_id}: {game_info['name']}")
-                                    else:
-                                        logger.info(f"⚠️ Fetched Steam info for app {app_id} (success=false): {game_info['name']}")
-                                    return game_info
-                        logger.warning(f"❌ No data/name found for app {app_id} (success={success}, has data={('data' in app_data)}, data value={app_data.get('data')})")
+                        if has_data and isinstance(data_value, dict):
+                            game_data = data_value
+                            name = game_data.get("name")
+                            
+                            if name:  # Has a real name from Steam
+                                game_info = {
+                                    "app_id": app_id,
+                                    "name": name,
+                                    "header_image": game_data.get("header_image", ""),
+                                }
+                                logger.info(f"✅ Fetched Steam info for app {app_id}: {game_info['name']} (success={success})")
+                                return game_info
+                            else:
+                                # Data exists but no name - likely delisted or hidden game
+                                logger.warning(f"❌ App {app_id} has data but no name (success={success}, data keys={list(game_data.keys())[:5]}...)")
+                        elif has_data and data_value is None:
+                            logger.warning(f"❌ App {app_id} returned null data (success={success}) - likely delisted or region-locked")
+                        elif not has_data:
+                            logger.warning(f"❌ App {app_id} has no data key in response (success={success})")
+                        else:
+                            logger.warning(f"❌ App {app_id} data is not a dict, it's {type(data_value).__name__}")
                     else:
-                        logger.warning(f"❌ App {app_id} not found in Steam API response")
+                        logger.warning(f"❌ App {app_id} not found in Steam API response keys: {list(data.keys())}")
+                        
                 elif response.status_code in (429, 403):
                     # Rate limit or forbidden - these are temporary/transient issues
                     if retry_count < max_retries:
                         wait_time = 2 ** retry_count  # Exponential backoff: 1s, 2s, 4s
                         logger.warning(f"⏳ Got HTTP {response.status_code} for app {app_id}, retrying in {wait_time}s (attempt {retry_count + 1}/{max_retries})...")
-                        import asyncio
                         await asyncio.sleep(wait_time)
                         return await self.get_game_info_from_steam(app_id, retry_count + 1, max_retries)
                     else:
                         logger.warning(f"❌ Gave up on app {app_id} after {max_retries} retries (HTTP {response.status_code})")
                 else:
                     logger.warning(f"Steam API error for app {app_id}: HTTP {response.status_code}")
+                    
+        except asyncio.TimeoutError:
+            logger.warning(f"⏱️ Timeout fetching app {app_id} (took >10s)")
         except Exception as e:
-            logger.warning(f"Error fetching Steam info for app {app_id}: {e}")
+            logger.warning(f"Error fetching Steam info for app {app_id}: {type(e).__name__}: {e}")
         
         return None
     

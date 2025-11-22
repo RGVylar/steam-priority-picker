@@ -291,6 +291,11 @@ async def get_my_games(
     else:
         logger.info("No valid user_game records to commit (all games delisted or not found)")
     
+    # Reload game service cache after any database changes
+    logger.info("Reloading game service cache from database...")
+    game_service.load_games()
+    logger.info(f"✅ Game service cache reloaded with {len(game_service.games)} games")
+    
     elapsed_time = time.time() - start_time
     logger.info(f"⏱️ ========== END /my-games request - Took {elapsed_time:.2f}s ==========")
     
