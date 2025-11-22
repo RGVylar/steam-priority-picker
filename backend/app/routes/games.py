@@ -288,3 +288,21 @@ async def get_my_games(
         "db_total": actual_db_total  # Real count from database
     }
 
+
+@router.get("/debug/db-stats")
+async def get_db_stats(db: Session = Depends(get_db)):
+    """Debug endpoint to check database statistics"""
+    from ..models import DelistedGame
+    
+    delisted_count = db.query(DelistedGame).count()
+    games_with_score = db.query(GameModel).filter(GameModel.score != 0).count()
+    total_games = db.query(GameModel).count()
+    
+    return {
+        "delisted_games": delisted_count,
+        "games_with_score": games_with_score,
+        "total_games": total_games,
+        "games_without_score": total_games - games_with_score,
+        "percentage_with_score": f"{(games_with_score/total_games*100):.1f}%" if total_games > 0 else "0%"
+    }
+

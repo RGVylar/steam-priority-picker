@@ -476,7 +476,7 @@ class SteamAuthService:
         return unknown_games
     
     def get_steam_review_score(self, app_id: int) -> Optional[dict]:
-        """Get review score from Steam review API (synchronous)
+        """Get review score from Steam review API (synchronous using httpx)
         
         Args:
             app_id: Steam application ID
@@ -484,7 +484,7 @@ class SteamAuthService:
         Returns:
             Dictionary with score and total_reviews or None if not available
         """
-        import requests
+        import httpx
         
         url = f"https://store.steampowered.com/appreviews/{app_id}"
         params = {
@@ -497,7 +497,7 @@ class SteamAuthService:
         }
         
         try:
-            response = requests.get(url, params=params, headers=headers, timeout=5)
+            response = httpx.get(url, params=params, headers=headers, timeout=5)
             response.raise_for_status()
             
             data = response.json()
