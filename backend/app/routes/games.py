@@ -271,9 +271,12 @@ async def get_my_games(
     elapsed_time = time.time() - start_time
     logger.info(f"⏱️ ========== END /my-games request - Took {elapsed_time:.2f}s ==========")
     
+    # Get actual count from database (not cached)
+    actual_db_total = db.query(GameModel).count()
+    
     return {
         "total": len(user_games_response),
         "games": user_games_response,
-        "db_total": len(game_service.games)  # Send total DB count for UI
+        "db_total": actual_db_total  # Real count from database
     }
 

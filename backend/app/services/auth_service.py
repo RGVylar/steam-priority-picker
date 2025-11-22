@@ -350,6 +350,7 @@ class SteamAuthService:
         
         unknown_games = []
         logger.info(f"🔍 Fetching info for {len(unknown_app_ids)} unknown games from Steam...")
+        logger.info(f"📌 Database session available: {db is not None}")
         
         # Get known delisted games from database
         delisted_from_db = set()
@@ -357,27 +358,46 @@ class SteamAuthService:
             delisted_records = db.query(DelistedGame.app_id).all()
             delisted_from_db = {record[0] for record in delisted_records}
             logger.info(f"📊 Loaded {len(delisted_from_db)} known delisted games from database")
+        else:
+            logger.warning(f"⚠️ No database session provided - cannot cache delisted games")
         
-        # On first request of this session, try to refetch known delisted games
-        # (in case they've been restored to Steam)
-        if db and not SteamAuthService._delisted_refetch_done and unknown_app_ids:
+        # Only attempt refetch if:
+        # 1. We have DB connection
+        # 2. We haven't already refetched in this session
+        # 3. We actually have delisted games to check
+        # 4. There are delisted games in the current unknown list
+        should_refetch = (
+            db and 
+            not SteamAuthService._delisted_refetch_done and 
+            delisted_from_db and
+            any(aid in delisted_from_db for aid in unknown_app_ids)
+        )
+        
+        if should_refetch:
             delisted_in_unknown = [aid for aid in unknown_app_ids if aid in delisted_from_db]
-            if delisted_in_unknown:
-                logger.info(f"🔄 First build: attempting to refetch {len(delisted_in_unknown)} previously delisted games...")
-                steam_tasks = [self.get_game_info_from_steam(app_id) for app_id in delisted_in_unknown]
-                steam_results = await asyncio.gather(*steam_tasks, return_exceptions=True)
-                
-                # Check if any have reappeared
-                for app_id, steam_info in zip(delisted_in_unknown, steam_results):
-                    if steam_info and isinstance(steam_info, dict) and steam_info.get("name"):
-                        logger.warning(f"✅ GAME RESTORED: App {app_id} ({steam_info.get('name')}) is now available!")
-                        # Remove from delisted list in database
-                        db.query(DelistedGame).filter(DelistedGame.app_id == app_id).delete()
-                        db.commit()
-                        delisted_from_db.discard(app_id)
-                
-                SteamAuthService._delisted_refetch_done = True
-                logger.info(f"✅ Delisted games refetch complete for this build")
+            logger.info(f"🔄 Attempting to refetch {len(delisted_in_unknown)}/{len(delisted_from_db)} delisted games (first time this build)...")
+            steam_tasks = [self.get_game_info_from_steam(app_id) for app_id in delisted_in_unknown]
+            steam_results = await asyncio.gather(*steam_tasks, return_exceptions=True)
+            
+            # Check if any have reappeared
+            restored_count = 0
+            for app_id, steam_info in zip(delisted_in_unknown, steam_results):
+                if steam_info and isinstance(steam_info, dict) and steam_info.get("name"):
+                    logger.warning(f"✅ GAME RESTORED: App {app_id} ({steam_info.get('name')}) is now available!")
+                    # Remove from delisted list in database
+                    db.query(DelistedGame).filter(DelistedGame.app_id == app_id).delete()
+                    delisted_from_db.discard(app_id)
+                    restored_count += 1
+            
+            db.commit()
+            SteamAuthService._delisted_refetch_done = True
+            if restored_count > 0:
+                logger.warning(f"⭐ {restored_count} games have been restored to Steam!")
+            else:
+                logger.info(f"✅ Refetch complete - no games have been restored")
+        else:
+            if delisted_from_db:
+                logger.info(f"⏭️ Already refetched delisted games in this session - skipping refetch")
         
         # Filter out known delisted games
         apps_to_fetch = [aid for aid in unknown_app_ids if aid not in delisted_from_db]
@@ -393,9 +413,11 @@ class SteamAuthService:
         else:
             steam_results = []
         
-        # Process results
+        # Process results and collect newly delisted games
         games_found = 0
         skipped_games = 0
+        newly_delisted = []
+        
         for app_id, steam_info in zip(apps_to_fetch, steam_results):
             if isinstance(steam_info, Exception):
                 logger.error(f"❌ Exception fetching app {app_id}: {steam_info}")
@@ -404,12 +426,7 @@ class SteamAuthService:
             
             if steam_info is None:
                 logger.warning(f"⚠️ No Steam info returned for app {app_id} (delisted/removed from store)")
-                # Add to delisted games in database for next time
-                if db:
-                    existing = db.query(DelistedGame).filter(DelistedGame.app_id == app_id).first()
-                    if not existing:
-                        db.add(DelistedGame(app_id=app_id))
-                    db.commit()
+                newly_delisted.append(app_id)
                 skipped_games += 1
                 continue
             
@@ -435,6 +452,27 @@ class SteamAuthService:
             else:
                 logger.warning(f"⚠️ Skipping app {app_id}: invalid Steam data structure")
                 skipped_games += 1
+        
+        # Save newly delisted games to database (batch commit)
+        if newly_delisted and db:
+            logger.info(f"💾 Saving {len(newly_delisted)} newly discovered delisted games to database...")
+            for app_id in newly_delisted:
+                try:
+                    existing = db.query(DelistedGame).filter(DelistedGame.app_id == app_id).first()
+                    if not existing:
+                        db.add(DelistedGame(app_id=app_id))
+                        logger.info(f"  ➕ Marked app {app_id} as delisted")
+                except Exception as e:
+                    logger.error(f"  ❌ Error marking app {app_id} as delisted: {e}", exc_info=True)
+            
+            try:
+                db.commit()
+                logger.info(f"✅ Successfully saved {len(newly_delisted)} delisted games to database")
+            except Exception as e:
+                logger.error(f"❌ Failed to commit delisted games: {e}", exc_info=True)
+                db.rollback()
+        elif newly_delisted:
+            logger.warning(f"⚠️ Found {len(newly_delisted)} newly delisted games but no DB session available")
         
         logger.info(f"✅ Successfully fetched {games_found}/{len(apps_to_fetch)} games from Steam ({skipped_games} delisted/skipped, {delisted_skipped} skipped from cache)")
         return unknown_games

@@ -26,7 +26,7 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, dbTotal = 0 
               )}
               {dbTotal > 0 && (
                 <p className="text-xs text-blue-500 dark:text-blue-400 font-medium">
-                  🌍 Catálogo: {dbTotal.toLocaleString()} juegos
+                  � Catálogo: {dbTotal.toLocaleString()} juegos
                 </p>
               )}
             </div>
