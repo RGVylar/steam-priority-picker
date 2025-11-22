@@ -171,17 +171,29 @@ async def get_my_games(
                 for game_data in unknown_games:
                     try:
                         app_id = game_data.get("app_id")
-                        logger.info(f"Processing game: app_id={app_id}, name={game_data.get('name', 'Unknown')}")
+                        new_name = game_data.get("name", "Unknown")
+                        logger.info(f"Processing game: app_id={app_id}, name={new_name}")
                         
                         # Check if already exists
                         existing = db.query(GameModel).filter(GameModel.app_id == app_id).first()
                         if existing:
-                            logger.info(f"Game {app_id} already exists in DB")
+                            # Update if we found a real name (not a generic "Game {id}" name)
+                            if not new_name.startswith("Game ") and existing.name.startswith("Game "):
+                                logger.info(f"⬆️ Updating game {app_id}: '{existing.name}' → '{new_name}'")
+                                existing.name = new_name
+                                existing.header_image = game_data.get("header_image", "") or existing.header_image
+                                existing.playtime_hours = game_data.get("playtime_hours", 0) or existing.playtime_hours
+                                existing.score = game_data.get("score", 0) or existing.score
+                                existing.total_reviews = game_data.get("total_reviews", 0) or existing.total_reviews
+                                games_added += 1
+                                logger.info(f"✅ Updated game {app_id} in session")
+                            else:
+                                logger.info(f"Game {app_id} already has correct name, skipping")
                             continue
                         
                         game = GameModel(
                             app_id=app_id,
-                            name=game_data.get("name", "Unknown"),
+                            name=new_name,
                             header_image=game_data.get("header_image", ""),
                             playtime_hours=game_data.get("playtime_hours", 0),
                             score=game_data.get("score", 0),
