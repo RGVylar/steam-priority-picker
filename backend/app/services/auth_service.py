@@ -19,6 +19,9 @@ class SteamAuthService:
     STEAM_API_URL = "https://steamcommunity.com/openid/login"
     STEAM_INFO_URL = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/"
     
+    # Flag to track if we've already tried to refetch delisted games in this session
+    _delisted_refetch_done = False
+    
     def __init__(self):
         # Don't cache these - read from settings each time to get production values
         self.steam_api_key = settings.steam_api_key
@@ -331,21 +334,69 @@ class SteamAuthService:
         
         return None
     
-    async def fetch_unknown_games_info(self, unknown_app_ids: list) -> list:
-        """Fetch info for unknown games from Steam and HowLongToBeat"""
+    async def fetch_unknown_games_info(self, unknown_app_ids: list, db=None) -> list:
+        """Fetch info for unknown games from Steam and HowLongToBeat
+        
+        Skips known delisted games from database to avoid unnecessary Steam API calls.
+        On first request of this session, attempts to refetch delisted games to see 
+        if they've been restored to Steam.
+        
+        Args:
+            unknown_app_ids: List of app IDs to fetch info for
+            db: Database session for checking/storing delisted games
+        """
         import asyncio
+        from ..models import DelistedGame
         
         unknown_games = []
         logger.info(f"🔍 Fetching info for {len(unknown_app_ids)} unknown games from Steam...")
         
-        # Fetch Steam info in parallel
-        steam_tasks = [self.get_game_info_from_steam(app_id) for app_id in unknown_app_ids]
-        steam_results = await asyncio.gather(*steam_tasks, return_exceptions=True)
+        # Get known delisted games from database
+        delisted_from_db = set()
+        if db:
+            delisted_records = db.query(DelistedGame.app_id).all()
+            delisted_from_db = {record[0] for record in delisted_records}
+            logger.info(f"📊 Loaded {len(delisted_from_db)} known delisted games from database")
+        
+        # On first request of this session, try to refetch known delisted games
+        # (in case they've been restored to Steam)
+        if db and not SteamAuthService._delisted_refetch_done and unknown_app_ids:
+            delisted_in_unknown = [aid for aid in unknown_app_ids if aid in delisted_from_db]
+            if delisted_in_unknown:
+                logger.info(f"🔄 First build: attempting to refetch {len(delisted_in_unknown)} previously delisted games...")
+                steam_tasks = [self.get_game_info_from_steam(app_id) for app_id in delisted_in_unknown]
+                steam_results = await asyncio.gather(*steam_tasks, return_exceptions=True)
+                
+                # Check if any have reappeared
+                for app_id, steam_info in zip(delisted_in_unknown, steam_results):
+                    if steam_info and isinstance(steam_info, dict) and steam_info.get("name"):
+                        logger.warning(f"✅ GAME RESTORED: App {app_id} ({steam_info.get('name')}) is now available!")
+                        # Remove from delisted list in database
+                        db.query(DelistedGame).filter(DelistedGame.app_id == app_id).delete()
+                        db.commit()
+                        delisted_from_db.discard(app_id)
+                
+                SteamAuthService._delisted_refetch_done = True
+                logger.info(f"✅ Delisted games refetch complete for this build")
+        
+        # Filter out known delisted games
+        apps_to_fetch = [aid for aid in unknown_app_ids if aid not in delisted_from_db]
+        delisted_skipped = len(unknown_app_ids) - len(apps_to_fetch)
+        
+        if delisted_skipped > 0:
+            logger.info(f"⏭️ Skipping {delisted_skipped} known delisted games (no Steam API call needed)")
+        
+        # Fetch Steam info in parallel for non-delisted games
+        if apps_to_fetch:
+            steam_tasks = [self.get_game_info_from_steam(app_id) for app_id in apps_to_fetch]
+            steam_results = await asyncio.gather(*steam_tasks, return_exceptions=True)
+        else:
+            steam_results = []
         
         # Process results
         games_found = 0
         skipped_games = 0
-        for app_id, steam_info in zip(unknown_app_ids, steam_results):
+        for app_id, steam_info in zip(apps_to_fetch, steam_results):
             if isinstance(steam_info, Exception):
                 logger.error(f"❌ Exception fetching app {app_id}: {steam_info}")
                 skipped_games += 1
@@ -353,6 +404,12 @@ class SteamAuthService:
             
             if steam_info is None:
                 logger.warning(f"⚠️ No Steam info returned for app {app_id} (delisted/removed from store)")
+                # Add to delisted games in database for next time
+                if db:
+                    existing = db.query(DelistedGame).filter(DelistedGame.app_id == app_id).first()
+                    if not existing:
+                        db.add(DelistedGame(app_id=app_id))
+                    db.commit()
                 skipped_games += 1
                 continue
             
@@ -379,7 +436,7 @@ class SteamAuthService:
                 logger.warning(f"⚠️ Skipping app {app_id}: invalid Steam data structure")
                 skipped_games += 1
         
-        logger.info(f"✅ Successfully fetched {games_found}/{len(unknown_app_ids)} unknown games from Steam ({skipped_games} delisted/skipped)")
+        logger.info(f"✅ Successfully fetched {games_found}/{len(apps_to_fetch)} games from Steam ({skipped_games} delisted/skipped, {delisted_skipped} skipped from cache)")
         return unknown_games
 
 

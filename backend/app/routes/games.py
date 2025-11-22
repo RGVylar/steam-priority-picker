@@ -152,7 +152,7 @@ async def get_my_games(
     if unknown_app_ids:
         unknown_app_ids_to_fetch = unknown_app_ids[:50]  # Limit to 50 per request
         logger.info(f"Fetching info for {len(unknown_app_ids_to_fetch)}/{len(unknown_app_ids)} unknown games...")
-        unknown_games = await auth_service.fetch_unknown_games_info(unknown_app_ids_to_fetch)
+        unknown_games = await auth_service.fetch_unknown_games_info(unknown_app_ids_to_fetch, db)
         
         if unknown_games:
             # Insert games directly into database in a separate transaction

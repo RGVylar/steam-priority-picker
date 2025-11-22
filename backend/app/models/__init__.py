@@ -105,3 +105,19 @@ class Session(Base):
     
     def __repr__(self):
         return f"<Session user={self.user_id}>"
+
+
+class DelistedGame(Base):
+    """Track games that are no longer available on Steam
+    
+    This prevents repeated Steam API calls for games that have been delisted,
+    improving performance on subsequent fetches of the same user's library.
+    """
+    __tablename__ = "delisted_games"
+    
+    id = Column(Integer, primary_key=True)
+    app_id = Column(Integer, unique=True, nullable=False, index=True)
+    checked_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f"<DelistedGame app_id={self.app_id}>"
