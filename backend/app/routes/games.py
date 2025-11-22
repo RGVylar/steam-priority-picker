@@ -148,62 +148,70 @@ async def get_my_games(
     
     logger.info(f"Found {len(known_app_ids)} known games, {len(unknown_app_ids)} unknown games")
     
-    # Fetch and save unknown games FIRST (limit to 50 at a time to avoid timeouts)
+    # Fetch and save unknown games FIRST (process in batches of 50 to avoid timeouts)
     if unknown_app_ids:
-        unknown_app_ids_to_fetch = unknown_app_ids[:50]  # Limit to 50 per request
-        logger.info(f"Fetching info for {len(unknown_app_ids_to_fetch)}/{len(unknown_app_ids)} unknown games...")
-        unknown_games = await auth_service.fetch_unknown_games_info(unknown_app_ids_to_fetch, db)
+        logger.info(f"Found {len(unknown_app_ids)} unknown games - processing in batches of 50...")
         
-        if unknown_games:
-            # Insert games directly into database in a separate transaction
-            games_added = 0
-            logger.info(f"Processing {len(unknown_games)} unknown games from Steam API")
+        # Process all unknown games in batches of 50
+        for batch_start in range(0, len(unknown_app_ids), 50):
+            batch_end = min(batch_start + 50, len(unknown_app_ids))
+            unknown_app_ids_to_fetch = unknown_app_ids[batch_start:batch_end]
+            logger.info(f"Fetching batch {batch_start//50 + 1}: games {batch_start+1}-{batch_end} of {len(unknown_app_ids)}...")
             
-            for game_data in unknown_games:
-                try:
-                    app_id = game_data.get("app_id")
-                    logger.info(f"Processing game: app_id={app_id}, name={game_data.get('name', 'Unknown')}")
-                    
-                    # Check if already exists
-                    existing = db.query(GameModel).filter(GameModel.app_id == app_id).first()
-                    if existing:
-                        logger.info(f"Game {app_id} already exists in DB")
-                        continue
-                    
-                    game = GameModel(
-                        app_id=app_id,
-                        name=game_data.get("name", "Unknown"),
-                        header_image=game_data.get("header_image", ""),
-                        playtime_hours=game_data.get("playtime_hours", 0),
-                        score=game_data.get("score", 0),
-                        total_reviews=game_data.get("total_reviews", 0)
-                    )
-                    db.add(game)
-                    games_added += 1
-                    logger.info(f"✅ Added game {app_id} to session")
-                except Exception as e:
-                    logger.error(f"❌ Error processing game {game_data.get('app_id')}: {e}", exc_info=True)
-                    continue
+            unknown_games = await auth_service.fetch_unknown_games_info(unknown_app_ids_to_fetch, db)
             
-            if games_added > 0:
-                # COMMIT the games in a fresh transaction
-                try:
-                    logger.info(f"Committing {games_added} games to database...")
-                    db.commit()
-                    logger.info(f"✅ Successfully committed {games_added} games")
-                    
-                    # Verify games were actually saved
-                    for game_data in unknown_games:
+            if unknown_games:
+                # Insert games directly into database in a separate transaction
+                games_added = 0
+                logger.info(f"Processing {len(unknown_games)} unknown games from Steam API (batch {batch_start//50 + 1})")
+                
+                for game_data in unknown_games:
+                    try:
                         app_id = game_data.get("app_id")
-                        verified = db.query(GameModel).filter(GameModel.app_id == app_id).first()
-                        if verified:
-                            logger.info(f"✅ Verified game {app_id} is in database")
-                        else:
-                            logger.error(f"❌ VERIFICATION FAILED: Game {app_id} NOT found in database after commit!")
-                except Exception as e:
-                    logger.error(f"❌ Failed to commit games: {e}", exc_info=True)
-                    db.rollback()
-                    raise
+                        logger.info(f"Processing game: app_id={app_id}, name={game_data.get('name', 'Unknown')}")
+                        
+                        # Check if already exists
+                        existing = db.query(GameModel).filter(GameModel.app_id == app_id).first()
+                        if existing:
+                            logger.info(f"Game {app_id} already exists in DB")
+                            continue
+                        
+                        game = GameModel(
+                            app_id=app_id,
+                            name=game_data.get("name", "Unknown"),
+                            header_image=game_data.get("header_image", ""),
+                            playtime_hours=game_data.get("playtime_hours", 0),
+                            score=game_data.get("score", 0),
+                            total_reviews=game_data.get("total_reviews", 0)
+                        )
+                        db.add(game)
+                        games_added += 1
+                        logger.info(f"✅ Added game {app_id} to session")
+                    except Exception as e:
+                        logger.error(f"❌ Error processing game {game_data.get('app_id')}: {e}", exc_info=True)
+                        continue
+                
+                if games_added > 0:
+                    # COMMIT the games in a fresh transaction
+                    try:
+                        logger.info(f"Committing {games_added} games to database (batch {batch_start//50 + 1})...")
+                        db.commit()
+                        logger.info(f"✅ Successfully committed {games_added} games")
+                        
+                        # Verify games were actually saved
+                        for game_data in unknown_games:
+                            app_id = game_data.get("app_id")
+                            verified = db.query(GameModel).filter(GameModel.app_id == app_id).first()
+                            if verified:
+                                logger.info(f"✅ Verified game {app_id} is in database")
+                            else:
+                                logger.error(f"❌ VERIFICATION FAILED: Game {app_id} NOT found in database after commit!")
+                    except Exception as e:
+                        logger.error(f"❌ Failed to commit games (batch {batch_start//50 + 1}): {e}", exc_info=True)
+                        db.rollback()
+                        raise
+            
+            logger.info(f"✅ Batch {batch_start//50 + 1} complete")
     
     # NOW create user_game records ONLY for games that exist in the database
     # Use a single efficient query to get all games at once instead of looping
