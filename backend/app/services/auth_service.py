@@ -278,13 +278,30 @@ class SteamAuthService:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    if str(app_id) in data and data[str(app_id)].get("success"):
-                        game_data = data[str(app_id)]["data"]
-                        return {
-                            "app_id": app_id,
-                            "name": game_data.get("name", "Unknown"),
-                            "header_image": game_data.get("header_image", ""),
-                        }
+                    if str(app_id) in data:
+                        app_data = data[str(app_id)]
+                        success = app_data.get("success", False)
+                        
+                        # Try to get game data even if success is False
+                        # (some games are delisted but still have data)
+                        if "data" in app_data and isinstance(app_data["data"], dict):
+                            game_data = app_data["data"]
+                            game_info = {
+                                "app_id": app_id,
+                                "name": game_data.get("name", f"Game {app_id}"),
+                                "header_image": game_data.get("header_image", ""),
+                            }
+                            if success:
+                                logger.info(f"✅ Fetched Steam info for app {app_id}: {game_info['name']}")
+                            else:
+                                logger.info(f"⚠️ Fetched Steam info for app {app_id} (success=false): {game_info['name']}")
+                            return game_info
+                        else:
+                            logger.warning(f"❌ No data found for app {app_id} (success={success})")
+                    else:
+                        logger.warning(f"❌ App {app_id} not found in Steam API response")
+                else:
+                    logger.warning(f"Steam API error for app {app_id}: HTTP {response.status_code}")
         except Exception as e:
             logger.warning(f"Error fetching Steam info for app {app_id}: {e}")
         
@@ -317,28 +334,43 @@ class SteamAuthService:
         import asyncio
         
         unknown_games = []
+        logger.info(f"🔍 Fetching info for {len(unknown_app_ids)} unknown games from Steam...")
         
         # Fetch Steam info in parallel
         steam_tasks = [self.get_game_info_from_steam(app_id) for app_id in unknown_app_ids]
         steam_results = await asyncio.gather(*steam_tasks, return_exceptions=True)
         
         # Process results
+        games_found = 0
         for app_id, steam_info in zip(unknown_app_ids, steam_results):
-            if isinstance(steam_info, dict) and steam_info:
-                # Try to get HLTB playtime
-                playtime = await self.get_hltb_playtime(steam_info["name"])
-                
-                game = {
-                    "app_id": app_id,
-                    "name": steam_info["name"],
-                    "header_image": steam_info["header_image"],
-                    "playtime_hours": playtime or 0,
-                    "score": 0,  # No score for unknown games
-                    "total_reviews": 0
-                }
-                unknown_games.append(game)
-                logger.info(f"Added unknown game: {game['name']} ({app_id})")
+            if isinstance(steam_info, Exception):
+                logger.error(f"❌ Exception fetching app {app_id}: {steam_info}")
+                continue
+            
+            if steam_info is None:
+                logger.warning(f"⚠️ No Steam info returned for app {app_id}")
+                continue
+            
+            if isinstance(steam_info, dict) and steam_info.get("name"):
+                try:
+                    # Try to get HLTB playtime
+                    playtime = await self.get_hltb_playtime(steam_info["name"])
+                    
+                    game = {
+                        "app_id": app_id,
+                        "name": steam_info["name"],
+                        "header_image": steam_info["header_image"],
+                        "playtime_hours": playtime or 0,
+                        "score": 0,  # No score for unknown games
+                        "total_reviews": 0
+                    }
+                    unknown_games.append(game)
+                    games_found += 1
+                    logger.info(f"✅ Added unknown game: {game['name']} ({app_id})")
+                except Exception as e:
+                    logger.error(f"❌ Error processing game {app_id}: {e}", exc_info=True)
         
+        logger.info(f"✅ Successfully fetched {games_found}/{len(unknown_app_ids)} unknown games from Steam")
         return unknown_games
 
 
