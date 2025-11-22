@@ -137,7 +137,24 @@ async def get_my_games(
     
     logger.info(f"User owns {len(owned_app_ids)} games")
     
-    # Get or create user_game records for all owned games
+    # Find unknown games - query DB directly
+    known_games = db.query(GameModel.app_id).filter(GameModel.app_id.in_(list(owned_app_ids.keys()))).all()
+    known_app_ids = {g.app_id for g in known_games}
+    unknown_app_ids = [aid for aid in owned_app_ids.keys() if aid not in known_app_ids]
+    
+    logger.info(f"Found {len(known_app_ids)} known games, {len(unknown_app_ids)} unknown games")
+    
+    # Fetch and save unknown games FIRST (limit to 50 at a time to avoid timeouts)
+    if unknown_app_ids:
+        unknown_app_ids_to_fetch = unknown_app_ids[:50]  # Limit to 50 per request
+        logger.info(f"Fetching info for {len(unknown_app_ids_to_fetch)}/{len(unknown_app_ids)} unknown games...")
+        unknown_games = await auth_service.fetch_unknown_games_info(unknown_app_ids_to_fetch)
+        
+        if unknown_games:
+            game_service.add_games(unknown_games)
+            logger.info(f"Added {len(unknown_games)} new games to database")
+    
+    # NOW create user_game records for all owned games (after unknown games are in DB)
     user_games_response = []
     
     for app_id, playtime_hours in owned_app_ids.items():
@@ -172,7 +189,7 @@ async def get_my_games(
                 "total_reviews": game.total_reviews
             }
         else:
-            # Unknown game - will be fetched
+            # Game still not in DB (beyond the 50 limit)
             game_dict = {
                 "app_id": app_id,
                 "name": f"Game {app_id}",
@@ -184,35 +201,6 @@ async def get_my_games(
         
         user_games_response.append(game_dict)
     
-    # Find unknown games - query DB directly instead of relying on game_service.games
-    known_games = db.query(GameModel.app_id).filter(GameModel.app_id.in_(list(owned_app_ids.keys()))).all()
-    known_app_ids = {g.app_id for g in known_games}
-    unknown_app_ids = [aid for aid in owned_app_ids.keys() if aid not in known_app_ids]
-    
-    logger.info(f"Found {len(known_app_ids)} known games, {len(unknown_app_ids)} unknown games")
-    
-    # Fetch and save unknown games (limit to 50 at a time to avoid timeouts)
-    if unknown_app_ids:
-        unknown_app_ids_to_fetch = unknown_app_ids[:50]  # Limit to 50 per request
-        logger.info(f"Fetching info for {len(unknown_app_ids_to_fetch)}/{len(unknown_app_ids)} unknown games...")
-        unknown_games = await auth_service.fetch_unknown_games_info(unknown_app_ids_to_fetch)
-        
-        if unknown_games:
-            game_service.add_games(unknown_games)
-            
-            # Update response with newly fetched game info
-            for game_dict in user_games_response:
-                if game_dict["app_id"] in unknown_app_ids:
-                    for unknown_game in unknown_games:
-                        if unknown_game["app_id"] == game_dict["app_id"]:
-                            # Update with fetched info, but keep user's playtime
-                            personal_playtime = game_dict["playtime_hours"]
-                            game_dict.update(unknown_game)
-                            game_dict["playtime_hours"] = personal_playtime
-                            break
-            
-            logger.info(f"Added {len(unknown_games)} new games to database. Total: {len(game_service.games)}")
-    
     # Commit all user_game changes
     db.commit()
     
@@ -221,3 +209,4 @@ async def get_my_games(
         "games": user_games_response,
         "db_total": len(game_service.games)  # Send total DB count for UI
     }
+
