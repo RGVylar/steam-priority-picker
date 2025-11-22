@@ -278,26 +278,28 @@ class SteamAuthService:
                 
                 if response.status_code == 200:
                     data = response.json()
+                    logger.debug(f"Steam API response for {app_id}: {data}")
                     if str(app_id) in data:
                         app_data = data[str(app_id)]
                         success = app_data.get("success", False)
+                        logger.debug(f"App data for {app_id}: success={success}, keys={app_data.keys()}, data type={type(app_data.get('data'))}")
                         
                         # Try to get game data even if success is False
                         # (some games are delisted but still have data)
-                        if "data" in app_data and isinstance(app_data["data"], dict):
+                        if "data" in app_data and app_data["data"]:
                             game_data = app_data["data"]
-                            game_info = {
-                                "app_id": app_id,
-                                "name": game_data.get("name", f"Game {app_id}"),
-                                "header_image": game_data.get("header_image", ""),
-                            }
-                            if success:
-                                logger.info(f"✅ Fetched Steam info for app {app_id}: {game_info['name']}")
-                            else:
-                                logger.info(f"⚠️ Fetched Steam info for app {app_id} (success=false): {game_info['name']}")
-                            return game_info
-                        else:
-                            logger.warning(f"❌ No data found for app {app_id} (success={success})")
+                            if isinstance(game_data, dict):
+                                game_info = {
+                                    "app_id": app_id,
+                                    "name": game_data.get("name", f"Game {app_id}"),
+                                    "header_image": game_data.get("header_image", ""),
+                                }
+                                if success:
+                                    logger.info(f"✅ Fetched Steam info for app {app_id}: {game_info['name']}")
+                                else:
+                                    logger.info(f"⚠️ Fetched Steam info for app {app_id} (success=false): {game_info['name']}")
+                                return game_info
+                        logger.warning(f"❌ No data found for app {app_id} (success={success}, has data={('data' in app_data)}, data value={app_data.get('data')})")
                     else:
                         logger.warning(f"❌ App {app_id} not found in Steam API response")
                 else:
