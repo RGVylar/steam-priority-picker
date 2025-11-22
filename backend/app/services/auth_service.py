@@ -344,13 +344,16 @@ class SteamAuthService:
         
         # Process results
         games_found = 0
+        skipped_games = 0
         for app_id, steam_info in zip(unknown_app_ids, steam_results):
             if isinstance(steam_info, Exception):
                 logger.error(f"❌ Exception fetching app {app_id}: {steam_info}")
+                skipped_games += 1
                 continue
             
             if steam_info is None:
-                logger.warning(f"⚠️ No Steam info returned for app {app_id}")
+                logger.warning(f"⚠️ No Steam info returned for app {app_id} (delisted/removed from store)")
+                skipped_games += 1
                 continue
             
             if isinstance(steam_info, dict) and steam_info.get("name"):
@@ -371,8 +374,12 @@ class SteamAuthService:
                     logger.info(f"✅ Added unknown game: {game['name']} ({app_id})")
                 except Exception as e:
                     logger.error(f"❌ Error processing game {app_id}: {e}", exc_info=True)
+                    skipped_games += 1
+            else:
+                logger.warning(f"⚠️ Skipping app {app_id}: invalid Steam data structure")
+                skipped_games += 1
         
-        logger.info(f"✅ Successfully fetched {games_found}/{len(unknown_app_ids)} unknown games from Steam")
+        logger.info(f"✅ Successfully fetched {games_found}/{len(unknown_app_ids)} unknown games from Steam ({skipped_games} delisted/skipped)")
         return unknown_games
 
 
