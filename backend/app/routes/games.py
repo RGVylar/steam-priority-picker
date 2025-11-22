@@ -208,6 +208,11 @@ async def get_my_games(
         # Get game info from database
         game = db.query(GameModel).filter(GameModel.app_id == app_id).first()
         
+        # Skip games that don't exist in the database (delisted/removed games)
+        if not game:
+            logger.debug(f"Skipping app_id {app_id}: not found in database (delisted or beyond fetch limit)")
+            continue
+        
         # Get or create user_game record
         user_game = db.query(UserGame).filter(
             UserGame.user_id == user.id,
@@ -226,30 +231,27 @@ async def get_my_games(
             user_game.playtime_hours = playtime_hours
         
         # Build response with user's personal playtime
-        if game:
-            game_dict = {
-                "app_id": game.app_id,
-                "name": game.name,
-                "header_image": game.header_image,
-                "playtime_hours": playtime_hours,  # User's personal playtime
-                "score": game.score,
-                "total_reviews": game.total_reviews
-            }
-        else:
-            # Game still not in DB (beyond the 50 limit)
-            game_dict = {
-                "app_id": app_id,
-                "name": f"Game {app_id}",
-                "header_image": "",
-                "playtime_hours": playtime_hours,
-                "score": 0,
-                "total_reviews": 0
-            }
+        game_dict = {
+            "app_id": game.app_id,
+            "name": game.name,
+            "header_image": game.header_image,
+            "playtime_hours": playtime_hours,  # User's personal playtime
+            "score": game.score,
+            "total_reviews": game.total_reviews
+        }
         
         user_games_response.append(game_dict)
     
     # Commit all user_game changes
-    db.commit()
+    if user_games_response:
+        try:
+            logger.info(f"Committing {len(user_games_response)} user_game records...")
+            db.commit()
+            logger.info(f"✅ Successfully committed {len(user_games_response)} user_game records")
+        except Exception as e:
+            logger.error(f"❌ Failed to commit user_game records: {e}", exc_info=True)
+            db.rollback()
+            raise
     
     return {
         "total": len(user_games_response),
