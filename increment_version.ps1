@@ -20,9 +20,9 @@ if ($content -match 'APP_VERSION = "([^"]+)"') {
     $newCounter = 1
 }
 
-# Generate new version
+# Generate new version with date and counter
 $date = (Get-Date).ToString('yyyy-MM-dd')
-$newVersion = "$date-fix-fk-violations-v$newCounter"
+$newVersion = "$date-v$newCounter"
 
 # Replace version
 $newContent = $content -replace 'APP_VERSION = "[^"]+"', "APP_VERSION = ""$newVersion"""
