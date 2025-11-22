@@ -421,31 +421,47 @@ class SteamAuthService:
         for app_id, steam_info in zip(apps_to_fetch, steam_results):
             if isinstance(steam_info, Exception):
                 logger.error(f"❌ Exception fetching app {app_id}: {steam_info}")
+                # Don't mark as delisted - could be temporary API error
                 skipped_games += 1
                 continue
             
+            # If no Steam info, create game with app_id as fallback name
+            # Don't mark as delisted automatically - could be API error, not actual delisting
             if steam_info is None:
-                logger.warning(f"⚠️ No Steam info returned for app {app_id} (delisted/removed from store)")
-                newly_delisted.append(app_id)
-                skipped_games += 1
-                continue
+                logger.warning(f"⚠️ No Steam info returned for app {app_id} - using fallback data")
+                steam_info = {
+                    "name": f"Game {app_id}",
+                    "header_image": ""
+                }
             
             if isinstance(steam_info, dict) and steam_info.get("name"):
                 try:
                     # Try to get HLTB playtime
                     playtime = await self.get_hltb_playtime(steam_info["name"])
                     
+                    # Get Steam review score and total reviews
+                    score = 0
+                    total_reviews = 0
+                    try:
+                        review_data = self.get_steam_review_score(app_id)
+                        if review_data:
+                            score = review_data.get("score", 0)
+                            total_reviews = review_data.get("total_reviews", 0)
+                            logger.info(f"📊 Got reviews for {steam_info['name']}: {score:.1f}% ({total_reviews} reviews)")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Could not fetch reviews for app {app_id}: {e}")
+                    
                     game = {
                         "app_id": app_id,
                         "name": steam_info["name"],
-                        "header_image": steam_info["header_image"],
+                        "header_image": steam_info.get("header_image", ""),
                         "playtime_hours": playtime or 0,
-                        "score": 0,  # No score for unknown games
-                        "total_reviews": 0
+                        "score": score,
+                        "total_reviews": total_reviews
                     }
                     unknown_games.append(game)
                     games_found += 1
-                    logger.info(f"✅ Added unknown game: {game['name']} ({app_id})")
+                    logger.info(f"✅ Added unknown game: {game['name']} ({app_id}) - {score:.1f}% ({total_reviews} reviews)")
                 except Exception as e:
                     logger.error(f"❌ Error processing game {app_id}: {e}", exc_info=True)
                     skipped_games += 1
@@ -453,28 +469,57 @@ class SteamAuthService:
                 logger.warning(f"⚠️ Skipping app {app_id}: invalid Steam data structure")
                 skipped_games += 1
         
-        # Save newly delisted games to database (batch commit)
-        if newly_delisted and db:
-            logger.info(f"💾 Saving {len(newly_delisted)} newly discovered delisted games to database...")
-            for app_id in newly_delisted:
-                try:
-                    existing = db.query(DelistedGame).filter(DelistedGame.app_id == app_id).first()
-                    if not existing:
-                        db.add(DelistedGame(app_id=app_id))
-                        logger.info(f"  ➕ Marked app {app_id} as delisted")
-                except Exception as e:
-                    logger.error(f"  ❌ Error marking app {app_id} as delisted: {e}", exc_info=True)
-            
-            try:
-                db.commit()
-                logger.info(f"✅ Successfully saved {len(newly_delisted)} delisted games to database")
-            except Exception as e:
-                logger.error(f"❌ Failed to commit delisted games: {e}", exc_info=True)
-                db.rollback()
-        elif newly_delisted:
-            logger.warning(f"⚠️ Found {len(newly_delisted)} newly delisted games but no DB session available")
+        # NOTE: We no longer mark games as delisted automatically due to API errors
+        # Instead, we use fallback names (Game {app_id}) and still save the games
         
-        logger.info(f"✅ Successfully fetched {games_found}/{len(apps_to_fetch)} games from Steam ({skipped_games} delisted/skipped, {delisted_skipped} skipped from cache)")
+        logger.info(f"✅ Successfully fetched {games_found}/{len(apps_to_fetch)} games from Steam ({skipped_games} skipped, {delisted_skipped} skipped from cache)")
         return unknown_games
+    
+    def get_steam_review_score(self, app_id: int) -> Optional[dict]:
+        """Get review score from Steam review API (synchronous)
+        
+        Args:
+            app_id: Steam application ID
+            
+        Returns:
+            Dictionary with score and total_reviews or None if not available
+        """
+        import requests
+        
+        url = f"https://store.steampowered.com/appreviews/{app_id}"
+        params = {
+            "json": 1,
+            "language": "all",
+            "purchase_type": "all"
+        }
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
+        
+        try:
+            response = requests.get(url, params=params, headers=headers, timeout=5)
+            response.raise_for_status()
+            
+            data = response.json()
+            query_summary = data.get("query_summary", {})
+            
+            total_reviews = query_summary.get("total_reviews", 0)
+            if total_reviews == 0:
+                return None
+            
+            total_positive = query_summary.get("total_positive", 0)
+            total_negative = query_summary.get("total_negative", 0)
+            
+            # Calculate percentage score
+            score = (total_positive / (total_positive + total_negative) * 100) if (total_positive + total_negative) > 0 else 0
+            
+            return {
+                "score": round(score, 1),
+                "total_reviews": total_reviews
+            }
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Could not fetch Steam reviews for app {app_id}: {e}")
+            return None
 
 
