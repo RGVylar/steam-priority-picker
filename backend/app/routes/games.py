@@ -202,28 +202,23 @@ async def get_my_games(
                     raise
     
     # NOW create user_game records ONLY for games that exist in the database
+    # Use a single efficient query to get all games at once instead of looping
     user_games_response = []
-    user_games_to_add = []
     
-    # First, get ALL app_ids that exist in the games table
-    existing_game_app_ids = set(db.query(GameModel.app_id).all())
-    existing_game_app_ids = {g[0] for g in existing_game_app_ids}  # Flatten the tuples
+    # Get ALL games from database in ONE query (much faster than looping)
+    all_games = db.query(GameModel).all()
+    games_by_app_id = {g.app_id: g for g in all_games}
     
-    logger.info(f"Games table has {len(existing_game_app_ids)} games total")
+    logger.info(f"Games table has {len(games_by_app_id)} games total")
     
     # Only process games that actually exist in the database
-    valid_app_ids = [aid for aid in owned_app_ids.keys() if aid in existing_game_app_ids]
+    valid_app_ids = [aid for aid in owned_app_ids.keys() if aid in games_by_app_id]
     logger.info(f"User has {len(valid_app_ids)} games that exist in database, {len(owned_app_ids) - len(valid_app_ids)} delisted/not found")
     
     for app_id in valid_app_ids:
         playtime_hours = owned_app_ids[app_id]
+        game = games_by_app_id[app_id]  # Already fetched above
         
-        # Get game info from database
-        game = db.query(GameModel).filter(GameModel.app_id == app_id).first()
-        
-        if not game:
-            logger.warning(f"⚠️ Expected game {app_id} in database but not found - skipping")
-            continue
         
         # Get or create user_game record
         user_game = db.query(UserGame).filter(
@@ -237,7 +232,6 @@ async def get_my_games(
                 app_id=app_id,
                 playtime_hours=playtime_hours
             )
-            user_games_to_add.append(user_game)
             db.add(user_game)
         else:
             # Update playtime if changed

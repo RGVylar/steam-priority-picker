@@ -9,7 +9,7 @@ from .models import Base
 import logging
 
 # Version identifier for deployment tracking
-APP_VERSION = "2025-11-22-fix-fk-violations-v5"
+APP_VERSION = "2025-11-22-fix-fk-violations-v6"
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
