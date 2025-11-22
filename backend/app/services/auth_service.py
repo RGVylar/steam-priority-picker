@@ -426,13 +426,14 @@ class SteamAuthService:
                 skipped_games += 1
                 continue
             
-            # If no Steam info, mark as delisted (don't create game with fallback name)
+            # If no Steam info, mark as delisted (API couldn't find the game)
             if steam_info is None:
                 logger.warning(f"⚠️ No Steam info returned for app {app_id} - marking as delisted")
                 newly_delisted.append(app_id)
                 skipped_games += 1
                 continue
             
+            # Game has valid name from Steam (could be "To be announced" or real name)
             if isinstance(steam_info, dict) and steam_info.get("name"):
                 try:
                     # Try to get HLTB playtime
@@ -466,7 +467,7 @@ class SteamAuthService:
                     newly_delisted.append(app_id)
                     skipped_games += 1
             else:
-                logger.warning(f"⚠️ Skipping app {app_id}: invalid Steam data structure - marking as delisted")
+                logger.warning(f"⚠️ Invalid Steam data for app {app_id} - marking as delisted")
                 newly_delisted.append(app_id)
                 skipped_games += 1
         
