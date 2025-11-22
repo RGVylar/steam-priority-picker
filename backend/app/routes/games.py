@@ -292,9 +292,17 @@ async def get_my_games(
         logger.info("No valid user_game records to commit (all games delisted or not found)")
     
     # Reload game service cache after any database changes
-    logger.info("Reloading game service cache from database...")
-    game_service.load_games()
-    logger.info(f"✅ Game service cache reloaded with {len(game_service.games)} games")
+    # Only reload if the cache is empty to avoid SSL connection issues
+    if not game_service.games or len(game_service.games) == 0:
+        logger.info("Game service cache is empty - reloading from database...")
+        try:
+            game_service.load_games()
+            logger.info(f"✅ Game service cache reloaded with {len(game_service.games)} games")
+        except Exception as e:
+            logger.warning(f"⚠️ Could not reload game cache: {e} - will use existing cache")
+            # Try to reload on next request
+    else:
+        logger.info(f"Game service cache already has {len(game_service.games)} games - skipping reload")
     
     elapsed_time = time.time() - start_time
     logger.info(f"⏱️ ========== END /my-games request - Took {elapsed_time:.2f}s ==========")
