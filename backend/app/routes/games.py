@@ -6,6 +6,7 @@ from ..services.game_service import game_service
 from ..services.auth_service import SteamAuthService
 from ..database import get_db
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["games"])
@@ -102,6 +103,9 @@ async def get_my_games(
 ):
     """Get authenticated user's games from Steam library with personal playtime"""
     from ..models import UserGame, Game as GameModel
+    
+    start_time = time.time()
+    logger.info("⏱️ ========== START /my-games request ==========")
     
     if not authorization:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -263,6 +267,9 @@ async def get_my_games(
             logger.warning(f"⚠️ Returning {len(user_games_response)} games despite DB commit error")
     else:
         logger.info("No valid user_game records to commit (all games delisted or not found)")
+    
+    elapsed_time = time.time() - start_time
+    logger.info(f"⏱️ ========== END /my-games request - Took {elapsed_time:.2f}s ==========")
     
     return {
         "total": len(user_games_response),
