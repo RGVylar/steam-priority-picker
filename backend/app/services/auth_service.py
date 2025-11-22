@@ -288,21 +288,24 @@ class SteamAuthService:
                         logger.debug(f"App data for {app_id}: success={success}, keys={app_data.keys()}, data type={type(app_data.get('data'))}")
                         
                         # Try to get game data even if success is False
-                        # (some games are delisted but still have data)
-                        if "data" in app_data and app_data["data"]:
+                        # (some games are delisted but still have data, or have empty data but might have name elsewhere)
+                        if "data" in app_data:
                             game_data = app_data["data"]
+                            # Even if data is empty dict {}, it's still valid - Steam found the game
                             if isinstance(game_data, dict):
-                                game_info = {
-                                    "app_id": app_id,
-                                    "name": game_data.get("name", f"Game {app_id}"),
-                                    "header_image": game_data.get("header_image", ""),
-                                }
-                                if success:
-                                    logger.info(f"✅ Fetched Steam info for app {app_id}: {game_info['name']}")
-                                else:
-                                    logger.info(f"⚠️ Fetched Steam info for app {app_id} (success=false): {game_info['name']}")
-                                return game_info
-                        logger.warning(f"❌ No data found for app {app_id} (success={success}, has data={('data' in app_data)}, data value={app_data.get('data')})")
+                                name = game_data.get("name")
+                                if name:  # Has a real name from Steam
+                                    game_info = {
+                                        "app_id": app_id,
+                                        "name": name,
+                                        "header_image": game_data.get("header_image", ""),
+                                    }
+                                    if success:
+                                        logger.info(f"✅ Fetched Steam info for app {app_id}: {game_info['name']}")
+                                    else:
+                                        logger.info(f"⚠️ Fetched Steam info for app {app_id} (success=false): {game_info['name']}")
+                                    return game_info
+                        logger.warning(f"❌ No data/name found for app {app_id} (success={success}, has data={('data' in app_data)}, data value={app_data.get('data')})")
                     else:
                         logger.warning(f"❌ App {app_id} not found in Steam API response")
                 else:
@@ -421,19 +424,18 @@ class SteamAuthService:
         for app_id, steam_info in zip(apps_to_fetch, steam_results):
             if isinstance(steam_info, Exception):
                 logger.error(f"❌ Exception fetching app {app_id}: {steam_info}")
-                # Mark as delisted when there's an error
-                newly_delisted.append(app_id)
+                # Don't mark as delisted - could be temporary API error
                 skipped_games += 1
                 continue
             
-            # If no Steam info, mark as delisted (API couldn't find the game)
+            # If no Steam info, use fallback name (don't mark as delisted yet)
             if steam_info is None:
-                logger.warning(f"⚠️ No Steam info returned for app {app_id} - marking as delisted")
-                newly_delisted.append(app_id)
-                skipped_games += 1
-                continue
+                logger.warning(f"⚠️ No Steam info returned for app {app_id} - using fallback data")
+                steam_info = {
+                    "name": f"Game {app_id}",
+                    "header_image": ""
+                }
             
-            # Game has valid name from Steam (could be "To be announced" or real name)
             if isinstance(steam_info, dict) and steam_info.get("name"):
                 try:
                     # Try to get HLTB playtime
@@ -464,35 +466,12 @@ class SteamAuthService:
                     logger.info(f"✅ Added unknown game: {game['name']} ({app_id}) - {score:.1f}% ({total_reviews} reviews)")
                 except Exception as e:
                     logger.error(f"❌ Error processing game {app_id}: {e}", exc_info=True)
-                    newly_delisted.append(app_id)
                     skipped_games += 1
             else:
-                logger.warning(f"⚠️ Invalid Steam data for app {app_id} - marking as delisted")
-                newly_delisted.append(app_id)
+                logger.warning(f"⚠️ Skipping app {app_id}: invalid Steam data structure")
                 skipped_games += 1
         
-        # Save newly delisted games to database (batch commit)
-        if newly_delisted and db:
-            logger.info(f"💾 Saving {len(newly_delisted)} newly discovered delisted games to database...")
-            for app_id in newly_delisted:
-                try:
-                    existing = db.query(DelistedGame).filter(DelistedGame.app_id == app_id).first()
-                    if not existing:
-                        db.add(DelistedGame(app_id=app_id))
-                        logger.info(f"  ➕ Marked app {app_id} as delisted")
-                except Exception as e:
-                    logger.error(f"  ❌ Error marking app {app_id} as delisted: {e}", exc_info=True)
-            
-            try:
-                db.commit()
-                logger.info(f"✅ Successfully saved {len(newly_delisted)} delisted games to database")
-            except Exception as e:
-                logger.error(f"❌ Failed to commit delisted games: {e}", exc_info=True)
-                db.rollback()
-        elif newly_delisted:
-            logger.warning(f"⚠️ Found {len(newly_delisted)} newly delisted games but no DB session available")
-        
-        logger.info(f"✅ Successfully fetched {games_found}/{len(apps_to_fetch)} games from Steam ({skipped_games} delisted, {delisted_skipped} skipped from cache)")
+        logger.info(f"✅ Successfully fetched {games_found}/{len(apps_to_fetch)} games from Steam ({skipped_games} skipped, {delisted_skipped} skipped from cache)")
         return unknown_games
     
     def get_steam_review_score(self, app_id: int) -> Optional[dict]:
