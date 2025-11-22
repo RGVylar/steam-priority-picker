@@ -421,18 +421,17 @@ class SteamAuthService:
         for app_id, steam_info in zip(apps_to_fetch, steam_results):
             if isinstance(steam_info, Exception):
                 logger.error(f"❌ Exception fetching app {app_id}: {steam_info}")
-                # Don't mark as delisted - could be temporary API error
+                # Mark as delisted when there's an error
+                newly_delisted.append(app_id)
                 skipped_games += 1
                 continue
             
-            # If no Steam info, create game with app_id as fallback name
-            # Don't mark as delisted automatically - could be API error, not actual delisting
+            # If no Steam info, mark as delisted (don't create game with fallback name)
             if steam_info is None:
-                logger.warning(f"⚠️ No Steam info returned for app {app_id} - using fallback data")
-                steam_info = {
-                    "name": f"Game {app_id}",
-                    "header_image": ""
-                }
+                logger.warning(f"⚠️ No Steam info returned for app {app_id} - marking as delisted")
+                newly_delisted.append(app_id)
+                skipped_games += 1
+                continue
             
             if isinstance(steam_info, dict) and steam_info.get("name"):
                 try:
@@ -464,15 +463,35 @@ class SteamAuthService:
                     logger.info(f"✅ Added unknown game: {game['name']} ({app_id}) - {score:.1f}% ({total_reviews} reviews)")
                 except Exception as e:
                     logger.error(f"❌ Error processing game {app_id}: {e}", exc_info=True)
+                    newly_delisted.append(app_id)
                     skipped_games += 1
             else:
-                logger.warning(f"⚠️ Skipping app {app_id}: invalid Steam data structure")
+                logger.warning(f"⚠️ Skipping app {app_id}: invalid Steam data structure - marking as delisted")
+                newly_delisted.append(app_id)
                 skipped_games += 1
         
-        # NOTE: We no longer mark games as delisted automatically due to API errors
-        # Instead, we use fallback names (Game {app_id}) and still save the games
+        # Save newly delisted games to database (batch commit)
+        if newly_delisted and db:
+            logger.info(f"💾 Saving {len(newly_delisted)} newly discovered delisted games to database...")
+            for app_id in newly_delisted:
+                try:
+                    existing = db.query(DelistedGame).filter(DelistedGame.app_id == app_id).first()
+                    if not existing:
+                        db.add(DelistedGame(app_id=app_id))
+                        logger.info(f"  ➕ Marked app {app_id} as delisted")
+                except Exception as e:
+                    logger.error(f"  ❌ Error marking app {app_id} as delisted: {e}", exc_info=True)
+            
+            try:
+                db.commit()
+                logger.info(f"✅ Successfully saved {len(newly_delisted)} delisted games to database")
+            except Exception as e:
+                logger.error(f"❌ Failed to commit delisted games: {e}", exc_info=True)
+                db.rollback()
+        elif newly_delisted:
+            logger.warning(f"⚠️ Found {len(newly_delisted)} newly delisted games but no DB session available")
         
-        logger.info(f"✅ Successfully fetched {games_found}/{len(apps_to_fetch)} games from Steam ({skipped_games} skipped, {delisted_skipped} skipped from cache)")
+        logger.info(f"✅ Successfully fetched {games_found}/{len(apps_to_fetch)} games from Steam ({skipped_games} delisted, {delisted_skipped} skipped from cache)")
         return unknown_games
     
     def get_steam_review_score(self, app_id: int) -> Optional[dict]:

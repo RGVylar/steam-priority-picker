@@ -53,7 +53,7 @@ const translations = {
     // Games
     'games.noGames': 'No se encontraron juegos que coincidan con tus filtros.',
     'games.loading': '⏳ Cargando tu librería Steam...',
-    'games.loadingHint': 'Esto puede tomar hasta 40 segundos en la primera carga',
+    'games.loadingHint': 'Esto puede tomar minutos en la primera carga',
     'games.showing': 'Mostrando',
     'games.of': 'de',
     'games.beforeFilters': 'antes de los filtros',
@@ -120,7 +120,7 @@ const translations = {
     // Games
     'games.noGames': 'No games found matching your filters.',
     'games.loading': '⏳ Fetching your Steam library...',
-    'games.loadingHint': 'This may take up to 40 seconds on first load',
+    'games.loadingHint': 'This may take some minutes on first load',
     'games.showing': 'Showing',
     'games.of': 'of',
     'games.beforeFilters': 'before filters',
