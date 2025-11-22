@@ -63,9 +63,16 @@ class GameService:
                 
                 # Migrate to database
                 db = self._get_db_session()
+                games_added = 0
+                
                 for game_data in json_games:
                     # Check if game already exists
-                    existing = db.query(Game).filter(Game.app_id == game_data.get("app_id")).first()
+                    try:
+                        existing = db.query(Game).filter(Game.app_id == game_data.get("app_id")).first()
+                    except Exception as e:
+                        logger.debug(f"Could not query games table: {e}")
+                        existing = None
+                    
                     if not existing:
                         game = Game(
                             app_id=game_data.get("app_id"),
@@ -76,10 +83,20 @@ class GameService:
                             total_reviews=game_data.get("total_reviews", 0)
                         )
                         db.add(game)
+                        games_added += 1
                 
-                db.commit()
-                self.games = [game.to_dict() for game in db.query(Game).all()]
-                logger.info(f"✅ Migrated {len(self.games)} games from JSON to database")
+                if games_added > 0:
+                    db.commit()
+                
+                # Load from database or fallback to in-memory list
+                try:
+                    self.games = [game.to_dict() for game in db.query(Game).all()]
+                except Exception as e:
+                    logger.warning(f"Could not load games from DB after migration: {e}")
+                    # Fallback: keep games from JSON in memory
+                    self.games = json_games
+                
+                logger.info(f"✅ Migrated {games_added} games from JSON to database. Total in memory: {len(self.games)}")
                 self.games_file_path = games_file
                 
             except Exception as e:
