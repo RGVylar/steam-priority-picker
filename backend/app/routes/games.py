@@ -174,6 +174,8 @@ async def get_my_games(
                     continue
             
             if games_added > 0:
+                # FLUSH to ensure games are written to DB before creating user_game records
+                db.flush()
                 logger.info(f"Added {games_added} new games to database")
     
     # NOW create user_game records for all owned games (after unknown games are in DB)
