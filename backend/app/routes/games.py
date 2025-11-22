@@ -151,9 +151,30 @@ async def get_my_games(
         unknown_games = await auth_service.fetch_unknown_games_info(unknown_app_ids_to_fetch)
         
         if unknown_games:
-            # Pass the db session to add_games so it uses the same transaction
-            game_service.add_games(unknown_games, db=db)
-            logger.info(f"Added {len(unknown_games)} new games to database")
+            # Insert games directly into database in the same transaction
+            games_added = 0
+            for game_data in unknown_games:
+                try:
+                    app_id = game_data.get("app_id")
+                    # Check if already exists
+                    existing = db.query(GameModel).filter(GameModel.app_id == app_id).first()
+                    if not existing:
+                        game = GameModel(
+                            app_id=app_id,
+                            name=game_data.get("name", "Unknown"),
+                            header_image=game_data.get("header_image", ""),
+                            playtime_hours=game_data.get("playtime_hours", 0),
+                            score=game_data.get("score", 0),
+                            total_reviews=game_data.get("total_reviews", 0)
+                        )
+                        db.add(game)
+                        games_added += 1
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not add game {game_data.get('app_id')}: {e}")
+                    continue
+            
+            if games_added > 0:
+                logger.info(f"Added {games_added} new games to database")
     
     # NOW create user_game records for all owned games (after unknown games are in DB)
     user_games_response = []
