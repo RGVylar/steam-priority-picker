@@ -8,11 +8,14 @@ from .database import engine
 from .models import Base
 import logging
 
+# Version identifier for deployment tracking
+APP_VERSION = "2025-11-22-fix-fk-violations-v4"
+
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-logger.info(f"🚀 FastAPI app initialized")
+logger.info(f"🚀 FastAPI app initialized - VERSION: {APP_VERSION}")
 logger.info(f"📍 APP_URL configured as: {settings.app_url}")
 logger.info(f"🔑 STEAM_API_KEY set: {'Yes' if settings.steam_api_key else 'No'}")
 

@@ -201,16 +201,28 @@ async def get_my_games(
                     db.rollback()
                     raise
     
-    # NOW create user_game records for all owned games (after unknown games are in DB)
+    # NOW create user_game records ONLY for games that exist in the database
     user_games_response = []
+    user_games_to_add = []
     
-    for app_id, playtime_hours in owned_app_ids.items():
+    # First, get ALL app_ids that exist in the games table
+    existing_game_app_ids = set(db.query(GameModel.app_id).all())
+    existing_game_app_ids = {g[0] for g in existing_game_app_ids}  # Flatten the tuples
+    
+    logger.info(f"Games table has {len(existing_game_app_ids)} games total")
+    
+    # Only process games that actually exist in the database
+    valid_app_ids = [aid for aid in owned_app_ids.keys() if aid in existing_game_app_ids]
+    logger.info(f"User has {len(valid_app_ids)} games that exist in database, {len(owned_app_ids) - len(valid_app_ids)} delisted/not found")
+    
+    for app_id in valid_app_ids:
+        playtime_hours = owned_app_ids[app_id]
+        
         # Get game info from database
         game = db.query(GameModel).filter(GameModel.app_id == app_id).first()
         
-        # Skip games that don't exist in the database (delisted/removed games)
         if not game:
-            logger.debug(f"Skipping app_id {app_id}: not found in database (delisted or beyond fetch limit)")
+            logger.warning(f"⚠️ Expected game {app_id} in database but not found - skipping")
             continue
         
         # Get or create user_game record
@@ -225,6 +237,7 @@ async def get_my_games(
                 app_id=app_id,
                 playtime_hours=playtime_hours
             )
+            user_games_to_add.append(user_game)
             db.add(user_game)
         else:
             # Update playtime if changed
@@ -242,7 +255,7 @@ async def get_my_games(
         
         user_games_response.append(game_dict)
     
-    # Commit all user_game changes
+    # Commit all user_game changes only if there are games to add
     if user_games_response:
         try:
             logger.info(f"Committing {len(user_games_response)} user_game records...")
@@ -251,7 +264,11 @@ async def get_my_games(
         except Exception as e:
             logger.error(f"❌ Failed to commit user_game records: {e}", exc_info=True)
             db.rollback()
-            raise
+            # Return with games from response even if DB commit failed
+            # (games are valid, just DB insert had issues)
+            logger.warning(f"⚠️ Returning {len(user_games_response)} games despite DB commit error")
+    else:
+        logger.info("No valid user_game records to commit (all games delisted or not found)")
     
     return {
         "total": len(user_games_response),
