@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 
 export function FilterPanel({ filters, onClose, played }) {
+  const { t } = useLanguage()
   const [expandedSections, setExpandedSections] = useState({
     playtime: true,
     score: true,
@@ -20,23 +22,23 @@ export function FilterPanel({ filters, onClose, played }) {
   }
 
   const playtimeRanges = [
-    { label: '0-5 hours', min: 0, max: 5 },
-    { label: '5-10 hours', min: 5, max: 10 },
-    { label: '10-20 hours', min: 10, max: 20 },
-    { label: '20+ hours', min: 20, max: Infinity },
+    { label: t('filter.playtime0to5'), min: 0, max: 5 },
+    { label: t('filter.playtime5to10'), min: 5, max: 10 },
+    { label: t('filter.playtime10to20'), min: 10, max: 20 },
+    { label: t('filter.playtime20plus'), min: 20, max: Infinity },
   ]
 
   const scoreRanges = [
-    { label: '75-100%', min: 75, max: 100 },
-    { label: '50-75%', min: 50, max: 75 },
-    { label: 'Below 50%', min: 0, max: 50 },
+    { label: t('filter.score75to100'), min: 75, max: 100 },
+    { label: t('filter.score50to75'), min: 50, max: 75 },
+    { label: t('filter.scoreBelow50'), min: 0, max: 50 },
   ]
 
   const sortOptions = [
-    { label: 'Playtime (Low to High)', value: 'playtime_asc' },
-    { label: 'Playtime (High to Low)', value: 'playtime_desc' },
-    { label: 'Score (High to Low)', value: 'score_desc' },
-    { label: 'Score (Low to High)', value: 'score_asc' },
+    { label: t('filter.sortPlaytimeAsc'), value: 'playtime_asc' },
+    { label: t('filter.sortPlaytimeDesc'), value: 'playtime_desc' },
+    { label: t('filter.sortScoreDesc'), value: 'score_desc' },
+    { label: t('filter.sortScoreAsc'), value: 'score_asc' },
   ]
 
   const activeFilterCount = [
@@ -97,7 +99,7 @@ export function FilterPanel({ filters, onClose, played }) {
 
       {/* Playtime Filter */}
       <CollapsibleSection 
-        title="Playtime" 
+        title={t('filter.playtime')} 
         section="playtime"
         activeCount={filters.playtimeMin !== 0 || filters.playtimeMax !== Infinity ? 1 : 0}
       >
@@ -118,7 +120,7 @@ export function FilterPanel({ filters, onClose, played }) {
 
       {/* Score Filter */}
       <CollapsibleSection 
-        title="Steam Score" 
+        title={t('filter.score')} 
         section="score"
         activeCount={filters.scoreMin !== 0 || filters.scoreMax !== 100 ? 1 : 0}
       >
@@ -139,13 +141,13 @@ export function FilterPanel({ filters, onClose, played }) {
 
       {/* Reviews Filter */}
       <CollapsibleSection 
-        title="Reviews" 
+        title={t('filter.reviews')} 
         section="reviews"
         activeCount={filters.reviewsMin !== 0 || filters.reviewsMax !== Infinity ? 1 : 0}
       >
         <div className="space-y-3">
           <div>
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Minimum: {filters.reviewsMin.toLocaleString()}</label>
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">{t('filter.reviewsMinimum')} {filters.reviewsMin.toLocaleString()}</label>
             <input
               type="range"
               min="0"
@@ -157,7 +159,7 @@ export function FilterPanel({ filters, onClose, played }) {
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Maximum: {filters.reviewsMax === Infinity ? '∞' : filters.reviewsMax.toLocaleString()}</label>
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">{t('filter.reviewsMaximum')} {filters.reviewsMax === Infinity ? '∞' : filters.reviewsMax.toLocaleString()}</label>
             <input
               type="range"
               min="0"
@@ -172,7 +174,7 @@ export function FilterPanel({ filters, onClose, played }) {
       </CollapsibleSection>
 
       {/* Sort */}
-      <CollapsibleSection title="Sort By" section="sort">
+      <CollapsibleSection title={t('filter.sort')} section="sort">
         <select
           value={filters.sortBy}
           onChange={(e) => filters.setSortBy(e.target.value)}
@@ -188,7 +190,7 @@ export function FilterPanel({ filters, onClose, played }) {
 
       {/* Played Games Filter */}
       <CollapsibleSection 
-        title="Played Status" 
+        title={t('filter.played')} 
         section="played"
         activeCount={filters.showPlayed !== 'all' ? 1 : 0}
       >
@@ -202,7 +204,7 @@ export function FilterPanel({ filters, onClose, played }) {
               onChange={() => filters.setShowPlayed('all')}
               className="w-4 h-4 text-blue-600"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">All Games</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">{t('filter.playedAll')}</span>
           </label>
           <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded transition-colors">
             <input
@@ -213,7 +215,7 @@ export function FilterPanel({ filters, onClose, played }) {
               onChange={() => filters.setShowPlayed('played')}
               className="w-4 h-4 text-blue-600"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Played</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">{t('filter.playedPlayed')}</span>
             <span className="ml-auto text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-0.5 rounded-full">
               {playedCount}
             </span>
@@ -227,7 +229,7 @@ export function FilterPanel({ filters, onClose, played }) {
               onChange={() => filters.setShowPlayed('unplayed')}
               className="w-4 h-4 text-blue-600"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Unplayed</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">{t('filter.playedUnplayed')}</span>
           </label>
         </div>
       </CollapsibleSection>
@@ -248,7 +250,7 @@ export function FilterPanel({ filters, onClose, played }) {
           }}
           className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors"
         >
-          Reset Filters
+          {t('filter.reset')}
         </button>
       </div>
     </div>

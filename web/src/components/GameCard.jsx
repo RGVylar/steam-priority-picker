@@ -1,4 +1,7 @@
+import { useLanguage } from '../context/LanguageContext'
+
 export function GameCard({ game, isPlayed, onTogglePlayed }) {
+  const { t } = useLanguage()
   const getPlaytimeBadge = (hours) => {
     if (hours < 5) return { text: '< 5 hrs', color: 'bg-green-100 text-green-800' }
     if (hours < 10) return { text: '5-10 hrs', color: 'bg-blue-100 text-blue-800' }
@@ -100,9 +103,9 @@ export function GameCard({ game, isPlayed, onTogglePlayed }) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 px-3 py-2 bg-gray-500 text-white text-sm font-medium rounded hover:bg-gray-600 transition-colors text-center"
-            title="HLTB page not found for this game"
+            title={t('links.hltbNotFound')}
           >
-            HLTB
+            {t('links.hltb')}
           </a>
         )}
         <button
@@ -112,9 +115,9 @@ export function GameCard({ game, isPlayed, onTogglePlayed }) {
               ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-gray-400 text-white hover:bg-gray-500'
           }`}
-          title={isPlayed ? 'Mark as unplayed' : 'Mark as played'}
+          title={isPlayed ? t('games.markAsUnplayed') : t('games.markAsPlayed')}
         >
-          {isPlayed ? '✓ Played' : '○ Play'}
+          {isPlayed ? t('games.played') : t('games.unplayed')}
         </button>
       </div>
     </div>

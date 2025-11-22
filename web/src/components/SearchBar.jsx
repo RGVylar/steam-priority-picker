@@ -1,10 +1,13 @@
+import { useLanguage } from '../context/LanguageContext'
+
 export function SearchBar({ value, onChange }) {
+  const { t } = useLanguage()
   return (
     <div className="mb-8">
       <div className="relative">
         <input
           type="text"
-          placeholder="Search games... (Cmd/Ctrl + K)"
+          placeholder={t('filter.search')}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="w-full px-4 py-3 pl-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"

@@ -1,7 +1,9 @@
 import GameCard from './GameCard'
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll'
+import { useLanguage } from '../context/LanguageContext'
 
 export function GameList({ games, total, loading, filters, togglePlayed, isPlayed }) {
+  const { t } = useLanguage()
   const { displayedItems, hasMore, observerTarget } = useInfiniteScroll(games, 24)
 
   if (loading) {
@@ -11,10 +13,10 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 dark:border-gray-600 border-t-blue-600 dark:border-t-blue-400"></div>
         </div>
         <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          ⏳ Fetching your Steam library...
+          {t('games.loading')}
         </p>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          This may take up to 40 seconds on the first load
+          {t('games.loadingHint')}
         </p>
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
           {Array.from({ length: 12 }).map((_, i) => (
@@ -28,7 +30,7 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
   if (games.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 dark:text-gray-400 text-lg">No games found matching your filters.</p>
+        <p className="text-gray-500 dark:text-gray-400 text-lg">{t('games.noGames')}</p>
         <button
           onClick={() => {
             filters.setPlaytimeMin(0)
@@ -39,7 +41,7 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
           }}
           className="mt-4 px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
         >
-          Reset Filters
+          {t('filter.reset')}
         </button>
       </div>
     )
@@ -48,9 +50,9 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
   return (
     <>
       <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        Showing <span className="font-medium text-gray-900 dark:text-white">{displayedItems.length}</span> of <span className="font-medium text-gray-900 dark:text-white">{games.length}</span> games
+        {t('games.showing')} <span className="font-medium text-gray-900 dark:text-white">{displayedItems.length}</span> {t('games.of')} <span className="font-medium text-gray-900 dark:text-white">{games.length}</span> {t('header.games')}
         {games.length < total && (
-          <span className="text-gray-400 dark:text-gray-500 ml-2">({total} before filters)</span>
+          <span className="text-gray-400 dark:text-gray-500 ml-2">({total} {t('games.beforeFilters')})</span>
         )}
       </div>
       

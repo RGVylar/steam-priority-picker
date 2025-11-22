@@ -1,10 +1,11 @@
 import icon from '../image/icon.svg'
 import { LoginButton } from './LoginButton'
 import { useAuthContext } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 
 export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, dbTotal = 0 }) {
   const { isAuthenticated } = useAuthContext()
-  
+  const { language, toggleLanguage, t } = useLanguage()
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -16,17 +17,17 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, dbTotal = 0 
           />
           <div className="flex flex-col">
             <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              Steam Priority Picker
+              {t('header.title')}
             </h1>
             <div className="flex items-center gap-4 mt-1">
               {isAuthenticated && (
                 <p className="text-xs text-green-600 dark:text-green-400 font-medium">
-                  📚 Tu librería Steam
+                  {t('header.library')}
                 </p>
               )}
               {dbTotal > 0 && (
                 <p className="text-xs text-blue-500 dark:text-blue-400 font-medium">
-                  � Catálogo: {dbTotal.toLocaleString()} juegos
+                  {t('header.catalog')}: {dbTotal.toLocaleString()} {t('header.games')}
                 </p>
               )}
             </div>
@@ -37,9 +38,20 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, dbTotal = 0 
           <LoginButton />
           
           <button 
+            onClick={toggleLanguage}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            aria-label={t('header.toggleLanguage')}
+            title={language === 'es' ? 'English' : 'Español'}
+          >
+            <span className="text-sm font-bold text-gray-700 dark:text-gray-200">
+              {language.toUpperCase()}
+            </span>
+          </button>
+          
+          <button 
             onClick={onDarkModeToggle}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            aria-label="Toggle dark mode"
+            aria-label={t('header.toggleDarkMode')}
             title={isDarkMode ? 'Light mode' : 'Dark mode'}
           >
             {isDarkMode ? (
@@ -56,7 +68,7 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, dbTotal = 0 
           <button 
             onClick={onMenuClick}
             className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            aria-label="Toggle filters"
+            aria-label={t('header.toggleFilters')}
           >
             <svg className="w-6 h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
