@@ -177,18 +177,8 @@ async def get_my_games(
                         # Check if already exists
                         existing = db.query(GameModel).filter(GameModel.app_id == app_id).first()
                         if existing:
-                            # Update if we found a real name (not a generic "Game {id}" name)
-                            if not new_name.startswith("Game ") and existing.name.startswith("Game "):
-                                logger.info(f"⬆️ Updating game {app_id}: '{existing.name}' → '{new_name}'")
-                                existing.name = new_name
-                                existing.header_image = game_data.get("header_image", "") or existing.header_image
-                                existing.playtime_hours = game_data.get("playtime_hours", 0) or existing.playtime_hours
-                                existing.score = game_data.get("score", 0) or existing.score
-                                existing.total_reviews = game_data.get("total_reviews", 0) or existing.total_reviews
-                                games_added += 1
-                                logger.info(f"✅ Updated game {app_id} in session")
-                            else:
-                                logger.info(f"Game {app_id} already has correct name, skipping")
+                            # Game already exists in database, skip
+                            logger.info(f"Game {app_id} already in database, skipping")
                             continue
                         
                         game = GameModel(
