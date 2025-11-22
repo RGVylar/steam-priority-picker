@@ -142,11 +142,14 @@ async def get_my_games(
     logger.info(f"User owns {len(owned_app_ids)} games")
     
     # Find unknown games - query DB directly
-    known_games = db.query(GameModel.app_id).filter(GameModel.app_id.in_(list(owned_app_ids.keys()))).all()
+    known_games = db.query(GameModel.app_id, GameModel.name).filter(GameModel.app_id.in_(list(owned_app_ids.keys()))).all()
     known_app_ids = {g.app_id for g in known_games}
-    unknown_app_ids = [aid for aid in owned_app_ids.keys() if aid not in known_app_ids]
+    games_with_generic_names = {g.app_id for g in known_games if g.name.startswith("Game ")}
     
-    logger.info(f"Found {len(known_app_ids)} known games, {len(unknown_app_ids)} unknown games")
+    # Unknown games = either not in DB, or have generic names (need to refetch from Steam)
+    unknown_app_ids = [aid for aid in owned_app_ids.keys() if aid not in known_app_ids or aid in games_with_generic_names]
+    
+    logger.info(f"Found {len(known_app_ids)} known games, {len(unknown_app_ids)} unknown/generic games ({len(games_with_generic_names)} with generic names)")
     
     # Fetch and save unknown games FIRST (process in batches of 50 to avoid timeouts)
     if unknown_app_ids:

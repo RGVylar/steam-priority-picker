@@ -267,8 +267,8 @@ class SteamAuthService:
             logger.error(f"Error fetching owned games: {e}")
             return None
     
-    async def get_game_info_from_steam(self, app_id: int) -> Optional[dict]:
-        """Get basic game info from Steam Store API"""
+    async def get_game_info_from_steam(self, app_id: int, retry_count: int = 0, max_retries: int = 3) -> Optional[dict]:
+        """Get basic game info from Steam Store API with retry logic for rate limits"""
         if not self.steam_api_key or self.steam_api_key == "your_steam_api_key_here":
             return None
         
@@ -308,6 +308,16 @@ class SteamAuthService:
                         logger.warning(f"❌ No data/name found for app {app_id} (success={success}, has data={('data' in app_data)}, data value={app_data.get('data')})")
                     else:
                         logger.warning(f"❌ App {app_id} not found in Steam API response")
+                elif response.status_code in (429, 403):
+                    # Rate limit or forbidden - these are temporary/transient issues
+                    if retry_count < max_retries:
+                        wait_time = 2 ** retry_count  # Exponential backoff: 1s, 2s, 4s
+                        logger.warning(f"⏳ Got HTTP {response.status_code} for app {app_id}, retrying in {wait_time}s (attempt {retry_count + 1}/{max_retries})...")
+                        import asyncio
+                        await asyncio.sleep(wait_time)
+                        return await self.get_game_info_from_steam(app_id, retry_count + 1, max_retries)
+                    else:
+                        logger.warning(f"❌ Gave up on app {app_id} after {max_retries} retries (HTTP {response.status_code})")
                 else:
                     logger.warning(f"Steam API error for app {app_id}: HTTP {response.status_code}")
         except Exception as e:
@@ -419,7 +429,6 @@ class SteamAuthService:
         # Process results and collect newly delisted games
         games_found = 0
         skipped_games = 0
-        newly_delisted = []
         
         for app_id, steam_info in zip(apps_to_fetch, steam_results):
             if isinstance(steam_info, Exception):
