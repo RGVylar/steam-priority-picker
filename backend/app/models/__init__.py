@@ -31,6 +31,7 @@ class Game(Base):
     playtime_hours = Column(Float, default=0)  # Generic/average playtime
     score = Column(Float, default=0)
     total_reviews = Column(Integer, default=0)
+    hltb_url = Column(String(500), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -42,7 +43,10 @@ class Game(Base):
             "header_image": self.header_image,
             "playtime_hours": self.playtime_hours,
             "score": self.score,
-            "total_reviews": self.total_reviews
+            "total_reviews": self.total_reviews,
+            "steam_url": f"https://store.steampowered.com/app/{self.app_id}/",
+            "image_url": self.header_image,
+            "hltb_url": self.hltb_url
         }
     
     def __repr__(self):
