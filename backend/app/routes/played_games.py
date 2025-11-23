@@ -57,7 +57,7 @@ async def sync_played_games(
         # Delete all existing played games for this user
         deleted_count = db.query(UserPlayedGame).filter(
             UserPlayedGame.user_id == current_user.id
-        ).delete()
+        ).delete(synchronize_session=False)
         logger.info(f"Deleted {deleted_count} played games for user {current_user.id}")
         
         # Add new played games

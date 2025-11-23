@@ -60,7 +60,7 @@ async def auth_callback(
     return RedirectResponse(url=f"{settings.app_url}?token={token}")
 
 @router.get("/user")
-async def get_current_user(
+async def get_user_info(
     authorization: str = Header(None),
     db: Session = Depends(get_db)
 ):
@@ -87,6 +87,29 @@ async def get_current_user(
         "avatar_url": user.avatar_url,
         "profile_url": user.profile_url,
     }
+
+
+async def get_current_user(
+    authorization: str = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Dependency for getting current authenticated user (returns User object)"""
+    
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    # Extract token from "Bearer <token>"
+    try:
+        token = authorization.split(" ")[1]
+    except IndexError:
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    
+    user = auth_service.verify_token(db, token)
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    
+    return user
 
 @router.post("/logout")
 async def logout(
