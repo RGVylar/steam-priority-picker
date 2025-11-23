@@ -73,7 +73,7 @@ export function GameCard({ game, isPlayed, onTogglePlayed }) {
         {/* Additional Info */}
         <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
           <p className="text-xs text-gray-600 dark:text-gray-400">
-            Playtime: <span className="font-medium text-gray-900 dark:text-white">{game.playtime_hours.toFixed(1)} hrs</span>
+            {t('games.playtime')}: <span className="font-medium text-gray-900 dark:text-white">{game.playtime_hours.toFixed(1)} hrs</span>
           </p>
         </div>
       </div>

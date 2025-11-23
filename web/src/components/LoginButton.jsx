@@ -12,7 +12,14 @@ export function LoginButton() {
           className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600"
         />
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{user.username}</span>
+          <a 
+            href={user.profile_url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-2 py-1 rounded transition cursor-pointer"
+          >
+            {user.username}
+          </a>
           <button
             onClick={logout}
             disabled={loading}
