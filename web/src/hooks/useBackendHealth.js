@@ -36,8 +36,9 @@ export function useBackendHealth() {
 
     checkHealth();
 
-    // Check every 60 seconds (balance between detection and resource usage)
-    const interval = setInterval(checkHealth, 60000);
+    // Check every 10 minutes (600 seconds) to keep Render.com from sleeping (15 min timeout)
+    // and reduce clutter in logs
+    const interval = setInterval(checkHealth, 600000);
     return () => clearInterval(interval);
   }, []);
 
