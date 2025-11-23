@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import jwt
 import logging
 from sqlalchemy.orm import Session
+from howlongtobeatpy import HowLongToBeat
 from ..models import User, Session as SessionModel
 from ..config import settings
 
@@ -343,27 +344,22 @@ class SteamAuthService:
         
         return None
     
-    async def get_hltb_playtime(self, game_name: str) -> Optional[float]:
-        """Get playtime from HowLongToBeat"""
+    async def get_hltb_info(self, game_name: str) -> dict:
+        """Get playtime and URL from HowLongToBeat using howlongtobeatpy library"""
         try:
-            async with httpx.AsyncClient() as client:
-                # HowLongToBeat search
-                response = await client.post(
-                    "https://howlongtobeat.com/api/search",
-                    json={"searchType": "games", "searchQuery": game_name},
-                    timeout=5
-                )
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    if data.get("data") and len(data["data"]) > 0:
-                        # Get main story playtime
-                        playtime = data["data"][0].get("gameplayMain")
-                        return float(playtime) if playtime else 0
+            results = await HowLongToBeat().async_search(game_name)
+            if results and len(results) > 0:
+                # Get the best match (first result has highest similarity)
+                best_match = results[0]
+                return {
+                    "playtime": best_match.main_story if best_match.main_story else 0,
+                    "url": f"https://howlongtobeat.com/game/{best_match.game_id}" if best_match.game_id else None
+                }
         except Exception as e:
-            logger.warning(f"Error fetching HLTB info for {game_name}: {e}")
+            # Silently fail - HLTB is optional
+            pass
         
-        return None
+        return {"playtime": None, "url": None}
     
     async def fetch_unknown_games_info(self, unknown_app_ids: list, db=None) -> list:
         """Fetch info for unknown games from Steam and HowLongToBeat
@@ -482,8 +478,8 @@ class SteamAuthService:
             
             if isinstance(steam_info, dict) and steam_info.get("name"):
                 try:
-                    # Try to get HLTB playtime
-                    playtime = await self.get_hltb_playtime(steam_info["name"])
+                    # Try to get HLTB info (playtime and URL)
+                    hltb_info = await self.get_hltb_info(steam_info["name"])
                     
                     # Get Steam review score and total reviews
                     score = 0
@@ -501,9 +497,10 @@ class SteamAuthService:
                         "app_id": app_id,
                         "name": steam_info["name"],
                         "header_image": steam_info.get("header_image", ""),
-                        "playtime_hours": playtime or 0,
+                        "playtime_hours": hltb_info.get("playtime") or 0,
                         "score": score,
-                        "total_reviews": total_reviews
+                        "total_reviews": total_reviews,
+                        "hltb_url": hltb_info.get("url")
                     }
                     unknown_games.append(game)
                     games_found += 1

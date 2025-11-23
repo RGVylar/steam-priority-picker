@@ -187,7 +187,8 @@ async def get_my_games(
                             header_image=game_data.get("header_image", ""),
                             playtime_hours=game_data.get("playtime_hours", 0),
                             score=game_data.get("score", 0),
-                            total_reviews=game_data.get("total_reviews", 0)
+                            total_reviews=game_data.get("total_reviews", 0),
+                            hltb_url=game_data.get("hltb_url")
                         )
                         db.add(game)
                         games_added += 1
@@ -256,6 +257,7 @@ async def get_my_games(
         
         # Build response with user's personal playtime using game.to_dict()
         game_dict = game.to_dict()
+        game_dict["hltb_hours"] = game.playtime_hours  # Save HLTB time before override
         game_dict["playtime_hours"] = playtime_hours  # Override with user's personal playtime
         
         user_games_response.append(game_dict)

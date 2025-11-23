@@ -140,11 +140,13 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
       )
     }
 
-    // Filter by playtime
+    // Filter by playtime (use HLTB time, fallback to personal time)
     if (filters.playtimeMin !== undefined && filters.playtimeMax !== undefined) {
       filtered = filtered.filter(
-        (game) => game.playtime_hours >= filters.playtimeMin && 
-                  game.playtime_hours <= filters.playtimeMax
+        (game) => {
+          const timeToUse = game.hltb_hours > 0 ? game.hltb_hours : game.playtime_hours
+          return timeToUse >= filters.playtimeMin && timeToUse <= filters.playtimeMax
+        }
       )
     }
 
@@ -171,11 +173,19 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
       filtered = filtered.filter((game) => !played.has(game.app_id))
     }
 
-    // Sort
+    // Sort (use HLTB time for playtime sorting)
     if (filters.sortBy === 'playtime_asc') {
-      filtered.sort((a, b) => a.playtime_hours - b.playtime_hours)
+      filtered.sort((a, b) => {
+        const timeA = a.hltb_hours > 0 ? a.hltb_hours : a.playtime_hours
+        const timeB = b.hltb_hours > 0 ? b.hltb_hours : b.playtime_hours
+        return timeA - timeB
+      })
     } else if (filters.sortBy === 'playtime_desc') {
-      filtered.sort((a, b) => b.playtime_hours - a.playtime_hours)
+      filtered.sort((a, b) => {
+        const timeA = a.hltb_hours > 0 ? a.hltb_hours : a.playtime_hours
+        const timeB = b.hltb_hours > 0 ? b.hltb_hours : b.playtime_hours
+        return timeB - timeA
+      })
     } else if (filters.sortBy === 'score_asc') {
       filtered.sort((a, b) => a.score - b.score)
     } else if (filters.sortBy === 'score_desc') {

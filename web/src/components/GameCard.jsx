@@ -9,7 +9,9 @@ export function GameCard({ game, isPlayed, onTogglePlayed }) {
     return { text: '20+ hrs', color: 'bg-red-100 text-red-800' }
   }
 
-  const badge = getPlaytimeBadge(game.playtime_hours)
+  // Use HLTB time for badge, fallback to personal playtime if HLTB not available
+  const timeForBadge = game.hltb_hours > 0 ? game.hltb_hours : game.playtime_hours
+  const badge = getPlaytimeBadge(timeForBadge)
   const imageUrl = game.image_url || `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.app_id}/header.jpg`
 
   return (
@@ -71,10 +73,15 @@ export function GameCard({ game, isPlayed, onTogglePlayed }) {
         </div>
 
         {/* Additional Info */}
-        <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+        <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 space-y-1">
           <p className="text-xs text-gray-600 dark:text-gray-400">
             {t('games.playtime')}: <span className="font-medium text-gray-900 dark:text-white">{game.playtime_hours.toFixed(1)} hrs</span>
           </p>
+          {game.hltb_hours > 0 && (
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              {t('games.timeToBeat')}: <span className="font-medium text-gray-900 dark:text-white">{game.hltb_hours.toFixed(1)} hrs</span>
+            </p>
+          )}
         </div>
       </div>
 
