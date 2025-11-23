@@ -14,6 +14,7 @@ import { useAuthContext } from './context/AuthContext'
 import { useLanguage } from './context/LanguageContext'
 import { useSearchParams } from 'react-router-dom'
 import appIcon from './image/icon.svg'
+import backgroundIcon from './image/background.svg'
 
 function App() {
   const [showMobileFilters, setShowMobileFilters] = useState(false)
@@ -66,8 +67,8 @@ function App() {
           <div 
             className="fixed inset-0 z-0 transition-opacity duration-1000 ease-in-out flex items-center justify-center"
             style={{
-              backgroundImage: `url(${appIcon})`,
-              backgroundSize: '1200px 1200px',
+              backgroundImage: `url(${backgroundIcon})`,
+              backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
               opacity: hoveredGame ? 0 : 0.15,
