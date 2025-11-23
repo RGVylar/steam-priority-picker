@@ -257,7 +257,7 @@ async def get_my_games(
         
         # Build response with user's personal playtime using game.to_dict()
         game_dict = game.to_dict()
-        game_dict["hltb_hours"] = game.playtime_hours  # Save HLTB time before override
+        # game_dict already has hltb_hours from to_dict() - don't override it
         game_dict["playtime_hours"] = playtime_hours  # Override with user's personal playtime
         
         user_games_response.append(game_dict)

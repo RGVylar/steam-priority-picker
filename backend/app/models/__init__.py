@@ -42,6 +42,7 @@ class Game(Base):
             "name": self.name,
             "header_image": self.header_image,
             "playtime_hours": self.playtime_hours,
+            "hltb_hours": self.playtime_hours,  # Currently playtime_hours contains HLTB data
             "score": self.score,
             "total_reviews": self.total_reviews,
             "steam_url": f"https://store.steampowered.com/app/{self.app_id}/",
