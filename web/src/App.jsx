@@ -15,6 +15,8 @@ import { useSearchParams } from 'react-router-dom'
 
 function App() {
   const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const [hoveredGame, setHoveredGame] = useState(null)
+  const [prevHoveredGame, setPrevHoveredGame] = useState(null)
   const { isDark, toggle: toggleDarkMode } = useDarkMode()
   const [searchParams, setSearchParams] = useSearchParams()
   const { isAuthenticated, token } = useAuthContext()
@@ -22,6 +24,13 @@ function App() {
   const filters = useFilters()
   const { played, togglePlayed, isPlayed, getPlayedCount } = usePlayed()
   const { games, total, loading, error, dbTotal, forceRefresh } = useGames(filters, played, isAuthenticated, token)
+
+  // Handle smooth transition between background images
+  useEffect(() => {
+    if (hoveredGame) {
+      setPrevHoveredGame(hoveredGame)
+    }
+  }, [hoveredGame])
 
   // Handle auth token from URL
   useEffect(() => {
@@ -43,7 +52,25 @@ function App() {
   }, [searchParams, setSearchParams])
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-100 dark:bg-slate-900 relative overflow-hidden">
+      {/* Subtle gradient overlay for depth */}
+      <div className="fixed inset-0 z-0 bg-gradient-to-br from-white/30 via-transparent to-gray-200/30 dark:from-slate-800/20 dark:via-transparent dark:to-slate-950/40" />
+      
+      {/* Dynamic Background Image - Always render but fade opacity */}
+      <div 
+        className="fixed inset-0 z-0 transition-opacity duration-1000 ease-in-out"
+        style={{
+          backgroundImage: prevHoveredGame 
+            ? `url(${prevHoveredGame.image_url || `https://cdn.cloudflare.steamstatic.com/steam/apps/${prevHoveredGame.app_id}/header.jpg`})`
+            : 'none',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: hoveredGame ? 0.5 : 0,
+          filter: 'blur(30px)',
+        }}
+      />
+      
+      <div className="relative z-10">
       <Header 
         onMenuClick={() => setShowMobileFilters(!showMobileFilters)}
         onDarkModeToggle={toggleDarkMode}
@@ -160,6 +187,7 @@ function App() {
                   filters={filters}
                   togglePlayed={togglePlayed}
                   isPlayed={isPlayed}
+                  onGameHover={setHoveredGame}
                 />
               </>
             )}
@@ -180,6 +208,7 @@ function App() {
       
       {/* Ko-fi Support Button */}
       <KofiButton />
+      </div>
     </div>
   )
 }

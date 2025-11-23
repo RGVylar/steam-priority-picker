@@ -1,6 +1,6 @@
 import { useLanguage } from '../context/LanguageContext'
 
-export function GameCard({ game, isPlayed, onTogglePlayed }) {
+export function GameCard({ game, isPlayed, onTogglePlayed, onMouseEnter, onMouseLeave }) {
   const { t } = useLanguage()
   const getPlaytimeBadge = (hours) => {
     if (hours < 5) return { text: '< 5 hrs', color: 'bg-green-100 text-green-800' }
@@ -15,7 +15,11 @@ export function GameCard({ game, isPlayed, onTogglePlayed }) {
   const imageUrl = game.image_url || `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.app_id}/header.jpg`
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg dark:shadow-gray-950 transition-shadow overflow-hidden flex flex-col h-full">
+    <div 
+      className="glass hover-glow rounded-2xl overflow-hidden flex flex-col h-full border border-white/20 transition-all duration-300"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       {/* Image Container - Header image horizontal aspect ratio */}
       <div className="w-full aspect-video bg-gray-200 dark:bg-gray-700 overflow-hidden relative group">
         <img 

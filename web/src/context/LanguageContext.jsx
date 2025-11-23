@@ -48,7 +48,7 @@ const translations = {
     'filter.playedPlayed': 'Jugados',
     'filter.playedUnplayed': 'No jugados',
     
-    'filter.search': 'Buscar juegos...',
+    'filter.search': 'Buscar juegos...(Ctrl + F)',
     'filter.reset': 'Resetear filtros',
     'filter.activeFilters': 'Filtros activos',
     
@@ -131,7 +131,7 @@ const translations = {
     'filter.playedPlayed': 'Played',
     'filter.playedUnplayed': 'Unplayed',
     
-    'filter.search': 'Search games... (Cmd/Ctrl + K)',
+    'filter.search': 'Search games... (Ctrl + F)',
     'filter.reset': 'Reset filters',
     'filter.activeFilters': 'Active filters',
     

@@ -7,7 +7,7 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, dbTotal = 0,
   const { isAuthenticated } = useAuthContext()
   const { language, toggleLanguage, t } = useLanguage()
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+    <header className="glass-dark float-elevated sticky top-0 z-50 border-b border-white/10 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 py-3">
         {/* Top row: Logo + Buttons */}
         <div className="flex justify-between items-center">

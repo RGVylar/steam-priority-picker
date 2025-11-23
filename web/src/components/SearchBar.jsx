@@ -6,6 +6,19 @@ export function SearchBar({ value, onChange }) {
   const { t } = useLanguage()
   const [localValue, setLocalValue] = useState(value)
   const debouncedValue = useDebounce(localValue, 500)
+  const inputRef = React.useRef(null)
+
+  // Handle Ctrl+F keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault()
+        inputRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   // Update parent when debounced value changes
   const handleChange = (newValue) => {
@@ -21,6 +34,7 @@ export function SearchBar({ value, onChange }) {
     <div className="mb-8">
       <div className="relative">
         <input
+          ref={inputRef}
           type="text"
           placeholder={t('filter.search')}
           value={localValue}

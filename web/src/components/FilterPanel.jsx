@@ -95,9 +95,9 @@ export function FilterPanel({ filters, onClose, played }) {
   )
 
   return (
-    <div className="dark:bg-gray-800 h-full overflow-y-auto">
+    <div className="frosted-glass h-full overflow-y-auto border-r border-white/10">
       {/* Mobile close button */}
-      <div className="lg:hidden sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between z-10">
+      <div className="lg:hidden sticky top-0 glass-dark border-b border-white/10 px-4 py-3 flex items-center justify-between z-10 backdrop-blur-xl">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('filter.title')}</h2>
         <button
           onClick={onClose}

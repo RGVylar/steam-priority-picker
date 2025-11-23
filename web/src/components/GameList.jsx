@@ -2,7 +2,7 @@ import GameCard from './GameCard'
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll'
 import { useLanguage } from '../context/LanguageContext'
 
-export function GameList({ games, total, loading, filters, togglePlayed, isPlayed }) {
+export function GameList({ games, total, loading, filters, togglePlayed, isPlayed, onGameHover }) {
   const { t } = useLanguage()
   const { displayedItems, hasMore, observerTarget } = useInfiniteScroll(games, 24)
 
@@ -63,6 +63,8 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
             game={game} 
             isPlayed={isPlayed(game.app_id)}
             onTogglePlayed={() => togglePlayed(game.app_id)}
+            onMouseEnter={() => onGameHover && onGameHover(game)}
+            onMouseLeave={() => onGameHover && onGameHover(null)}
           />
         ))}
       </div>
