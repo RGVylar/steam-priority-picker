@@ -10,6 +10,7 @@ import { useFilters } from './hooks/useFilters'
 import { useDarkMode } from './hooks/useDarkMode'
 import { usePlayed } from './hooks/usePlayed'
 import { useAuthContext } from './context/AuthContext'
+import { useLanguage } from './context/LanguageContext'
 import { useSearchParams } from 'react-router-dom'
 
 function App() {
@@ -17,7 +18,7 @@ function App() {
   const { isDark, toggle: toggleDarkMode } = useDarkMode()
   const [searchParams, setSearchParams] = useSearchParams()
   const { isAuthenticated, token } = useAuthContext()
-  
+  const { t } = useLanguage()
   const filters = useFilters()
   const { played, togglePlayed, isPlayed, getPlayedCount } = usePlayed()
   const { games, total, loading, error, dbTotal, forceRefresh } = useGames(filters, played, isAuthenticated, token)
@@ -78,16 +79,64 @@ function App() {
           <div className="max-w-7xl mx-auto px-4 py-8">
             {/* Show message if not authenticated */}
             {!isAuthenticated ? (
-              <div className="flex flex-col items-center justify-center min-h-[500px] text-center">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                  🔐 Log in para ver tu librería Steam
-                </h2>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-                  Inicia sesión con tu cuenta de Steam para ver tus juegos y priorizarlos.
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500">
-                  Haz clic en el botón de login en la esquina superior derecha →
-                </p>
+              <div className="flex flex-col items-center justify-center min-h-[500px] text-center px-4">
+                <div className="max-w-2xl">
+                  {/* Hero Section */}
+                  <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                    🎮 Steam Priority Picker
+                  </h1>
+                  <p className="text-xl lg:text-2xl text-gray-700 dark:text-gray-300 mb-8">
+                    {t('landing.subtitle')}
+                  </p>
+                  
+                  {/* Features */}
+                  <div className="grid md:grid-cols-3 gap-6 mb-10 text-left">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                      <div className="text-3xl mb-3">📊</div>
+                      <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                        {t('landing.feature1Title')}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {t('landing.feature1Desc')}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                      <div className="text-3xl mb-3">🔍</div>
+                      <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                        {t('landing.feature2Title')}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {t('landing.feature2Desc')}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                      <div className="text-3xl mb-3">⏱️</div>
+                      <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                        {t('landing.feature3Title')}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {t('landing.feature3Desc')}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* CTA */}
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-4">
+                    <p className="text-lg text-gray-800 dark:text-gray-200 mb-3">
+                      {t('landing.cta')}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {t('landing.ctaHint')}
+                    </p>
+                  </div>
+                  
+                  {/* Privacy note */}
+                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                    {t('landing.privacy')}
+                  </p>
+                </div>
               </div>
             ) : (
               <>

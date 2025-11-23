@@ -70,6 +70,18 @@ const translations = {
     'links.playstats': 'PlayStats',
     'links.hltbNotFound': 'Página HLTB no encontrada para este juego',
     
+    // Landing page
+    'landing.subtitle': 'Descubre qué jugar a continuación en tu biblioteca de Steam',
+    'landing.feature1Title': 'Filtra tu biblioteca',
+    'landing.feature1Desc': 'Filtra por tiempo de juego, puntuación, reseñas y más para encontrar el juego perfecto.',
+    'landing.feature2Title': 'Información detallada',
+    'landing.feature2Desc': 'Ve puntuaciones de Steam, reseñas y tiempo estimado de HowLongToBeat.',
+    'landing.feature3Title': 'Organiza tu backlog',
+    'landing.feature3Desc': 'Marca juegos como jugados y prioriza tu backlog infinito de Steam.',
+    'landing.cta': '🔒 Inicia sesión con Steam para empezar',
+    'landing.ctaHint': 'Haz clic en el botón de login en la esquina superior derecha →',
+    'landing.privacy': '🔒 Solo leemos tu biblioteca pública de Steam. No guardamos contraseñas ni datos sensibles.',
+    
     // Ko-fi
     'kofi.supportUs': 'Invítame una',
   },
@@ -138,6 +150,18 @@ const translations = {
     'links.steam': 'Steam',
     'links.playstats': 'PlayStats',
     'links.hltbNotFound': 'HLTB page not found for this game',
+    
+    // Landing page
+    'landing.subtitle': 'Discover what to play next in your Steam library',
+    'landing.feature1Title': 'Filter your library',
+    'landing.feature1Desc': 'Filter by playtime, score, reviews and more to find the perfect game.',
+    'landing.feature2Title': 'Detailed information',
+    'landing.feature2Desc': 'See Steam scores, reviews and estimated time from HowLongToBeat.',
+    'landing.feature3Title': 'Organize your backlog',
+    'landing.feature3Desc': 'Mark games as played and prioritize your endless Steam backlog.',
+    'landing.cta': '🔒 Log in with Steam to get started',
+    'landing.ctaHint': 'Click the login button in the top right corner →',
+    'landing.privacy': '🔒 We only read your public Steam library. No passwords or sensitive data stored.',
     
     // Ko-fi
     'kofi.supportUs': 'Buy me beer',
