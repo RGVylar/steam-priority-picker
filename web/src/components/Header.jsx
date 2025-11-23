@@ -3,7 +3,7 @@ import { LoginButton } from './LoginButton'
 import { useAuthContext } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 
-export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, dbTotal = 0 }) {
+export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, dbTotal = 0, userTotal = 0 }) {
   const { isAuthenticated } = useAuthContext()
   const { language, toggleLanguage, t } = useLanguage()
   return (
@@ -20,9 +20,9 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, dbTotal = 0 
               {t('header.title')}
             </h1>
             <div className="flex items-center gap-4 mt-1">
-              {isAuthenticated && (
+              {isAuthenticated && userTotal > 0 && (
                 <p className="text-xs text-green-600 dark:text-green-400 font-medium">
-                  {t('header.library')}
+                  {t('header.library')}: {userTotal.toLocaleString()} {t('header.games')}
                 </p>
               )}
               {dbTotal > 0 && (

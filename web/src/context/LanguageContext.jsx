@@ -7,7 +7,7 @@ const translations = {
   es: {
     // Header
     'header.title': 'Steam Priority Picker',
-    'header.library': '📚 Tu librería Steam',
+    'header.library': '📚 Tu librería',
     'header.catalog': '🌍 Catálogo',
     'header.games': 'juegos',
     'header.toggleLanguage': 'Cambiar idioma',
@@ -74,7 +74,7 @@ const translations = {
   en: {
     // Header
     'header.title': 'Steam Priority Picker',
-    'header.library': '📚 Your Steam Library',
+    'header.library': '📚 Your library',
     'header.catalog': '🌍 Catalog',
     'header.games': 'games',
     'header.toggleLanguage': 'Toggle language',

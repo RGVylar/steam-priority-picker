@@ -48,6 +48,7 @@ function App() {
         onDarkModeToggle={toggleDarkMode}
         isDarkMode={isDark}
         dbTotal={dbTotal}
+        userTotal={total}
       />
       
       <div className="flex">
