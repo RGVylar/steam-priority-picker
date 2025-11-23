@@ -5,7 +5,7 @@ import { useDebounce } from '../hooks/useDebounce'
 export function SearchBar({ value, onChange }) {
   const { t } = useLanguage()
   const [localValue, setLocalValue] = useState(value)
-  const debouncedValue = useDebounce(localValue, 500)
+  // const debouncedValue = useDebounce(localValue, 500) // Disabled for instant search
   const inputRef = React.useRef(null)
 
   // Handle Ctrl+F keyboard shortcut
@@ -20,15 +20,16 @@ export function SearchBar({ value, onChange }) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  // Update parent when debounced value changes
+  // Update parent immediately as user types (no debounce for instant search)
   const handleChange = (newValue) => {
     setLocalValue(newValue)
+    onChange(newValue) // Call immediately instead of waiting for debounce
   }
 
-  // Call parent's onChange when debounced value changes
-  useEffect(() => {
-    onChange(debouncedValue)
-  }, [debouncedValue, onChange])
+  // Alternative: Call parent's onChange when debounced value changes (commented out for instant search)
+  // useEffect(() => {
+  //   onChange(debouncedValue)
+  // }, [debouncedValue, onChange])
 
   return (
     <div className="mb-8">
