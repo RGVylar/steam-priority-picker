@@ -254,15 +254,9 @@ async def get_my_games(
             # Update playtime if changed
             user_game.playtime_hours = playtime_hours
         
-        # Build response with user's personal playtime
-        game_dict = {
-            "app_id": game.app_id,
-            "name": game.name,
-            "header_image": game.header_image,
-            "playtime_hours": playtime_hours,  # User's personal playtime
-            "score": game.score,
-            "total_reviews": game.total_reviews
-        }
+        # Build response with user's personal playtime using game.to_dict()
+        game_dict = game.to_dict()
+        game_dict["playtime_hours"] = playtime_hours  # Override with user's personal playtime
         
         user_games_response.append(game_dict)
     
