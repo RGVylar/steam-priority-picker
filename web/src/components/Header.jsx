@@ -32,7 +32,7 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, onGlassModeT
               <button 
                 onClick={onRefresh}
                 disabled={isRefreshing}
-                className="p-1.5 lg:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-1 lg:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label={t('header.refresh')}
                 title={t('header.refresh')}
               >
@@ -49,7 +49,7 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, onGlassModeT
             
             <button 
               onClick={toggleLanguage}
-              className="p-1.5 lg:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-1 lg:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               aria-label={t('header.toggleLanguage')}
               title={language === 'es' ? 'English' : 'Español'}
             >
@@ -60,7 +60,7 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, onGlassModeT
             
             <button 
               onClick={onDarkModeToggle}
-              className="p-1.5 lg:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-1 lg:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               aria-label={t('header.toggleDarkMode')}
               title={isDarkMode ? 'Light mode' : 'Dark mode'}
             >
@@ -77,7 +77,7 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, onGlassModeT
 
             <button 
               onClick={onGlassModeToggle}
-              className="p-1.5 lg:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-1 lg:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               aria-label="Toggle Glass Mode"
               title={isGlassMode ? 'Disable Glass Effect' : 'Enable Glass Effect'}
             >
@@ -88,7 +88,7 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, onGlassModeT
 
             <button 
               onClick={onMenuClick}
-              className="lg:hidden p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="lg:hidden p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               aria-label={t('header.toggleFilters')}
             >
               <svg className="w-5 h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
