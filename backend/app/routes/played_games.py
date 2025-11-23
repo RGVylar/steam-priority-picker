@@ -1,9 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import delete
+from typing import List
 from ..models import UserPlayedGame, User
 from ..database import get_db
 from .auth import get_current_user
+
+# Request model
+class SyncPlayedGamesRequest(BaseModel):
+    app_ids: List[int]
 
 router = APIRouter(prefix="/api/played-games", tags=["played-games"])
 
@@ -28,7 +34,7 @@ async def get_played_games(
 
 @router.post("/")
 async def sync_played_games(
-    request: dict,
+    request: SyncPlayedGamesRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -39,7 +45,7 @@ async def sync_played_games(
     Request body: {"app_ids": [123456, 789012, ...]}
     """
     try:
-        app_ids = request.get("app_ids", [])
+        app_ids = request.app_ids
         
         if not isinstance(app_ids, list):
             raise HTTPException(status_code=400, detail="app_ids must be a list")
