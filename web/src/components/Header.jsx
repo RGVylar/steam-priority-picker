@@ -17,12 +17,15 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, onGlassModeT
               alt="App icon" 
               className="w-7 h-7 lg:w-8 lg:h-8 select-none drop-shadow-sm"
             />
-            <h1 className="text-lg lg:text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <h1 className="text-lg lg:text-2xl font-bold text-blue-600 dark:text-blue-400 hidden sm:block">
               {t('header.title')}
+            </h1>
+            <h1 className="text-lg font-bold text-blue-600 dark:text-blue-400 sm:hidden">
+              SPP
             </h1>
           </div>
                   
-          <div className="flex items-center gap-1 lg:gap-2">
+          <div className="flex items-center gap-0.5 lg:gap-2">
             <LoginButton />
             
             {isAuthenticated && onRefresh && (
