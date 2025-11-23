@@ -20,7 +20,7 @@ function App() {
   
   const filters = useFilters()
   const { played, togglePlayed, isPlayed, getPlayedCount } = usePlayed()
-  const { games, total, loading, error, dbTotal } = useGames(filters, played, isAuthenticated, token)
+  const { games, total, loading, error, dbTotal, forceRefresh } = useGames(filters, played, isAuthenticated, token)
 
   // Handle auth token from URL
   useEffect(() => {
@@ -49,6 +49,8 @@ function App() {
         isDarkMode={isDark}
         dbTotal={dbTotal}
         userTotal={total}
+        onRefresh={forceRefresh}
+        isRefreshing={loading}
       />
       
       <div className="flex">

@@ -3,11 +3,95 @@ import { useState, useEffect, useMemo } from 'react'
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 export function useGames(filters, played, isAuthenticated = false, token = null) {
-  const [allGames, setAllGames] = useState([])
+  const [allGames, setAllGames] = useState(() => {
+    // Load from cache on initial render
+    if (isAuthenticated && token) {
+      const cached = localStorage.getItem('steam_games_cache')
+      if (cached) {
+        try {
+          const { games, timestamp } = JSON.parse(cached)
+          // Cache valid for 1 hour
+          if (Date.now() - timestamp < 60 * 60 * 1000) {
+            return games
+          }
+        } catch (e) {
+          console.error('Error parsing cache:', e)
+        }
+      }
+    }
+    return []
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [total, setTotal] = useState(0)
-  const [dbTotal, setDbTotal] = useState(0)
+  const [total, setTotal] = useState(() => {
+    // Load total from cache
+    if (isAuthenticated && token) {
+      const cached = localStorage.getItem('steam_games_cache')
+      if (cached) {
+        try {
+          const { total, timestamp } = JSON.parse(cached)
+          if (Date.now() - timestamp < 60 * 60 * 1000) {
+            return total
+          }
+        } catch (e) {}
+      }
+    }
+    return 0
+  })
+  const [dbTotal, setDbTotal] = useState(() => {
+    // Load dbTotal from cache
+    if (isAuthenticated && token) {
+      const cached = localStorage.getItem('steam_games_cache')
+      if (cached) {
+        try {
+          const { db_total, timestamp } = JSON.parse(cached)
+          if (Date.now() - timestamp < 60 * 60 * 1000) {
+            return db_total || 0
+          }
+        } catch (e) {}
+      }
+    }
+    return 0
+  })
+
+  // Force refresh function to clear cache and refetch
+  const forceRefresh = async () => {
+    localStorage.removeItem('steam_games_cache')
+    console.log('🔄 Forcing refresh - cache cleared')
+    
+    if (!isAuthenticated || !token) return
+    
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await fetch(`${API_URL}/my-games`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`API error: ${response.status} - ${errorData.detail || 'Unknown error'}`)
+      }
+      
+      const data = await response.json()
+      setAllGames(data.games)
+      setTotal(data.total)
+      setDbTotal(data.db_total || 0)
+      
+      localStorage.setItem('steam_games_cache', JSON.stringify({
+        games: data.games,
+        total: data.total,
+        db_total: data.db_total || 0,
+        timestamp: Date.now()
+      }))
+      console.log('✅ Library refreshed and cached')
+    } catch (err) {
+      setError(err.message)
+      console.error('Error refreshing games:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Fetch games from API based on filters
   useEffect(() => {
@@ -19,6 +103,21 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
         setError(null)
         setLoading(false)
         return
+      }
+
+      // Check if we have valid cache
+      const cached = localStorage.getItem('steam_games_cache')
+      if (cached) {
+        try {
+          const { games, total, db_total, timestamp } = JSON.parse(cached)
+          // If cache is less than 1 hour old, don't fetch
+          if (Date.now() - timestamp < 60 * 60 * 1000) {
+            console.log('✅ Using cached games data')
+            return
+          }
+        } catch (e) {
+          console.error('Error parsing cache:', e)
+        }
       }
 
       setLoading(true)
@@ -45,6 +144,15 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
         setAllGames(data.games)
         setTotal(data.total)
         setDbTotal(data.db_total || 0)
+        
+        // Save to cache
+        localStorage.setItem('steam_games_cache', JSON.stringify({
+          games: data.games,
+          total: data.total,
+          db_total: data.db_total || 0,
+          timestamp: Date.now()
+        }))
+        console.log('💾 Games data cached')
       } catch (err) {
         setError(err.message)
         console.error('Error fetching games:', err)
@@ -131,5 +239,6 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
     loading,
     error,
     dbTotal,
+    forceRefresh,
   }
 }

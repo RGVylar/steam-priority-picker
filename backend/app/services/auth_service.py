@@ -447,9 +447,16 @@ class SteamAuthService:
         if delisted_skipped > 0:
             logger.info(f"⏭️ Skipping {delisted_skipped} known delisted games (no Steam API call needed)")
         
-        # Fetch Steam info in parallel for non-delisted games
+        # Fetch Steam info with limited concurrency to avoid rate limiting
         if apps_to_fetch:
-            steam_tasks = [self.get_game_info_from_steam(app_id) for app_id in apps_to_fetch]
+            # Limit to 10 concurrent requests to avoid Steam API timeouts
+            semaphore = asyncio.Semaphore(10)
+            
+            async def fetch_with_semaphore(app_id):
+                async with semaphore:
+                    return await self.get_game_info_from_steam(app_id)
+            
+            steam_tasks = [fetch_with_semaphore(app_id) for app_id in apps_to_fetch]
             steam_results = await asyncio.gather(*steam_tasks, return_exceptions=True)
         else:
             steam_results = []

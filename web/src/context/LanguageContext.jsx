@@ -8,8 +8,9 @@ const translations = {
     // Header
     'header.title': 'Steam Priority Picker',
     'header.library': '📚 Tu librería',
-    'header.catalog': '🌍 Catálogo',
+    'header.catalog': '🎮 Catálogo',
     'header.games': 'juegos',
+    'header.refresh': 'Actualizar librería',
     'header.toggleLanguage': 'Cambiar idioma',
     'header.toggleDarkMode': 'Cambiar modo oscuro',
     'header.toggleFilters': 'Cambiar filtros',
@@ -75,8 +76,9 @@ const translations = {
     // Header
     'header.title': 'Steam Priority Picker',
     'header.library': '📚 Your library',
-    'header.catalog': '🌍 Catalog',
+    'header.catalog': '🎮 Catalog',
     'header.games': 'games',
+    'header.refresh': 'Refresh library',
     'header.toggleLanguage': 'Toggle language',
     'header.toggleDarkMode': 'Toggle dark mode',
     'header.toggleFilters': 'Toggle filters',
