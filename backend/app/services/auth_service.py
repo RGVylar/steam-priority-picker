@@ -385,28 +385,37 @@ class SteamAuthService:
         
         # Get known delisted games from database
         delisted_from_db = set()
+        last_refetch_time = None
         if db:
-            delisted_records = db.query(DelistedGame.app_id).all()
-            delisted_from_db = {record[0] for record in delisted_records}
+            delisted_records = db.query(DelistedGame).all()
+            delisted_from_db = {record.app_id for record in delisted_records}
             logger.info(f"📊 Loaded {len(delisted_from_db)} known delisted games from database")
+            
+            # Get the most recent check time
+            if delisted_records:
+                last_refetch_time = max(record.checked_at for record in delisted_records)
+                logger.info(f"🕐 Last refetch was at: {last_refetch_time}")
         else:
             logger.warning(f"⚠️ No database session provided - cannot cache delisted games")
         
-        # Only attempt refetch if:
-        # 1. We have DB connection
-        # 2. We haven't already refetched in this session
-        # 3. We actually have delisted games to check
-        # 4. There are delisted games in the current unknown list
-        should_refetch = (
-            db and 
-            not SteamAuthService._delisted_refetch_done and 
-            delisted_from_db and
-            any(aid in delisted_from_db for aid in unknown_app_ids)
-        )
+        # Check if we should refetch (once per day)
+        from datetime import timedelta
+        should_refetch = False
+        if db and delisted_from_db and any(aid in delisted_from_db for aid in unknown_app_ids):
+            if last_refetch_time is None:
+                should_refetch = True
+                logger.info("🔄 No previous refetch found - will attempt refetch")
+            else:
+                time_since_refetch = datetime.utcnow() - last_refetch_time
+                if time_since_refetch > timedelta(hours=24):
+                    should_refetch = True
+                    logger.info(f"🔄 Last refetch was {time_since_refetch.total_seconds() / 3600:.1f} hours ago - will attempt refetch")
+                else:
+                    logger.info(f"⏭️ Last refetch was {time_since_refetch.total_seconds() / 3600:.1f} hours ago - skipping (need 24h)")
         
         if should_refetch:
             delisted_in_unknown = [aid for aid in unknown_app_ids if aid in delisted_from_db]
-            logger.info(f"🔄 Attempting to refetch {len(delisted_in_unknown)}/{len(delisted_from_db)} delisted games (first time this build)...")
+            logger.info(f"🔄 Attempting to refetch {len(delisted_in_unknown)}/{len(delisted_from_db)} delisted games...")
             steam_tasks = [self.get_game_info_from_steam(app_id) for app_id in delisted_in_unknown]
             steam_results = await asyncio.gather(*steam_tasks, return_exceptions=True)
             
@@ -419,16 +428,17 @@ class SteamAuthService:
                     db.query(DelistedGame).filter(DelistedGame.app_id == app_id).delete()
                     delisted_from_db.discard(app_id)
                     restored_count += 1
+                else:
+                    # Update checked_at for games still delisted
+                    db.query(DelistedGame).filter(DelistedGame.app_id == app_id).update(
+                        {"checked_at": datetime.utcnow()}
+                    )
             
             db.commit()
-            SteamAuthService._delisted_refetch_done = True
             if restored_count > 0:
                 logger.warning(f"⭐ {restored_count} games have been restored to Steam!")
             else:
                 logger.info(f"✅ Refetch complete - no games have been restored")
-        else:
-            if delisted_from_db:
-                logger.info(f"⏭️ Already refetched delisted games in this session - skipping refetch")
         
         # Filter out known delisted games
         apps_to_fetch = [aid for aid in unknown_app_ids if aid not in delisted_from_db]
