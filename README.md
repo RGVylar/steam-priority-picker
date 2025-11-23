@@ -1,103 +1,217 @@
-# Steam Priority Picker - Web Application
+# Steam Priority Picker 🎮
 
-A modern web application to help you prioritize which Steam games to play. Analyzes your Steam library, fetches game completion times from HowLongToBeat, and retrieves review scores to help you decide what to play next.
+A modern web application to help you discover what to play next in your Steam library. Features advanced filtering, HowLongToBeat integration, and Steam review scores with a beautiful glassmorphic UI.
 
-🔗 **Live Demo:** https://steam-priority-picker.vercel.app (Deploy to Vercel - See VERCEL_DEPLOYMENT.md)
+**Live Demo:** https://steam-priority-picker.vercel.app
 
-## 🎯 Features
+## ✨ Features
 
-## ✨ MVP Features (Phase 1 - Complete!)
+### 🎯 Core Features
+- **1000+ Games Display** - Browse your entire cataloged Steam library
+- **Advanced Filtering** - By playtime, score, reviews, and played status
+- **Real-time Search** - Instant filtering by game name with Ctrl+F
+- **HowLongToBeat Integration** - See estimated completion times
+- **Steam Review Scores** - Quick ratings and review counts
+- **Dark Mode** - Auto-detect system preference with manual toggle
+- **Responsive Design** - Optimized for mobile, tablet, and desktop
+- **Game Tracking** - Mark games as played with persistent storage
+- **Direct Launch** - Play games directly via Steam protocol
 
-### ✅ Currently Available
-- 🎮 **1080+ Games Display**: Browse your full cataloged Steam library  
-- 🖼️ **Steam Header Images**: Beautiful game artwork from Steam store
-- 🔍 **Advanced Filtering**:
-  - ⏱️ Playtime ranges (0-5, 5-10, 10-20, 20+ hours)
-  - ⭐ Steam score ranges (75-100%, 50-75%, Below 50%)
-  - 📊 Review count slider (min/max filtering)
-  - ✓ Played/Unplayed status tracker with counter
-- 🔤 **Real-time Search**: Instant filtering by game name
-- 📊 **Sorting Options**: 
-  - Playtime (ascending/descending)
-  - Score (ascending/descending)
-  - Default: Highest score first
-- ♾️ **Infinite Scroll**: Load 24 games at a time
-- 🎨 **Dark Mode**: Auto-detect system preference, toggle manually
-- 📱 **Responsive Design**: Optimized for mobile, tablet, and desktop
-- 🏷️ **Collapsible Filters**: Keep UI clean, expand only needed sections
-- 💾 **Game Tracking**: Mark games as played (persists in localStorage)
-- 🌙 **Persistent Settings**: All preferences saved locally
-- ▶️ **Play Button Overlay**: Launch games directly via Steam protocol
+### 🎨 UI/UX
+- **Liquid Glass Design** - Apple-style glassmorphism with backdrop blur
+- **Dynamic Backgrounds** - Game images appear on hover with smooth transitions
+- **Glass Mode Toggle** - Enable/disable glass effects with localStorage persistence
+- **Color-Tinted Buttons** - Semi-transparent buttons with color identity
+- **Smooth Animations** - 1000ms transitions for immersive experience
+- **Infinite Scroll** - Load 24 games at a time for smooth browsing
 
-## ✅ Phase 2 Features (Backend API - Complete!)
+## 🚀 Tech Stack
 
-### ✅ API Backend (FastAPI)
-- 🚀 **FastAPI Server** on port 8000 with auto-reload
-- 📡 **REST Endpoints**:
-  - `GET /api/games` - Paginated game list
-  - `GET /api/games/{app_id}` - Single game details
-  - `GET /api/search` - Advanced search with filtering
-  - `GET /api/filters` - Available filter ranges
-  - `GET /health` - Health check endpoint
-- 🔄 **Frontend Integration**: React hooks consume API instead of static JSON
-- 🔐 **CORS Middleware**: Configured for development and production
-- 📚 **Auto-generated Docs**: Swagger UI at `/docs`
+| Layer | Technology | Status |
+|-------|-----------|--------|
+| **Frontend** | React 18 + Vite + Tailwind CSS | ✅ Complete |
+| **Backend** | FastAPI + PostgreSQL | ✅ Complete |
+| **Deployment** | Vercel (Frontend) + Render (Backend) | ✅ Live |
+| **Auth** | Steam OAuth | ✅ Integrated |
 
-### 🎯 Planned Features (Phase 3)
-- 👤 Steam account login (OAuth)  
-- 🔄 Real-time library sync without manual export
-- 📊 Game statistics and insights
-- 🎲 Recommendation engine based on your preferences
-- 📈 Playtime analytics and trends
-- 🗄️ PostgreSQL Database integration
+## 📋 Prerequisites
 
-## 🏗️ Architecture
+- Node.js 18+
+- Python 3.9+
+- Steam account with games
 
-The project has three main components:
+## 🛠️ Development Setup
 
-| Component | Technology | Status |
-|-----------|-----------|--------|
-| **Frontend** | React 18 + Vite | 🚀 MVP Ready |
-| **Backend** | FastAPI | 🏗️ Scaffolded |
-| **Database** | PostgreSQL | 📅 Phase 3 |
-
-## 🔧 Full Setup Guide
-
-### Initial Setup (First Time)
+### Quick Start (Local Development)
 
 ```bash
 # 1. Clone repository
 git clone https://github.com/RGVylar/steam-priority-picker.git
 cd steam-priority-picker
 
-# 2. Create .env with your Steam credentials
-cp .env.example .env
-# Edit .env and add:
-#   STEAM_API_KEY=your_key_from_steamcommunity.com
-#   STEAM_ID=your_steamid64_number
+# 2. Frontend setup
+cd web
+npm install
+npm run dev
+# Frontend runs on http://localhost:5173
 
-# 3. Install Python dependencies
+# 3. Backend setup (in new terminal)
+cd backend
 pip install -r requirements.txt
-
-# 4. Fetch all your Steam games
-python main.py  # Takes 5-10 minutes (API rate limiting)
-
-# 5. Export to frontend format
-python scripts/cache_to_json.py
-
-# 6. Copy data to backend
-cp web/src/data/games.json backend/data/games.json
-
-# 7. Install backend dependencies
-cd backend && pip install -r requirements.txt && cd ..
-
-# 8. Install frontend dependencies
-cd web && npm install
+python -m uvicorn app.main:app --reload --port 8000
+# Backend runs on http://localhost:8000
+# API docs: http://localhost:8000/docs
 ```
 
-### Development (Running Both Servers)
+### Environment Variables
 
-**Terminal 1 - Backend (FastAPI on port 8000):**
+**Frontend (`web/.env.local`):**
+```
+VITE_API_URL=http://localhost:8000
+```
+
+**Backend (`backend/.env`):**
+```
+DATABASE_URL=postgresql://user:password@localhost/steam_picker
+STEAM_API_KEY=your_steam_api_key
+```
+
+Get your Steam API key: https://steamcommunity.com/dev/apikey
+
+## 📁 Project Structure
+
+```
+steam-priority-picker/
+├── web/                          # React Frontend (Vercel)
+│   ├── src/
+│   │   ├── components/          # React components (GameCard, Header, etc)
+│   │   ├── hooks/               # Custom hooks (useGames, useFilters, etc)
+│   │   ├── context/             # Context providers (Auth, Language)
+│   │   ├── pages/               # Page components (AuthCallback)
+│   │   ├── App.jsx
+│   │   └── index.css            # Liquid Glass design system
+│   ├── package.json
+│   └── vite.config.js
+├── backend/                      # FastAPI Backend (Render)
+│   ├── app/
+│   │   ├── models/              # Database models
+│   │   ├── routes/              # API endpoints
+│   │   ├── services/            # Business logic (Auth, Games)
+│   │   ├── schemas/             # Pydantic models
+│   │   └── main.py              # FastAPI app
+│   ├── requirements.txt
+│   └── Dockerfile
+├── scripts/                      # Utility scripts
+│   └── cache_to_json.py         # Export cache to JSON
+├── add_games_by_steamid.py       # Import games by Steam ID
+├── QUICK_START.md                # Quick start guide
+└── README.md                     # This file
+```
+
+## 🔐 Authentication
+
+The app uses Steam OAuth for authentication:
+
+1. Click "Log in with Steam" button
+2. Authorize on Steam's website
+3. Get redirected back with auth token
+4. Access your Steam library in the app
+
+## 📊 API Endpoints
+
+All endpoints require authentication (Bearer token):
+
+```
+GET  /api/games                  # Get user's games with filters
+GET  /api/games/{app_id}         # Get single game details
+POST /api/auth/login             # Initiate Steam OAuth
+GET  /api/auth/callback          # OAuth callback endpoint
+GET  /health                     # Health check
+```
+
+## 🎨 Liquid Glass Design
+
+The UI features Apple's Liquid Glass design with:
+
+- **Ultra-transparent backgrounds** - rgba(255,255,255,0.01)
+- **Backdrop blur** - blur(60px) for depth effect
+- **Color tints** - Semi-transparent colored overlays on buttons
+- **Dynamic backgrounds** - Game images on hover
+- **Smooth transitions** - 1000ms crossfades
+- **Optional toggle** - Enable/disable glass mode in header
+
+## 🚀 Deployment
+
+### Frontend to Vercel
+```bash
+# Auto-deploys from main branch
+# Free tier includes unlimited deployments
+# Set VITE_API_URL in Vercel environment variables
+```
+
+### Backend to Render
+```bash
+# Auto-deploys from main branch (Docker)
+# Free tier includes one instance (sleeps after 15min inactivity)
+# Set DATABASE_URL and STEAM_API_KEY in Render environment
+```
+
+### Database (PostgreSQL on Neon)
+```
+Free tier: 1 project, 3 branches, 100k rows
+Get free connection string from neon.tech
+```
+
+## 🐛 Troubleshooting
+
+### Frontend won't start
+```bash
+cd web
+rm -rf node_modules package-lock.json
+npm install
+npm run dev
+```
+
+### Backend won't start
+```bash
+cd backend
+pip install --upgrade -r requirements.txt
+python -m uvicorn app.main:app --reload
+```
+
+### Authentication fails
+- Verify STEAM_API_KEY is set in backend .env
+- Check DATABASE_URL is correct
+- Ensure Steam account has games in library
+
+### Games not showing
+- Verify you're logged in with a Steam account that has games
+- Check backend logs for API errors
+- Ensure PostgreSQL database connection is working
+
+## 📚 Documentation
+
+- **[QUICK_START.md](./QUICK_START.md)** - Quick setup and run guide
+- **Backend API Docs** - http://localhost:8000/docs (Swagger UI)
+
+## 🔗 Resources
+
+- [Steam Web API](https://steamcommunity.com/dev)
+- [HowLongToBeat API](https://howlongtobeat.com/)
+- [React Docs](https://react.dev)
+- [FastAPI Docs](https://fastapi.tiangolo.com)
+- [Vite Docs](https://vitejs.dev)
+- [Tailwind CSS](https://tailwindcss.com)
+
+## 📄 License
+
+Personal use only
+
+---
+
+**Version:** 1.0.0  
+**Last Updated:** November 23, 2025  
+**Status:** 🚀 Production Ready
 ```bash
 python -m uvicorn backend.app.main:app --reload --port 8000
 ```
