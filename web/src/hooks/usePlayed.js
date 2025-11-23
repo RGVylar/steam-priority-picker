@@ -49,9 +49,9 @@ export function usePlayed() {
   const loadPlayedGamesFromServer = async () => {
     try {
       setIsLoading(true)
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
       
-      const response = await fetch(`${API_URL}/api/played-games/`, {
+      const response = await fetch(`${API_URL}/played-games/`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -74,9 +74,9 @@ export function usePlayed() {
     if (!isAuthenticated || !token) return
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
       
-      const response = await fetch(`${API_URL}/api/played-games/`, {
+      const response = await fetch(`${API_URL}/played-games/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
