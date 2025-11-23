@@ -344,10 +344,29 @@ class SteamAuthService:
         
         return None
     
+    def normalize_game_name(self, name: str) -> str:
+        """Normalize game name for better HLTB search results"""
+        import re
+        # Remove trademark symbols
+        name = re.sub(r'[™®©]', '', name)
+        # Remove common patterns that cause issues
+        name = re.sub(r'\s*:\s*', ' ', name)  # Replace colons with space
+        name = re.sub(r'\s+', ' ', name)  # Normalize whitespace
+        # Title case (better matching than all caps)
+        name = name.title()
+        return name.strip()
+
     async def get_hltb_info(self, game_name: str) -> dict:
         """Get playtime and URL from HowLongToBeat using howlongtobeatpy library"""
         try:
-            results = await HowLongToBeat().async_search(game_name)
+            # Try with normalized name first
+            normalized_name = self.normalize_game_name(game_name)
+            results = await HowLongToBeat().async_search(normalized_name)
+            
+            # If no results, try with original name
+            if not results or len(results) == 0:
+                results = await HowLongToBeat().async_search(game_name)
+            
             if results and len(results) > 0:
                 # Get the best match (first result has highest similarity)
                 best_match = results[0]
