@@ -3,60 +3,11 @@ import { useState, useEffect, useMemo } from 'react'
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 export function useGames(filters, played, isAuthenticated = false, token = null) {
-  const [allGames, setAllGames] = useState(() => {
-    // Load from cache on initial render
-    if (isAuthenticated && token) {
-      const cached = localStorage.getItem('steam_games_cache')
-      if (cached) {
-        try {
-          const { games, timestamp, token: cachedToken } = JSON.parse(cached)
-          // Cache valid for 1 hour AND token must match
-          if (Date.now() - timestamp < 60 * 60 * 1000 && cachedToken === token) {
-            return games
-          } else if (cachedToken !== token) {
-            // Different user, clear cache
-            localStorage.removeItem('steam_games_cache')
-            console.log('🧹 Cache cleared - different user')
-          }
-        } catch (e) {
-          console.error('Error parsing cache:', e)
-        }
-      }
-    }
-    return []
-  })
+  const [allGames, setAllGames] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [total, setTotal] = useState(() => {
-    // Load total from cache
-    if (isAuthenticated && token) {
-      const cached = localStorage.getItem('steam_games_cache')
-      if (cached) {
-        try {
-          const { total, timestamp, token: cachedToken } = JSON.parse(cached)
-          if (Date.now() - timestamp < 60 * 60 * 1000 && cachedToken === token) {
-            return total
-          }
-        } catch (e) {}
-      }
-    }
-    return 0
-  })
-  const [dbTotal, setDbTotal] = useState(() => {
-    // Load dbTotal from cache
-    if (isAuthenticated && token) {
-      const cached = localStorage.getItem('steam_games_cache')
-      if (cached) {
-        try {
-          const { db_total, timestamp, token: cachedToken } = JSON.parse(cached)
-          if (Date.now() - timestamp < 60 * 60 * 1000 && cachedToken === token) {
-            return db_total || 0
-          }
-        } catch (e) {}
-      }
-    }
-    return 0
-  })
+  const [total, setTotal] = useState(0)
+  const [dbTotal, setDbTotal] = useState(0)
 
   // Force refresh function to clear cache and refetch
   const forceRefresh = async () => {
@@ -105,6 +56,7 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
       if (!isAuthenticated || !token) {
         setAllGames([])
         setTotal(0)
+        setDbTotal(0)
         setError(null)
         setLoading(false)
         return
@@ -115,9 +67,12 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
       if (cached) {
         try {
           const { games, total, db_total, timestamp, token: cachedToken } = JSON.parse(cached)
-          // If cache is less than 1 hour old AND token matches, don't fetch
+          // If cache is less than 1 hour old AND token matches, use cache
           if (Date.now() - timestamp < 60 * 60 * 1000 && cachedToken === token) {
             console.log('✅ Using cached games data')
+            setAllGames(games)
+            setTotal(total)
+            setDbTotal(db_total || 0)
             return
           } else if (cachedToken !== token) {
             console.log('🧹 Cache cleared - different user/token')
