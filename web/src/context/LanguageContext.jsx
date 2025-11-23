@@ -21,6 +21,7 @@ const translations = {
     'auth.loginButton': 'Conectar con Steam',
     
     // Filters
+    'filter.title': 'Filtros',
     'filter.playtime': 'Tiempo de juego',
     'filter.playtime0to5': '0-5 horas',
     'filter.playtime5to10': '5-10 horas',
@@ -89,6 +90,7 @@ const translations = {
     'auth.loginButton': 'Sign in with Steam',
     
     // Filters
+    'filter.title': 'Filters',
     'filter.playtime': 'Playtime',
     'filter.playtime0to5': '0-5 hours',
     'filter.playtime5to10': '5-10 hours',
