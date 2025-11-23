@@ -3,9 +3,12 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import delete
 from typing import List
+import logging
 from ..models import UserPlayedGame, User
 from ..database import get_db
 from .auth import get_current_user
+
+logger = logging.getLogger(__name__)
 
 # Request model
 class SyncPlayedGamesRequest(BaseModel):
@@ -45,15 +48,17 @@ async def sync_played_games(
     Request body: {"app_ids": [123456, 789012, ...]}
     """
     try:
+        logger.info(f"Syncing played games for user {current_user.id}: {request.app_ids}")
         app_ids = request.app_ids
         
         if not isinstance(app_ids, list):
             raise HTTPException(status_code=400, detail="app_ids must be a list")
         
         # Delete all existing played games for this user
-        db.query(UserPlayedGame).filter(
+        deleted_count = db.query(UserPlayedGame).filter(
             UserPlayedGame.user_id == current_user.id
         ).delete()
+        logger.info(f"Deleted {deleted_count} played games for user {current_user.id}")
         
         # Add new played games
         for app_id in app_ids:
@@ -65,6 +70,7 @@ async def sync_played_games(
                 db.add(played_game)
         
         db.commit()
+        logger.info(f"Successfully synced {len(app_ids)} played games for user {current_user.id}")
         return {
             "status": "success",
             "message": f"Synced {len(app_ids)} played games",
@@ -72,6 +78,7 @@ async def sync_played_games(
         }
     except Exception as e:
         db.rollback()
+        logger.error(f"Error syncing played games for user {current_user.id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
