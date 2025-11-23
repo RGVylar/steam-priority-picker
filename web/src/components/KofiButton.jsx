@@ -7,7 +7,7 @@ export function KofiButton() {
       href="https://ko-fi.com/Z8Z81OW7UV" 
       target="_blank" 
       rel="noopener noreferrer"
-      className="fixed bottom-16 right-4 flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-lg transition-all font-medium text-sm shadow-lg hover:shadow-xl z-40"
+      className="fixed bottom-16 right-4 flex items-center gap-2 px-4 py-2 glass hover-glow bg-cyan-500/50 backdrop-blur-xl hover:bg-cyan-600/60 text-white rounded-lg transition-all font-medium text-sm z-40 border border-cyan-400/30"
       title={t('kofi.supportUs')}
     >
       <span>🍺</span>

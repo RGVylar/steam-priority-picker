@@ -95,7 +95,7 @@ export function GameCard({ game, isPlayed, onTogglePlayed, onMouseEnter, onMouse
           href={game.steam_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors text-center"
+          className="flex-1 px-3 py-2 glass bg-blue-600/60 text-white text-sm font-medium rounded hover:bg-blue-700/70 transition-colors text-center"
         >
           Steam
         </a>
@@ -104,7 +104,7 @@ export function GameCard({ game, isPlayed, onTogglePlayed, onMouseEnter, onMouse
             href={game.hltb_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 px-3 py-2 bg-gray-600 text-white text-sm font-medium rounded hover:bg-gray-700 transition-colors text-center"
+            className="flex-1 px-3 py-2 glass bg-gray-600/60 text-white text-sm font-medium rounded hover:bg-gray-700/70 transition-colors text-center"
           >
             HLTB
           </a>
@@ -113,7 +113,7 @@ export function GameCard({ game, isPlayed, onTogglePlayed, onMouseEnter, onMouse
             href="https://howlongtobeat.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 px-3 py-2 bg-gray-500 text-white text-sm font-medium rounded hover:bg-gray-600 transition-colors text-center"
+            className="flex-1 px-3 py-2 glass bg-gray-500/60 text-white text-sm font-medium rounded hover:bg-gray-600/70 transition-colors text-center"
             title={t('links.hltbNotFound')}
           >
             {t('links.hltb')}
@@ -121,10 +121,10 @@ export function GameCard({ game, isPlayed, onTogglePlayed, onMouseEnter, onMouse
         )}
         <button
           onClick={onTogglePlayed}
-          className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
+          className={`px-3 py-2 rounded text-sm font-medium transition-colors glass ${
             isPlayed
-              ? 'bg-green-600 text-white hover:bg-green-700'
-              : 'bg-gray-400 text-white hover:bg-gray-500'
+              ? 'bg-green-600/60 text-white hover:bg-green-700/70'
+              : 'bg-gray-400/60 text-white hover:bg-gray-500/70'
           }`}
           title={isPlayed ? t('games.markAsUnplayed') : t('games.markAsPlayed')}
         >
