@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import delete
 from ..models import UserPlayedGame, User
 from ..database import get_db
-from ..services.auth_service import get_current_user
+from .auth import get_current_user
 
 router = APIRouter(prefix="/api/played-games", tags=["played-games"])
 
