@@ -59,7 +59,7 @@ const translations = {
     'games.of': 'de',
     'games.beforeFilters': 'antes de los filtros',
     'games.played': '✓ Jugado',
-    'games.unplayed': '○ Jugar',
+    'games.unplayed': '○ Jugado',
     'games.markAsPlayed': 'Marcar como jugado',
     'games.markAsUnplayed': 'Marcar como no jugado',
     
@@ -127,7 +127,7 @@ const translations = {
     'games.of': 'of',
     'games.beforeFilters': 'before filters',
     'games.played': '✓ Played',
-    'games.unplayed': '○ Play',
+    'games.unplayed': '○ Played',
     'games.markAsPlayed': 'Mark as played',
     'games.markAsUnplayed': 'Mark as unplayed',
     
