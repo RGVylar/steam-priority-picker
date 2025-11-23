@@ -64,6 +64,15 @@ code {
     border: 1px solid rgba(255, 255, 255, 0.06);
   }
 
+  /* Glass with tint - Only backdrop blur, no background override */
+  .glass-tinted {
+    backdrop-filter: blur(60px) saturate(200%);
+    -webkit-backdrop-filter: blur(60px) saturate(200%);
+    box-shadow: 
+      0 8px 32px 0 rgba(31, 38, 135, 0.05),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  }
+
   /* Solid mode - when glass-mode is disabled */
   .no-glass-mode .glass {
     backdrop-filter: none;
