@@ -9,10 +9,14 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
       const cached = localStorage.getItem('steam_games_cache')
       if (cached) {
         try {
-          const { games, timestamp } = JSON.parse(cached)
-          // Cache valid for 1 hour
-          if (Date.now() - timestamp < 60 * 60 * 1000) {
+          const { games, timestamp, token: cachedToken } = JSON.parse(cached)
+          // Cache valid for 1 hour AND token must match
+          if (Date.now() - timestamp < 60 * 60 * 1000 && cachedToken === token) {
             return games
+          } else if (cachedToken !== token) {
+            // Different user, clear cache
+            localStorage.removeItem('steam_games_cache')
+            console.log('🧹 Cache cleared - different user')
           }
         } catch (e) {
           console.error('Error parsing cache:', e)
@@ -29,8 +33,8 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
       const cached = localStorage.getItem('steam_games_cache')
       if (cached) {
         try {
-          const { total, timestamp } = JSON.parse(cached)
-          if (Date.now() - timestamp < 60 * 60 * 1000) {
+          const { total, timestamp, token: cachedToken } = JSON.parse(cached)
+          if (Date.now() - timestamp < 60 * 60 * 1000 && cachedToken === token) {
             return total
           }
         } catch (e) {}
@@ -44,8 +48,8 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
       const cached = localStorage.getItem('steam_games_cache')
       if (cached) {
         try {
-          const { db_total, timestamp } = JSON.parse(cached)
-          if (Date.now() - timestamp < 60 * 60 * 1000) {
+          const { db_total, timestamp, token: cachedToken } = JSON.parse(cached)
+          if (Date.now() - timestamp < 60 * 60 * 1000 && cachedToken === token) {
             return db_total || 0
           }
         } catch (e) {}
@@ -82,7 +86,8 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
         games: data.games,
         total: data.total,
         db_total: data.db_total || 0,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        token: token
       }))
       console.log('✅ Library refreshed and cached')
     } catch (err) {
@@ -109,11 +114,14 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
       const cached = localStorage.getItem('steam_games_cache')
       if (cached) {
         try {
-          const { games, total, db_total, timestamp } = JSON.parse(cached)
-          // If cache is less than 1 hour old, don't fetch
-          if (Date.now() - timestamp < 60 * 60 * 1000) {
+          const { games, total, db_total, timestamp, token: cachedToken } = JSON.parse(cached)
+          // If cache is less than 1 hour old AND token matches, don't fetch
+          if (Date.now() - timestamp < 60 * 60 * 1000 && cachedToken === token) {
             console.log('✅ Using cached games data')
             return
+          } else if (cachedToken !== token) {
+            console.log('🧹 Cache cleared - different user/token')
+            localStorage.removeItem('steam_games_cache')
           }
         } catch (e) {
           console.error('Error parsing cache:', e)
@@ -150,7 +158,8 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
           games: data.games,
           total: data.total,
           db_total: data.db_total || 0,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          token: token
         }))
         console.log('💾 Games data cached')
       } catch (err) {
