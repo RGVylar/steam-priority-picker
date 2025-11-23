@@ -8,6 +8,7 @@ import { KofiButton } from './components/KofiButton'
 import { useGames } from './hooks/useGames'
 import { useFilters } from './hooks/useFilters'
 import { useDarkMode } from './hooks/useDarkMode'
+import { useGlassMode } from './hooks/useGlassMode'
 import { usePlayed } from './hooks/usePlayed'
 import { useAuthContext } from './context/AuthContext'
 import { useLanguage } from './context/LanguageContext'
@@ -18,6 +19,7 @@ function App() {
   const [hoveredGame, setHoveredGame] = useState(null)
   const [prevHoveredGame, setPrevHoveredGame] = useState(null)
   const { isDark, toggle: toggleDarkMode } = useDarkMode()
+  const { isGlass, toggle: toggleGlassMode } = useGlassMode()
   const [searchParams, setSearchParams] = useSearchParams()
   const { isAuthenticated, token } = useAuthContext()
   const { t } = useLanguage()
@@ -56,25 +58,29 @@ function App() {
       {/* Subtle gradient overlay for depth */}
       <div className="fixed inset-0 z-0 bg-gradient-to-br from-white/30 via-transparent to-gray-200/30 dark:from-slate-800/20 dark:via-transparent dark:to-slate-950/40" />
       
-      {/* Dynamic Background Image - Always render but fade opacity */}
-      <div 
-        className="fixed inset-0 z-0 transition-opacity duration-1000 ease-in-out"
-        style={{
-          backgroundImage: prevHoveredGame 
-            ? `url(${prevHoveredGame.image_url || `https://cdn.cloudflare.steamstatic.com/steam/apps/${prevHoveredGame.app_id}/header.jpg`})`
-            : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: hoveredGame ? 0.5 : 0,
-          filter: 'blur(30px)',
-        }}
-      />
+      {/* Dynamic Background Image - Only show when glass mode is enabled */}
+      {isGlass && (
+        <div 
+          className="fixed inset-0 z-0 transition-opacity duration-1000 ease-in-out"
+          style={{
+            backgroundImage: prevHoveredGame 
+              ? `url(${prevHoveredGame.image_url || `https://cdn.cloudflare.steamstatic.com/steam/apps/${prevHoveredGame.app_id}/header.jpg`})`
+              : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: hoveredGame ? 0.5 : 0,
+            filter: 'blur(30px)',
+          }}
+        />
+      )}
       
       <div className="relative z-10">
       <Header 
         onMenuClick={() => setShowMobileFilters(!showMobileFilters)}
         onDarkModeToggle={toggleDarkMode}
         isDarkMode={isDark}
+        onGlassModeToggle={toggleGlassMode}
+        isGlassMode={isGlass}
         dbTotal={dbTotal}
         userTotal={total}
         onRefresh={forceRefresh}

@@ -69,10 +69,10 @@ export function FilterPanel({ filters, onClose, played }) {
   }
 
   const CollapsibleSection = ({ title, section, children, activeCount = 0 }) => (
-    <div className="border-b border-gray-200 dark:border-gray-700">
+    <div className="border-b border-white/10">
       <button
         onClick={() => toggleSection(section)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 dark:hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-2">
           <span className="font-medium text-gray-900 dark:text-white">{title}</span>
@@ -87,7 +87,7 @@ export function FilterPanel({ filters, onClose, played }) {
         </span>
       </button>
       {expandedSections[section] && (
-        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 space-y-3">
+        <div className="px-4 py-3 space-y-3">
           {children}
         </div>
       )}
@@ -101,7 +101,7 @@ export function FilterPanel({ filters, onClose, played }) {
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('filter.title')}</h2>
         <button
           onClick={onClose}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          className="p-2 hover:bg-white/5 rounded-lg transition-colors"
           aria-label="Close filters"
         >
           <svg className="w-6 h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,7 +118,7 @@ export function FilterPanel({ filters, onClose, played }) {
       >
         <div className="space-y-2">
           {playtimeRanges.map((range) => (
-            <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded transition-colors">
+            <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-white/5 p-2 rounded transition-colors">
               <input
                 type="checkbox"
                 checked={filters.playtimeMin === range.min && filters.playtimeMax === range.max}
@@ -139,7 +139,7 @@ export function FilterPanel({ filters, onClose, played }) {
       >
         <div className="space-y-2">
           {scoreRanges.map((range) => (
-            <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded transition-colors">
+            <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-white/5 p-2 rounded transition-colors">
               <input
                 type="checkbox"
                 checked={filters.scoreMin === range.min && filters.scoreMax === range.max}
@@ -208,7 +208,7 @@ export function FilterPanel({ filters, onClose, played }) {
         activeCount={filters.showPlayed !== 'all' ? 1 : 0}
       >
         <div className="space-y-2">
-          <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded transition-colors">
+          <label className="flex items-center gap-3 cursor-pointer hover:bg-white/5 p-2 rounded transition-colors">
             <input
               type="radio"
               name="playedStatus"
@@ -219,7 +219,7 @@ export function FilterPanel({ filters, onClose, played }) {
             />
             <span className="text-sm text-gray-700 dark:text-gray-300">{t('filter.playedAll')}</span>
           </label>
-          <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded transition-colors">
+          <label className="flex items-center gap-3 cursor-pointer hover:bg-white/5 p-2 rounded transition-colors">
             <input
               type="radio"
               name="playedStatus"
@@ -233,7 +233,7 @@ export function FilterPanel({ filters, onClose, played }) {
               {playedCount}
             </span>
           </label>
-          <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded transition-colors">
+          <label className="flex items-center gap-3 cursor-pointer hover:bg-white/5 p-2 rounded transition-colors">
             <input
               type="radio"
               name="playedStatus"
