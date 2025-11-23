@@ -12,11 +12,16 @@ export function AuthCallback() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Authenticating...</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Please wait while we verify your Steam account</p>
+    <div className="min-h-screen bg-gray-100 dark:bg-slate-900 flex items-center justify-center relative overflow-hidden">
+      {/* Subtle gradient overlay */}
+      <div className="fixed inset-0 z-0 bg-gradient-to-br from-white/30 via-transparent to-gray-200/30 dark:from-slate-800/20 dark:via-transparent dark:to-slate-950/40" />
+      
+      <div className="relative z-10 text-center">
+        <div className="glass bg-white/20 dark:bg-gray-800/20 p-12 rounded-2xl border border-white/20 dark:border-gray-700/30 max-w-md">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 mx-auto mb-6"></div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Authenticating...</h1>
+          <p className="text-gray-600 dark:text-gray-300">Please wait while we verify your Steam account</p>
+        </div>
       </div>
     </div>
   );

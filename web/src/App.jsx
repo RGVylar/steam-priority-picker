@@ -13,6 +13,7 @@ import { usePlayed } from './hooks/usePlayed'
 import { useAuthContext } from './context/AuthContext'
 import { useLanguage } from './context/LanguageContext'
 import { useSearchParams } from 'react-router-dom'
+import appIcon from './image/icon.svg'
 
 function App() {
   const [showMobileFilters, setShowMobileFilters] = useState(false)
@@ -60,18 +61,34 @@ function App() {
       
       {/* Dynamic Background Image - Only show when glass mode is enabled */}
       {isGlass && (
-        <div 
-          className="fixed inset-0 z-0 transition-opacity duration-1000 ease-in-out"
-          style={{
-            backgroundImage: prevHoveredGame 
-              ? `url(${prevHoveredGame.image_url || `https://cdn.cloudflare.steamstatic.com/steam/apps/${prevHoveredGame.app_id}/header.jpg`})`
-              : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            opacity: hoveredGame ? 0.5 : 0,
-            filter: 'blur(30px)',
-          }}
-        />
+        <>
+          {/* Default background with app icon */}
+          <div 
+            className="fixed inset-0 z-0 transition-opacity duration-1000 ease-in-out flex items-center justify-center"
+            style={{
+              backgroundImage: `url(${appIcon})`,
+              backgroundSize: '1200px 1200px',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              opacity: hoveredGame ? 0 : 0.15,
+              filter: 'blur(10px)',
+            }}
+          />
+          
+          {/* Game image on hover */}
+          <div 
+            className="fixed inset-0 z-0 transition-opacity duration-1000 ease-in-out"
+            style={{
+              backgroundImage: prevHoveredGame 
+                ? `url(${prevHoveredGame.image_url || `https://cdn.cloudflare.steamstatic.com/steam/apps/${prevHoveredGame.app_id}/header.jpg`})`
+                : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              opacity: hoveredGame ? 0.5 : 0,
+              filter: 'blur(30px)',
+            }}
+          />
+        </>
       )}
       
       <div className="relative z-10">
@@ -115,16 +132,19 @@ function App() {
               <div className="flex flex-col items-center justify-center min-h-[500px] text-center px-4">
                 <div className="max-w-2xl">
                   {/* Hero Section */}
-                  <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                    🎮 Steam Priority Picker
-                  </h1>
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <img src={appIcon} alt="Steam Priority Picker" className="w-12 h-12" />
+                    <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white">
+                      Steam Priority Picker
+                    </h1>
+                  </div>
                   <p className="text-xl lg:text-2xl text-gray-700 dark:text-gray-300 mb-8">
                     {t('landing.subtitle')}
                   </p>
                   
                   {/* Features */}
                   <div className="grid md:grid-cols-3 gap-6 mb-10 text-left">
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div className="glass bg-white/10 dark:bg-gray-800/30 p-6 rounded-lg border border-white/20 dark:border-gray-700/30">
                       <div className="text-3xl mb-3">📊</div>
                       <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                         {t('landing.feature1Title')}
@@ -134,7 +154,7 @@ function App() {
                       </p>
                     </div>
                     
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div className="glass bg-white/10 dark:bg-gray-800/30 p-6 rounded-lg border border-white/20 dark:border-gray-700/30">
                       <div className="text-3xl mb-3">🔍</div>
                       <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                         {t('landing.feature2Title')}
@@ -144,7 +164,7 @@ function App() {
                       </p>
                     </div>
                     
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div className="glass bg-white/10 dark:bg-gray-800/30 p-6 rounded-lg border border-white/20 dark:border-gray-700/30">
                       <div className="text-3xl mb-3">⏱️</div>
                       <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                         {t('landing.feature3Title')}
@@ -156,7 +176,7 @@ function App() {
                   </div>
                   
                   {/* CTA */}
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-4">
+                  <div className="glass bg-blue-500/10 dark:bg-blue-900/20 border border-blue-400/30 dark:border-blue-800/40 rounded-lg p-6 mb-4">
                     <p className="text-lg text-gray-800 dark:text-gray-200 mb-3">
                       {t('landing.cta')}
                     </p>
