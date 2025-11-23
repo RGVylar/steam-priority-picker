@@ -126,3 +126,23 @@ class DelistedGame(Base):
     
     def __repr__(self):
         return f"<DelistedGame app_id={self.app_id}>"
+
+
+class UserPlayedGame(Base):
+    """Track which games the user has marked as played"""
+    __tablename__ = "user_played_games"
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    app_id = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Composite index for efficient lookups
+    __table_args__ = (
+        # Index for fast user_id + app_id lookups
+        None,
+    )
+    
+    def __repr__(self):
+        return f"<UserPlayedGame user={self.user_id} app={self.app_id}>"

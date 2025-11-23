@@ -97,9 +97,10 @@ export function AuthProvider({ children }) {
       setToken(null);
       setUser(null);
       localStorage.removeItem('auth_token');
-      localStorage.removeItem('playedGames'); // Clear played games cache on logout
+      // Don't remove playedGames - it will sync from DB on next login
       localStorage.removeItem('steam_games_cache'); // Clear games cache on logout
-      console.log('🧹 Cleared all caches on logout')
+      localStorage.removeItem('showPlayedFilter'); // Reset filter on logout
+      console.log('🧹 Cleared session caches on logout')
       setError(null);
     } catch (err) {
       setError(err.message);
