@@ -81,11 +81,9 @@ export function GameCard({ game, isPlayed, onTogglePlayed, onMouseEnter, onMouse
           <p className="text-xs text-gray-600 dark:text-gray-400">
             {t('games.playtime')}: <span className="font-medium text-gray-900 dark:text-white">{game.playtime_hours.toFixed(1)} hrs</span>
           </p>
-          {game.hltb_hours > 0 && (
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              {t('games.timeToBeat')}: <span className="font-medium text-gray-900 dark:text-white">{game.hltb_hours.toFixed(1)} hrs</span>
-            </p>
-          )}
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            {t('games.timeToBeat')}: <span className="font-medium text-gray-900 dark:text-white">{game.hltb_hours > 0 ? `${game.hltb_hours.toFixed(1)} hrs` : t('games.unknown')}</span>
+          </p>
         </div>
       </div>
 
