@@ -56,7 +56,7 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
     }
 
     fetchGames()
-  }, [filters.searchQuery, isAuthenticated, token])
+  }, [isAuthenticated, token])
 
   const games = useMemo(() => {
     let filtered = [...allGames]
