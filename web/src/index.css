@@ -250,3 +250,35 @@ code {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Animation for game cards disappearing */
+@keyframes fadeOutSlideUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* Animation for game cards appearing */
+@keyframes fadeInSlideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fade-out {
+  animation: fadeOutSlideUp 0.3s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeInSlideDown 0.4s ease-out forwards;
+}
+

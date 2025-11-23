@@ -1,10 +1,28 @@
 import GameCard from './GameCard'
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll'
 import { useLanguage } from '../context/LanguageContext'
+import { useState, useEffect, useMemo } from 'react'
 
 export function GameList({ games, total, loading, filters, togglePlayed, isPlayed, onGameHover }) {
   const { t } = useLanguage()
   const { displayedItems, hasMore, observerTarget } = useInfiniteScroll(games, 24)
+  const [previousItems, setPreviousItems] = useState([])
+
+  // Track which games are disappearing
+  const disappearingIds = useMemo(() => {
+    const currentIds = new Set(displayedItems.map(g => g.app_id))
+    return previousItems
+      .filter(g => !currentIds.has(g.app_id))
+      .map(g => g.app_id)
+  }, [displayedItems, previousItems])
+
+  // Update previous items after a small delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPreviousItems(displayedItems)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [displayedItems])
 
   if (loading) {
     return (
@@ -59,15 +77,32 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {displayedItems.map((game) => (
-          <GameCard 
+        {previousItems.map((game) => (
+          <div 
             key={game.app_id} 
-            game={game} 
-            isPlayed={isPlayed(game.app_id)}
-            onTogglePlayed={() => togglePlayed(game.app_id)}
-            onMouseEnter={() => onGameHover && onGameHover(game)}
-            onMouseLeave={() => onGameHover && onGameHover(null)}
-          />
+            className={disappearingIds.includes(game.app_id) ? 'animate-fade-out' : ''}
+          >
+            <GameCard 
+              game={game} 
+              isPlayed={isPlayed(game.app_id)}
+              onTogglePlayed={() => togglePlayed(game.app_id)}
+              onMouseEnter={() => onGameHover && onGameHover(game)}
+              onMouseLeave={() => onGameHover && onGameHover(null)}
+            />
+          </div>
+        ))}
+        {displayedItems.map((game) => (
+          !previousItems.find(p => p.app_id === game.app_id) && (
+            <div key={game.app_id} className="animate-fade-in">
+              <GameCard 
+                game={game} 
+                isPlayed={isPlayed(game.app_id)}
+                onTogglePlayed={() => togglePlayed(game.app_id)}
+                onMouseEnter={() => onGameHover && onGameHover(game)}
+                onMouseLeave={() => onGameHover && onGameHover(null)}
+              />
+            </div>
+          )
         ))}
       </div>
 
