@@ -140,14 +140,22 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
       )
     }
 
+    // Identify games with unknown HLTB time (hltb_hours = 0)
+    const isUnknown = (game) => game.hltb_hours === 0 || game.hltb_hours === undefined
+
     // Filter by playtime (use HLTB time, fallback to personal time)
     if (filters.playtimeMin !== undefined && filters.playtimeMax !== undefined) {
-      filtered = filtered.filter(
-        (game) => {
-          const timeToUse = game.hltb_hours > 0 ? game.hltb_hours : game.playtime_hours
-          return timeToUse >= filters.playtimeMin && timeToUse <= filters.playtimeMax
+      filtered = filtered.filter((game) => {
+        const unknown = isUnknown(game)
+        
+        // If showUnknown is true, include them. Otherwise exclude them from range filters
+        if (unknown) {
+          return filters.showUnknown
         }
-      )
+        
+        const timeToUse = game.hltb_hours > 0 ? game.hltb_hours : game.playtime_hours
+        return timeToUse >= filters.playtimeMin && timeToUse <= filters.playtimeMax
+      })
     }
 
     // Filter by score
@@ -176,12 +184,30 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
     // Sort (use HLTB time for playtime sorting)
     if (filters.sortBy === 'playtime_asc') {
       filtered.sort((a, b) => {
+        // Exclude unknown games from playtime sorting
+        const aUnknown = isUnknown(a)
+        const bUnknown = isUnknown(b)
+        
+        // Put unknown games at the end
+        if (aUnknown && !bUnknown) return 1
+        if (!aUnknown && bUnknown) return -1
+        if (aUnknown && bUnknown) return 0
+        
         const timeA = a.hltb_hours > 0 ? a.hltb_hours : a.playtime_hours
         const timeB = b.hltb_hours > 0 ? b.hltb_hours : b.playtime_hours
         return timeA - timeB
       })
     } else if (filters.sortBy === 'playtime_desc') {
       filtered.sort((a, b) => {
+        // Exclude unknown games from playtime sorting
+        const aUnknown = isUnknown(a)
+        const bUnknown = isUnknown(b)
+        
+        // Put unknown games at the end
+        if (aUnknown && !bUnknown) return 1
+        if (!aUnknown && bUnknown) return -1
+        if (aUnknown && bUnknown) return 0
+        
         const timeA = a.hltb_hours > 0 ? a.hltb_hours : a.playtime_hours
         const timeB = b.hltb_hours > 0 ? b.hltb_hours : b.playtime_hours
         return timeB - timeA
@@ -204,6 +230,7 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
     filters.reviewsMax,
     filters.sortBy,
     filters.showPlayed,
+    filters.showUnknown,
     played,
   ])
 

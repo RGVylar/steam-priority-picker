@@ -47,6 +47,8 @@ const translations = {
     'filter.playedAll': 'Todos',
     'filter.playedPlayed': 'Jugados',
     'filter.playedUnplayed': 'No jugados',
+
+    'filter.unknown': 'Mostrar desconocidos',
     
     'filter.search': 'Buscar juegos...(Ctrl + F)',
     'filter.reset': 'Resetear filtros',
@@ -131,6 +133,8 @@ const translations = {
     'filter.playedAll': 'All',
     'filter.playedPlayed': 'Played',
     'filter.playedUnplayed': 'Unplayed',
+
+    'filter.unknown': 'Show unknown',
     
     'filter.search': 'Search games... (Ctrl + F)',
     'filter.reset': 'Reset filters',

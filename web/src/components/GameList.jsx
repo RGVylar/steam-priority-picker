@@ -38,6 +38,8 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
             filters.setScoreMin(0)
             filters.setScoreMax(100)
             filters.setSearchQuery('')
+            filters.setShowPlayed('all')
+            filters.setShowUnknown(true)
           }}
           className="mt-4 px-4 py-2 glass hover-glow bg-blue-600/80 text-white rounded-lg hover:bg-blue-700/90 transition-colors"
         >

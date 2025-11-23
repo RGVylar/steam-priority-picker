@@ -26,6 +26,7 @@ export function FilterPanel({ filters, onClose, played }) {
     { label: t('filter.playtime5to10'), min: 5, max: 10 },
     { label: t('filter.playtime10to20'), min: 10, max: 20 },
     { label: t('filter.playtime20plus'), min: 20, max: Infinity },
+    { label: t('filter.unknown'), value: 'Unknown' }, // Unknown HLTB games
   ]
 
   const scoreRanges = [
@@ -46,6 +47,7 @@ export function FilterPanel({ filters, onClose, played }) {
     filters.scoreMin !== 0 || filters.scoreMax !== 100,
     filters.reviewsMin !== 0 || filters.reviewsMax !== Infinity,
     filters.showPlayed !== 'all',
+    !filters.showUnknown, // Only count as active if DISABLED
   ].filter(Boolean).length
 
   const handlePlaytimeToggle = (range) => {
@@ -114,10 +116,10 @@ export function FilterPanel({ filters, onClose, played }) {
       <CollapsibleSection 
         title={t('filter.playtime')} 
         section="playtime"
-        activeCount={filters.playtimeMin !== 0 || filters.playtimeMax !== Infinity ? 1 : 0}
+        activeCount={filters.playtimeMin !== 0 || filters.playtimeMax !== Infinity || !filters.showUnknown ? 1 : 0}
       >
         <div className="space-y-2">
-          {playtimeRanges.map((range) => (
+          {playtimeRanges.slice(0, 4).map((range) => (
             <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-white/5 p-2 rounded transition-colors">
               <input
                 type="checkbox"
@@ -128,6 +130,18 @@ export function FilterPanel({ filters, onClose, played }) {
               <span className="text-sm text-gray-700 dark:text-gray-300">{range.label}</span>
             </label>
           ))}
+          {/* Unknown HLTB separator */}
+          <div className="border-t border-white/10 my-2 pt-2">
+            <label className="flex items-center gap-3 cursor-pointer hover:bg-white/5 p-2 rounded transition-colors">
+              <input
+                type="checkbox"
+                checked={filters.showUnknown}
+                onChange={() => filters.setShowUnknown(!filters.showUnknown)}
+                className="w-4 h-4 text-blue-600 rounded"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">{playtimeRanges[4].label}</span>
+            </label>
+          </div>
         </div>
       </CollapsibleSection>
 
@@ -259,7 +273,8 @@ export function FilterPanel({ filters, onClose, played }) {
             filters.setReviewsMax(Infinity)
             filters.setSortBy('score_desc')
             filters.setSearchQuery('')
-            filters.setShowPlayed('unplayed')
+            filters.setShowPlayed('all')
+            filters.setShowUnknown(true)
           }}
           className="w-full px-4 py-2 glass hover:bg-white/5 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"
         >

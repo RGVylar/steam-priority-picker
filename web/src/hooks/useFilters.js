@@ -9,7 +9,8 @@ export function useFilters() {
   const [reviewsMax, setReviewsMax] = useState(Infinity)
   const [sortBy, setSortBy] = useState('score_desc')
   const [searchQuery, setSearchQuery] = useState('')
-  const [showPlayed, setShowPlayed] = useState('unplayed') // 'all', 'played', 'unplayed'
+  const [showPlayed, setShowPlayed] = useState('all') // 'all', 'played', 'unplayed' - default to all games
+  const [showUnknown, setShowUnknown] = useState(true) // Show games with unknown HLTB time (true by default)
 
   return {
     playtimeMin,
@@ -30,5 +31,7 @@ export function useFilters() {
     setSearchQuery,
     showPlayed,
     setShowPlayed,
+    showUnknown,
+    setShowUnknown,
   }
 }
