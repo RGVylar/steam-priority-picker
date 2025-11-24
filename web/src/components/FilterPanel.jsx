@@ -25,7 +25,7 @@ export function FilterPanel({ filters, onClose, played }) {
     { label: t('filter.playtime0to5'), min: 0, max: 5 },
     { label: t('filter.playtime5to10'), min: 5, max: 10 },
     { label: t('filter.playtime10to20'), min: 10, max: 20 },
-    { label: t('filter.playtime20plus'), min: 20, max: Infinity },
+    { label: t('filter.playtime20plus'), min: 20, max: 10000 },
     { label: t('filter.unknown'), value: 'Unknown' }, // Unknown HLTB games
   ]
 

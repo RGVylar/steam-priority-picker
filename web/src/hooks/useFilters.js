@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 
 export function useFilters() {
   const [playtimeMin, setPlaytimeMin] = useState(0)
-  const [playtimeMax, setPlaytimeMax] = useState(Infinity)
+  const [playtimeMax, setPlaytimeMax] = useState(10000)
   const [scoreMin, setScoreMin] = useState(0)
   const [scoreMax, setScoreMax] = useState(100)
   const [reviewsMin, setReviewsMin] = useState(0)
@@ -34,7 +34,7 @@ export function useFilters() {
           const prefs = await response.json()
           // Map API fields to local state
           setPlaytimeMin(prefs.playtime_min || 0)
-          setPlaytimeMax(prefs.playtime_max || Infinity)
+          setPlaytimeMax(prefs.playtime_max || 10000)
           setScoreMin(prefs.score_min || 0)
           setScoreMax(prefs.score_max || 100)
           setReviewsMin(prefs.reviews_min || 0)
@@ -94,7 +94,7 @@ export function useFilters() {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
       const preferences = {
         playtime_min: playtimeMin,
-        playtime_max: playtimeMax === Infinity ? 1000 : playtimeMax,
+        playtime_max: playtimeMax === 10000 ? 10000 : playtimeMax,
         score_min: scoreMin,
         score_max: scoreMax,
         reviews_min: reviewsMin,
