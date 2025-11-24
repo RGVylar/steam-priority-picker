@@ -121,7 +121,7 @@ export function FilterPanel({ filters, onClose, played }) {
         activeCount={filters.playtimeMin !== 0 || filters.playtimeMax !== Infinity || !filters.showUnknown ? 1 : 0}
       >
         <div className="space-y-2">
-          {playtimeRanges.slice(0, 4).map((range) => (
+          {playtimeRanges.slice(0, 6).map((range) => (
             <label key={range.label} className="flex items-center gap-3 cursor-pointer hover:bg-white/5 p-2 rounded transition-colors">
               <input
                 type="checkbox"
@@ -141,7 +141,7 @@ export function FilterPanel({ filters, onClose, played }) {
                 onChange={() => filters.setShowUnknown(!filters.showUnknown)}
                 className="w-4 h-4 text-blue-600 rounded"
               />
-              <span className="text-sm text-gray-700 dark:text-gray-300">{playtimeRanges[4].label}</span>
+              <span className="text-sm text-gray-700 dark:text-gray-300">{playtimeRanges[6].label}</span>
             </label>
           </div>
         </div>
