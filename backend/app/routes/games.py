@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Query, Header, HTTPException, Depends
+from fastapi.responses import StreamingResponse
 from typing import Optional
 from sqlalchemy.orm import Session
 from ..schemas.game import GameResponse, GameListResponse
@@ -9,6 +10,7 @@ from ..models import User, UserPreferences, UserPlayedGame
 from .auth import get_current_user
 import logging
 import time
+import json
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["games"])
@@ -364,4 +366,88 @@ async def get_my_games(
         "games": user_games_response,
         "db_total": actual_db_total  # Real count from database
     }
+
+
+@router.get("/my-games-stream")
+async def get_my_games_stream(token: str = Query(..., description="JWT token for authentication"), db: Session = Depends(get_db)):
+    """Get authenticated user's games from Steam library with SSE progress updates"""
+    from ..models import UserGame, Game as GameModel
+
+    # Verify token
+    user = auth_service.verify_token(db, token)
+    if not user:
+        # Return error as SSE event
+        async def error_generator():
+            yield f"data: {json.dumps({'error': 'Invalid or expired token'})}\n\n"
+        return StreamingResponse(error_generator(), media_type="text/event-stream")
+
+    async def event_generator():
+        """Generate SSE events with progress updates"""
+        try:
+            # Get user's owned games from Steam API
+            owned_games_data = await auth_service.get_user_owned_games(user.steam_id)
+
+            if not owned_games_data or "games" not in owned_games_data:
+                yield f"data: {json.dumps({'error': 'Could not fetch games from Steam API'})}\n\n"
+                return
+
+            # Get list of owned games
+            owned_app_ids = {}
+            for game in owned_games_data["games"]:
+                owned_app_ids[game["appid"]] = game.get("playtime_forever", 0) / 60
+
+            total_games = len(owned_app_ids)
+
+            # Emit initial progress
+            yield f"data: {json.dumps({'count': 0, 'total': total_games, 'status': 'starting'})}\n\n"
+
+            # Get known games count
+            known_games = db.query(GameModel.app_id).filter(GameModel.app_id.in_(list(owned_app_ids.keys()))).all()
+            known_app_ids = {g.app_id for g in known_games}
+            games_loaded = len(known_app_ids)
+            
+            # If all games are already known, emit complete immediately
+            if games_loaded == total_games:
+                yield f"data: {json.dumps({'count': total_games, 'total': total_games, 'status': 'complete'})}\n\n"
+                return
+            
+            yield f"data: {json.dumps({'count': games_loaded, 'total': total_games, 'status': 'loading_known'})}\n\n"            # Fetch unknown games in batches and emit progress
+            unknown_app_ids = [aid for aid in owned_app_ids.keys() if aid not in known_app_ids]
+
+            if unknown_app_ids:
+                batch_size = 50  # Match the batch size used in /my-games endpoint for consistency
+                for batch_start in range(0, len(unknown_app_ids), batch_size):
+                    batch_end = min(batch_start + batch_size, len(unknown_app_ids))
+                    unknown_app_ids_to_fetch = unknown_app_ids[batch_start:batch_end]
+
+                    unknown_games = await auth_service.fetch_unknown_games_info(unknown_app_ids_to_fetch, db)
+
+                    if unknown_games:
+                        for game_data in unknown_games:
+                            app_id = game_data.get("app_id")
+                            existing = db.query(GameModel).filter(GameModel.app_id == app_id).first()
+                            if not existing:
+                                new_game = GameModel(
+                                    app_id=app_id,
+                                    name=game_data.get("name", "Unknown"),
+                                    header_image=game_data.get("header_image", ""),
+                                    score=game_data.get("score", 0),
+                                    total_reviews=game_data.get("total_reviews", 0),
+                                    hltb_url=game_data.get("hltb_url")
+                                )
+                                db.add(new_game)
+
+                        db.commit()
+
+                    games_loaded = len(known_app_ids) + batch_end
+                    yield f"data: {json.dumps({'count': games_loaded, 'total': total_games, 'status': 'loading_unknown'})}\n\n"
+
+            # Emit complete event
+            yield f"data: {json.dumps({'count': total_games, 'total': total_games, 'status': 'complete'})}\n\n"
+
+        except Exception as e:
+            logger.error(f"Error in SSE stream: {e}")
+            yield f"data: {json.dumps({'error': str(e), 'status': 'error'})}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 

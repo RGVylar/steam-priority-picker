@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react'
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 export function useGames(filters, played, isAuthenticated = false, token = null) {
+  const [gameCount, setGameCount] = useState(0)
   const [allGames, setAllGames] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -18,34 +19,87 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
     
     setLoading(true)
     setError(null)
+    setGameCount(0)
+    
+    // Try SSE for real-time progress
     try {
-      const response = await fetch(`${API_URL}/my-games`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const sseUrl = `${API_URL}/my-games-stream?token=${encodeURIComponent(token)}`
+      const eventSource = new EventSource(sseUrl)
+      
+      eventSource.addEventListener('message', (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          
+          if (data.error) {
+            console.error('SSE error:', data.error)
+            eventSource.close()
+            // Fallback to regular endpoint
+            fetchGamesRegular()
+            return
+          }
+          
+          if (data.status === 'complete') {
+            console.log('✅ SSE stream complete')
+            eventSource.close()
+            // Now fetch the actual games data
+            fetchGamesRegular()
+          } else {
+            // Update progress
+            setGameCount(data.count)
+            setTotal(data.total)
+          }
+        } catch (e) {
+          console.error('Error parsing SSE message:', e)
+        }
       })
       
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(`API error: ${response.status} - ${errorData.detail || 'Unknown error'}`)
-      }
+      eventSource.addEventListener('error', (error) => {
+        console.warn('SSE connection error, falling back to regular endpoint:', error)
+        eventSource.close()
+        // Fallback to regular endpoint
+        fetchGamesRegular()
+      })
       
-      const data = await response.json()
-      setAllGames(data.games)
-      setTotal(data.total)
-      setDbTotal(data.db_total || 0)
-      
-      localStorage.setItem('steam_games_cache', JSON.stringify({
-        games: data.games,
-        total: data.total,
-        db_total: data.db_total || 0,
-        timestamp: Date.now(),
-        token: token
-      }))
-      console.log('✅ Library refreshed and cached')
     } catch (err) {
-      setError(err.message)
-      console.error('Error refreshing games:', err)
-    } finally {
-      setLoading(false)
+      console.warn('SSE not supported, falling back to regular endpoint:', err)
+      fetchGamesRegular()
+    }
+    
+    // Regular fetch as fallback
+    async function fetchGamesRegular() {
+      try {
+        const response = await fetch(`${API_URL}/my-games`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(`API error: ${response.status} - ${errorData.detail || 'Unknown error'}`)
+        }
+        
+        const data = await response.json()
+        
+        setAllGames(data.games)
+        setTotal(data.total)
+        setDbTotal(data.db_total || 0)
+        setGameCount(data.games.length)
+        
+        localStorage.setItem('steam_games_cache', JSON.stringify({
+          games: data.games,
+          total: data.total,
+          db_total: data.db_total || 0,
+          timestamp: Date.now(),
+          token: token
+        }))
+        console.log('✅ Library refreshed and cached')
+      } catch (err) {
+        setError(err.message)
+        console.error('Error refreshing games:', err)
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -57,6 +111,7 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
         setAllGames([])
         setTotal(0)
         setDbTotal(0)
+        setGameCount(0)
         setError(null)
         setLoading(false)
         return
@@ -73,6 +128,7 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
             setAllGames(games)
             setTotal(total)
             setDbTotal(db_total || 0)
+            setGameCount(games.length)
             return
           } else if (cachedToken !== token) {
             console.log('🧹 Cache cleared - different user/token')
@@ -85,45 +141,90 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
 
       setLoading(true)
       setError(null)
+      setGameCount(0)
+      
+      // Try SSE for real-time progress
       try {
-        let url
-        let options = {}
+        const sseUrl = `${API_URL}/my-games-stream?token=${encodeURIComponent(token)}`
+        const eventSource = new EventSource(sseUrl)
         
-        // Use /my-games endpoint (user is authenticated)
-        url = `${API_URL}/my-games`
-        options = {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        eventSource.addEventListener('message', (event) => {
+          try {
+            const data = JSON.parse(event.data)
+            
+            if (data.error) {
+              console.error('SSE error:', data.error)
+              eventSource.close()
+              // Fallback to regular endpoint
+              fetchGamesRegular()
+              return
+            }
+            
+            if (data.status === 'complete') {
+              console.log('✅ SSE stream complete')
+              eventSource.close()
+              // Now fetch the actual games data
+              fetchGamesRegular()
+            } else {
+              // Update progress
+              setGameCount(data.count)
+              setTotal(data.total)
+            }
+          } catch (e) {
+            console.error('Error parsing SSE message:', e)
           }
-        }
+        })
         
-        const response = await fetch(url, options)
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}))
-          throw new Error(`API error: ${response.status} - ${errorData.detail || 'Unknown error'}`)
-        }
+        eventSource.addEventListener('error', (error) => {
+          console.warn('SSE connection error, falling back to regular endpoint:', error)
+          eventSource.close()
+          // Fallback to regular endpoint
+          fetchGamesRegular()
+        })
         
-        const data = await response.json()
-        setAllGames(data.games)
-        setTotal(data.total)
-        setDbTotal(data.db_total || 0)
-        
-        // Save to cache
-        localStorage.setItem('steam_games_cache', JSON.stringify({
-          games: data.games,
-          total: data.total,
-          db_total: data.db_total || 0,
-          timestamp: Date.now(),
-          token: token
-        }))
-        console.log('💾 Games data cached')
       } catch (err) {
-        setError(err.message)
-        console.error('Error fetching games:', err)
-        setAllGames([])
-        setTotal(0)
-      } finally {
-        setLoading(false)
+        console.warn('SSE not supported, falling back to regular endpoint:', err)
+        fetchGamesRegular()
+      }
+      
+      // Regular fetch as fallback
+      async function fetchGamesRegular() {
+        try {
+          const response = await fetch(`${API_URL}/my-games`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+          
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}))
+            throw new Error(`API error: ${response.status} - ${errorData.detail || 'Unknown error'}`)
+          }
+          
+          const data = await response.json()
+          setAllGames(data.games)
+          setTotal(data.total)
+          setDbTotal(data.db_total || 0)
+          setGameCount(data.games.length)
+          
+          // Save to cache
+          localStorage.setItem('steam_games_cache', JSON.stringify({
+            games: data.games,
+            total: data.total,
+            db_total: data.db_total || 0,
+            timestamp: Date.now(),
+            token: token
+          }))
+          console.log('💾 Games data cached')
+        } catch (err) {
+          setError(err.message)
+          console.error('Error fetching games:', err)
+          setAllGames([])
+          setTotal(0)
+          setGameCount(0)
+        } finally {
+          setLoading(false)
+        }
       }
     }
 
@@ -240,6 +341,7 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
     loading,
     error,
     dbTotal,
+    gameCount,
     forceRefresh,
   }
 }

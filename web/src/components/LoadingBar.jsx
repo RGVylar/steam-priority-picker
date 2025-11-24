@@ -3,47 +3,53 @@ import { useState, useEffect } from 'react'
 
 export function LoadingBar({ isLoading, gameCount, totalGames }) {
   const { t } = useLanguage()
-  const [simulatedProgress, setSimulatedProgress] = useState(0)
+  const [animatedProgress, setAnimatedProgress] = useState(0)
 
-  // Simulate progress while loading
+  // Calculate real progress percentage
+  const realProgress = totalGames > 0 ? (gameCount / totalGames) * 100 : 0
+
+  // Smooth animation to real progress
   useEffect(() => {
     if (!isLoading) {
-      setSimulatedProgress(0)
+      setAnimatedProgress(0)
       return
     }
 
-    // Start at 10% immediately
-    setSimulatedProgress(10)
+    const targetProgress = realProgress
+    const startProgress = animatedProgress
+    const duration = 300 // ms
+    const startTime = Date.now()
 
-    // Gradually increase to 90% over time
-    const interval = setInterval(() => {
-      setSimulatedProgress((prev) => {
-        if (prev >= 90) return 90
-        // Random increment between 5-15%
-        return prev + Math.random() * 10 + 5
-      })
-    }, 500)
+    const animate = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(1, elapsed / duration)
+      
+      // Smooth easing
+      const eased = 1 - Math.pow(1 - progress, 3)
+      const current = startProgress + (targetProgress - startProgress) * eased
+      
+      setAnimatedProgress(current)
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      }
+    }
 
-    return () => clearInterval(interval)
-  }, [isLoading])
+    requestAnimationFrame(animate)
+  }, [isLoading, realProgress, animatedProgress])
 
-  // When done loading, jump to 100%
+  // When done loading, animate to 100%
   useEffect(() => {
-    if (!isLoading && simulatedProgress > 0) {
-      setSimulatedProgress(100)
-      // Reset after animation completes
+    if (!isLoading && animatedProgress > 0) {
+      setAnimatedProgress(100)
       const timeout = setTimeout(() => {
-        setSimulatedProgress(0)
+        setAnimatedProgress(0)
       }, 500)
       return () => clearTimeout(timeout)
     }
-  }, [isLoading, simulatedProgress])
+  }, [isLoading, animatedProgress])
 
   if (!isLoading) return null
-
-  // Use actual count if available, otherwise use simulated progress
-  const percentage = totalGames > 0 && gameCount > 0 ? (gameCount / totalGames) * 100 : simulatedProgress
-  const displayCount = gameCount > 0 ? gameCount : Math.floor((simulatedProgress / 100) * (totalGames || 100))
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -59,7 +65,7 @@ export function LoadingBar({ isLoading, gameCount, totalGames }) {
           <div
             className="h-full bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-full transition-all duration-300 ease-out shadow-lg"
             style={{
-              width: `${percentage}%`,
+              width: `${animatedProgress}%`,
               boxShadow: '0 0 20px rgba(96, 165, 250, 0.6), 0 0 40px rgba(168, 85, 247, 0.3)',
             }}
           />
@@ -75,10 +81,10 @@ export function LoadingBar({ isLoading, gameCount, totalGames }) {
         {/* Counter Text */}
         <div className="text-center">
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {displayCount.toLocaleString()} / {(totalGames || '...').toLocaleString && (totalGames || '...').toLocaleString() || totalGames || '...'} {t('header.games')}
+            {gameCount.toLocaleString()} / {totalGames.toLocaleString()} {t('header.games')}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {Math.round(percentage)}%
+            {Math.round(realProgress)}%
           </p>
         </div>
 

@@ -28,7 +28,7 @@ function App() {
   const { t } = useLanguage()
   const filters = useFilters()
   const { played, togglePlayed, isPlayed, getPlayedCount } = usePlayed()
-  const { games, total, loading, error, dbTotal, forceRefresh } = useGames(filters, played, isAuthenticated, token)
+  const { games, total, loading, error, dbTotal, gameCount, forceRefresh } = useGames(filters, played, isAuthenticated, token)
 
   // Handle smooth transition between background images
   useEffect(() => {
@@ -109,7 +109,7 @@ function App() {
       {/* Loading Bar with Progress */}
       <LoadingBar 
         isLoading={loading && isAuthenticated}
-        gameCount={games.length}
+        gameCount={gameCount}
         totalGames={total}
       />
       
