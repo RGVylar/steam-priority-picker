@@ -66,3 +66,6 @@ output/
 # Test files
 test_*.py
 !web/src/data/games.json
+
+# Old/deprecated files
+old/
