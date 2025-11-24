@@ -10,7 +10,7 @@ from .models import Base
 import logging
 
 # Version identifier for deployment tracking
-APP_VERSION = "2025-11-22-v5"
+APP_VERSION = "2025-11-24-v1.0.0"
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)

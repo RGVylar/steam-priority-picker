@@ -14,7 +14,7 @@ load_dotenv()
 
 # Import models
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 from app.models import Game
 
 # Get database URL from environment
