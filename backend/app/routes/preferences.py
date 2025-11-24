@@ -13,10 +13,13 @@ logger = logging.getLogger(__name__)
 class UserPreferencesRequest(BaseModel):
     show_played_games: Optional[bool] = True
     show_unplayed_games: Optional[bool] = True
+    show_unknown: Optional[bool] = True
     playtime_min: Optional[float] = 0
     playtime_max: Optional[float] = 1000
     score_min: Optional[int] = 0
     score_max: Optional[int] = 100
+    reviews_min: Optional[int] = 0
+    reviews_max: Optional[int] = 999999
     sort_by: Optional[str] = "name"
     sort_order: Optional[str] = "asc"
     items_per_page: Optional[int] = 50
@@ -25,10 +28,13 @@ class UserPreferencesRequest(BaseModel):
 class UserPreferencesResponse(BaseModel):
     show_played_games: bool
     show_unplayed_games: bool
+    show_unknown: bool
     playtime_min: float
     playtime_max: float
     score_min: int
     score_max: int
+    reviews_min: int
+    reviews_max: int
     sort_by: str
     sort_order: str
     items_per_page: int

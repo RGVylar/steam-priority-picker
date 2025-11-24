@@ -158,10 +158,13 @@ class UserPreferences(Base):
     # Filter preferences
     show_played_games = Column(Boolean, default=True)  # Show games marked as played
     show_unplayed_games = Column(Boolean, default=True)  # Show games not marked as played
+    show_unknown = Column(Boolean, default=True)  # Show games with unknown playtime
     playtime_min = Column(Float, default=0)  # Minimum playtime filter
     playtime_max = Column(Float, default=1000)  # Maximum playtime filter
     score_min = Column(Integer, default=0)  # Minimum score filter
     score_max = Column(Integer, default=100)  # Maximum score filter
+    reviews_min = Column(Integer, default=0)  # Minimum reviews filter
+    reviews_max = Column(Integer, default=999999)  # Maximum reviews filter
     
     # Display preferences
     sort_by = Column(String(50), default="name")  # Sort field: name, playtime_hours, score
@@ -179,7 +182,13 @@ class UserPreferences(Base):
         return {
             "show_played_games": self.show_played_games,
             "show_unplayed_games": self.show_unplayed_games,
+            "show_unknown": self.show_unknown,
             "playtime_min": self.playtime_min,
+            "playtime_max": self.playtime_max,
+            "score_min": self.score_min,
+            "score_max": self.score_max,
+            "reviews_min": self.reviews_min,
+            "reviews_max": self.reviews_max,
             "playtime_max": self.playtime_max,
             "score_min": self.score_min,
             "score_max": self.score_max,

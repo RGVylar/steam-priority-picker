@@ -37,9 +37,11 @@ export function useFilters() {
           setPlaytimeMax(prefs.playtime_max || Infinity)
           setScoreMin(prefs.score_min || 0)
           setScoreMax(prefs.score_max || 100)
+          setReviewsMin(prefs.reviews_min || 0)
+          setReviewsMax(prefs.reviews_max || Infinity)
           setSortBy(mapSortByToFrontend(prefs.sort_by, prefs.sort_order) || 'score_desc')
           setShowPlayed(mapShowPlayedToFrontend(prefs.show_played_games, prefs.show_unplayed_games) || 'all')
-          // Note: showUnknown and reviews filters are not persisted yet
+          setShowUnknown(prefs.show_unknown !== false) // Defaults to true if not set
         }
       } catch (error) {
         console.warn('Could not load preferences:', error)
@@ -95,6 +97,9 @@ export function useFilters() {
         playtime_max: playtimeMax === Infinity ? 1000 : playtimeMax,
         score_min: scoreMin,
         score_max: scoreMax,
+        reviews_min: reviewsMin,
+        reviews_max: reviewsMax === Infinity ? 999999 : reviewsMax,
+        show_unknown: showUnknown,
         ...mapSortByToApi(sortBy),
         ...mapShowPlayedToApi(showPlayed),
       }
@@ -114,7 +119,7 @@ export function useFilters() {
     } catch (error) {
       console.error('Failed to save preferences:', error)
     }
-  }, [playtimeMin, playtimeMax, scoreMin, scoreMax, sortBy, showPlayed, isLoading])
+  }, [playtimeMin, playtimeMax, scoreMin, scoreMax, reviewsMin, reviewsMax, sortBy, showPlayed, showUnknown, isLoading])
 
   // Save preferences with debounce when any filter changes
   useEffect(() => {
