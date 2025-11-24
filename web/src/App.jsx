@@ -5,6 +5,7 @@ import GameList from './components/GameList'
 import SearchBar from './components/SearchBar'
 import { BackendStatus } from './components/BackendStatus'
 import { KofiButton } from './components/KofiButton'
+import { LoadingBar } from './components/LoadingBar'
 import { useGames } from './hooks/useGames'
 import { useFilters } from './hooks/useFilters'
 import { useDarkMode } from './hooks/useDarkMode'
@@ -103,6 +104,13 @@ function App() {
         userTotal={total}
         onRefresh={forceRefresh}
         isRefreshing={loading}
+      />
+      
+      {/* Loading Bar with Progress */}
+      <LoadingBar 
+        isLoading={loading && isAuthenticated}
+        gameCount={games.length}
+        totalGames={total}
       />
       
       <div className="flex">
