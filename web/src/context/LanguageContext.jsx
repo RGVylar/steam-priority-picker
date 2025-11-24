@@ -22,11 +22,13 @@ const translations = {
     
     // Filters
     'filter.title': 'Filtros',
-    'filter.playtime': 'Tiempo de juego',
+    'filter.playtime': 'Tiempo para completar',
     'filter.playtime0to5': '0-5 horas',
     'filter.playtime5to10': '5-10 horas',
     'filter.playtime10to20': '10-20 horas',
-    'filter.playtime20plus': '20+ horas',
+    'filter.playtime20to50': '20-50 horas',
+    'filter.playtime50to100': '50-100 horas',
+    'filter.playtime100plus': '100+ horas',
     
     'filter.score': 'Puntuación Steam',
     'filter.score75to100': '75-100%',
@@ -38,8 +40,8 @@ const translations = {
     'filter.reviewsMaximum': 'Máximo:',
     
     'filter.sort': 'Ordenar por',
-    'filter.sortPlaytimeAsc': 'Tiempo de juego (menor a mayor)',
-    'filter.sortPlaytimeDesc': 'Tiempo de juego (mayor a menor)',
+    'filter.sortPlaytimeAsc': 'Tiempo para completar (menor a mayor)',
+    'filter.sortPlaytimeDesc': 'Tiempo para completar (mayor a menor)',
     'filter.sortScoreDesc': 'Puntuación (mayor a menor)',
     'filter.sortScoreAsc': 'Puntuación (menor a mayor)',
     
@@ -108,11 +110,13 @@ const translations = {
     
     // Filters
     'filter.title': 'Filters',
-    'filter.playtime': 'Playtime',
+    'filter.playtime': 'Time to Beat',
     'filter.playtime0to5': '0-5 hours',
     'filter.playtime5to10': '5-10 hours',
     'filter.playtime10to20': '10-20 hours',
-    'filter.playtime20plus': '20+ hours',
+    'filter.playtime20to50': '20-50 hours',
+    'filter.playtime50to100': '50-100 hours',
+    'filter.playtime100plus': '100+ hours',
     
     'filter.score': 'Steam Score',
     'filter.score75to100': '75-100%',
@@ -124,8 +128,8 @@ const translations = {
     'filter.reviewsMaximum': 'Maximum:',
     
     'filter.sort': 'Sort by',
-    'filter.sortPlaytimeAsc': 'Playtime (Low to High)',
-    'filter.sortPlaytimeDesc': 'Playtime (High to Low)',
+    'filter.sortPlaytimeAsc': 'Time to Beat (Low to High)',
+    'filter.sortPlaytimeDesc': 'Time to Beat (High to Low)',
     'filter.sortScoreDesc': 'Score (High to Low)',
     'filter.sortScoreAsc': 'Score (Low to High)',
     
