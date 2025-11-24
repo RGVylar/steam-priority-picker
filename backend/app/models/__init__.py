@@ -28,7 +28,7 @@ class Game(Base):
     app_id = Column(Integer, unique=True, nullable=False, index=True)
     name = Column(String(500), nullable=False)
     header_image = Column(String(500), nullable=True)
-    playtime_hours = Column(Float, default=0)  # Generic/average playtime
+    playtime_hours = Column(Float, default=None, nullable=True)  # HLTB data: NULL = not searched, 0 = not in HLTB, >0 = valid data
     score = Column(Float, default=0)
     total_reviews = Column(Integer, default=0)
     hltb_url = Column(String(500), nullable=True)

@@ -101,7 +101,7 @@ async def main():
         print("\n📊 Checking for games that need HLTB data...")
         
         games_needing_update = db.query(Game).filter(
-            (Game.hltb_url == None) | (Game.playtime_hours == 0)
+            Game.playtime_hours == None
         ).all()
         
         total = len(games_needing_update)

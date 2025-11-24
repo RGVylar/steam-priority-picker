@@ -3,6 +3,7 @@ import { useLanguage } from '../context/LanguageContext'
 export function GameCard({ game, isPlayed, onTogglePlayed, onMouseEnter, onMouseLeave }) {
   const { t } = useLanguage()
   const getPlaytimeBadge = (hours) => {
+    if (!hours || hours === null) return { text: t('games.unknown'), color: 'bg-gray-100 text-gray-800' }
     if (hours < 5) return { text: '< 5 hrs', color: 'bg-green-100 text-green-800' }
     if (hours < 10) return { text: '5-10 hrs', color: 'bg-blue-100 text-blue-800' }
     if (hours < 20) return { text: '10-20 hrs', color: 'bg-yellow-100 text-yellow-800' }
@@ -10,7 +11,7 @@ export function GameCard({ game, isPlayed, onTogglePlayed, onMouseEnter, onMouse
   }
 
   // Use HLTB time for badge, fallback to personal playtime if HLTB not available
-  const timeForBadge = game.hltb_hours > 0 ? game.hltb_hours : game.playtime_hours
+  const timeForBadge = game.hltb_hours > 0 ? game.hltb_hours : (game.playtime_hours || 0)
   const badge = getPlaytimeBadge(timeForBadge)
   const imageUrl = game.image_url || `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.app_id}/header.jpg`
 
@@ -79,7 +80,7 @@ export function GameCard({ game, isPlayed, onTogglePlayed, onMouseEnter, onMouse
         {/* Additional Info */}
         <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 space-y-1">
           <p className="text-xs text-gray-600 dark:text-gray-400">
-            {t('games.playtime')}: <span className="font-medium text-gray-900 dark:text-white">{game.playtime_hours.toFixed(1)} hrs</span>
+            {t('games.playtime')}: <span className="font-medium text-gray-900 dark:text-white">{game.playtime_hours ? `${game.playtime_hours.toFixed(1)} hrs` : t('games.unknown')}</span>
           </p>
           <p className="text-xs text-gray-600 dark:text-gray-400">
             {t('games.timeToBeat')}: <span className="font-medium text-gray-900 dark:text-white">{game.hltb_hours > 0 ? `${game.hltb_hours.toFixed(1)} hrs` : t('games.unknown')}</span>
