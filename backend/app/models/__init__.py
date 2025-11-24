@@ -146,3 +146,48 @@ class UserPlayedGame(Base):
     
     def __repr__(self):
         return f"<UserPlayedGame user={self.user_id} app={self.app_id}>"
+
+
+class UserPreferences(Base):
+    """User's filter and display preferences"""
+    __tablename__ = "user_preferences"
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    
+    # Filter preferences
+    show_played_games = Column(Boolean, default=True)  # Show games marked as played
+    show_unplayed_games = Column(Boolean, default=True)  # Show games not marked as played
+    playtime_min = Column(Float, default=0)  # Minimum playtime filter
+    playtime_max = Column(Float, default=1000)  # Maximum playtime filter
+    score_min = Column(Integer, default=0)  # Minimum score filter
+    score_max = Column(Integer, default=100)  # Maximum score filter
+    
+    # Display preferences
+    sort_by = Column(String(50), default="name")  # Sort field: name, playtime_hours, score
+    sort_order = Column(String(4), default="asc")  # asc or desc
+    items_per_page = Column(Integer, default=50)  # Pagination limit
+    
+    # Search preferences
+    last_search_query = Column(String(255), default="")  # Last search query used
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def to_dict(self):
+        """Convert to dictionary for API responses"""
+        return {
+            "show_played_games": self.show_played_games,
+            "show_unplayed_games": self.show_unplayed_games,
+            "playtime_min": self.playtime_min,
+            "playtime_max": self.playtime_max,
+            "score_min": self.score_min,
+            "score_max": self.score_max,
+            "sort_by": self.sort_by,
+            "sort_order": self.sort_order,
+            "items_per_page": self.items_per_page,
+            "last_search_query": self.last_search_query
+        }
+    
+    def __repr__(self):
+        return f"<UserPreferences user={self.user_id}>"

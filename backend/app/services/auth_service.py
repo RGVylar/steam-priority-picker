@@ -85,7 +85,7 @@ class SteamAuthService:
                         logger.warning(f"Steam verification failed for {steam_id}")
                         # For development, accept anyway if we have a valid steam_id
                         if steam_id.isdigit():
-                            logger.info(f"Development mode: accepting Steam ID {steam_id}")
+                            logger.debug(f"Development mode: accepting Steam ID {steam_id}")
                             return steam_id
                         
             except Exception as e:
@@ -98,7 +98,7 @@ class SteamAuthService:
         
         # Development mode: create mock profile if no API key
         if not self.steam_api_key or self.steam_api_key == "your_steam_api_key_here":
-            logger.info(f"Development mode: using mock profile for {steam_id}")
+            logger.debug(f"Development mode: using mock profile for {steam_id}")
             return {
                 "steam_id": steam_id,
                 "username": f"SteamUser_{steam_id[-6:]}",
@@ -311,7 +311,7 @@ class SteamAuthService:
                                     "name": name,
                                     "header_image": game_data.get("header_image", ""),
                                 }
-                                logger.info(f"✅ Fetched Steam info for app {app_id}: {game_info['name']} (success={success})")
+                                logger.debug(f"✅ Fetched Steam info for app {app_id}: {game_info['name']} (success={success})")
                                 return game_info
                             else:
                                 # Data exists but no name - likely delisted or hidden game
@@ -395,8 +395,8 @@ class SteamAuthService:
         from ..models import DelistedGame
         
         unknown_games = []
-        logger.info(f"🔍 Fetching info for {len(unknown_app_ids)} unknown games from Steam...")
-        logger.info(f"📌 Database session available: {db is not None}")
+        logger.debug(f"🔍 Fetching info for {len(unknown_app_ids)} unknown games from Steam...")
+        logger.debug(f"📌 Database session available: {db is not None}")
         
         # Get known delisted games from database
         delisted_from_db = set()
@@ -404,14 +404,14 @@ class SteamAuthService:
         if db:
             delisted_records = db.query(DelistedGame).all()
             delisted_from_db = {record.app_id for record in delisted_records}
-            logger.info(f"📊 Loaded {len(delisted_from_db)} known delisted games from database")
+            logger.debug(f"📊 Loaded {len(delisted_from_db)} known delisted games from database")
             
             # Get the most recent check time
             if delisted_records:
                 last_refetch_time = max(record.checked_at for record in delisted_records)
-                logger.info(f"🕐 Last refetch was at: {last_refetch_time}")
+                logger.debug(f"🕐 Last refetch was at: {last_refetch_time}")
         else:
-            logger.warning(f"⚠️ No database session provided - cannot cache delisted games")
+            logger.debug(f"⚠️ No database session provided - cannot cache delisted games")
         
         # Check if we should refetch (once per day)
         from datetime import timedelta
@@ -419,18 +419,18 @@ class SteamAuthService:
         if db and delisted_from_db and any(aid in delisted_from_db for aid in unknown_app_ids):
             if last_refetch_time is None:
                 should_refetch = True
-                logger.info("🔄 No previous refetch found - will attempt refetch")
+                logger.debug("🔄 No previous refetch found - will attempt refetch")
             else:
                 time_since_refetch = datetime.utcnow() - last_refetch_time
                 if time_since_refetch > timedelta(hours=24):
                     should_refetch = True
-                    logger.info(f"🔄 Last refetch was {time_since_refetch.total_seconds() / 3600:.1f} hours ago - will attempt refetch")
+                    logger.debug(f"🔄 Last refetch was {time_since_refetch.total_seconds() / 3600:.1f} hours ago - will attempt refetch")
                 else:
-                    logger.info(f"⏭️ Last refetch was {time_since_refetch.total_seconds() / 3600:.1f} hours ago - skipping (need 24h)")
+                    logger.debug(f"⏭️ Last refetch was {time_since_refetch.total_seconds() / 3600:.1f} hours ago - skipping (need 24h)")
         
         if should_refetch:
             delisted_in_unknown = [aid for aid in unknown_app_ids if aid in delisted_from_db]
-            logger.info(f"🔄 Attempting to refetch {len(delisted_in_unknown)}/{len(delisted_from_db)} delisted games...")
+            logger.debug(f"🔄 Attempting to refetch {len(delisted_in_unknown)}/{len(delisted_from_db)} delisted games...")
             steam_tasks = [self.get_game_info_from_steam(app_id) for app_id in delisted_in_unknown]
             steam_results = await asyncio.gather(*steam_tasks, return_exceptions=True)
             
@@ -453,14 +453,14 @@ class SteamAuthService:
             if restored_count > 0:
                 logger.warning(f"⭐ {restored_count} games have been restored to Steam!")
             else:
-                logger.info(f"✅ Refetch complete - no games have been restored")
+                logger.debug(f"✅ Refetch complete - no games have been restored")
         
         # Filter out known delisted games
         apps_to_fetch = [aid for aid in unknown_app_ids if aid not in delisted_from_db]
         delisted_skipped = len(unknown_app_ids) - len(apps_to_fetch)
         
         if delisted_skipped > 0:
-            logger.info(f"⏭️ Skipping {delisted_skipped} known delisted games (no Steam API call needed)")
+            logger.debug(f"⏭️ Skipping {delisted_skipped} known delisted games (no Steam API call needed)")
         
         # Fetch Steam info with limited concurrency to avoid rate limiting
         if apps_to_fetch:
@@ -508,7 +508,7 @@ class SteamAuthService:
                         if review_data:
                             score = review_data.get("score", 0)
                             total_reviews = review_data.get("total_reviews", 0)
-                            logger.info(f"📊 Got reviews for {steam_info['name']}: {score:.1f}% ({total_reviews} reviews)")
+                            logger.debug(f"📊 Got reviews for {steam_info['name']}: {score:.1f}% ({total_reviews} reviews)")
                     except Exception as e:
                         logger.warning(f"⚠️ Could not fetch reviews for app {app_id}: {e}")
                     
@@ -523,7 +523,7 @@ class SteamAuthService:
                     }
                     unknown_games.append(game)
                     games_found += 1
-                    logger.info(f"✅ Added unknown game: {game['name']} ({app_id}) - {score:.1f}% ({total_reviews} reviews)")
+                    logger.debug(f"✅ Added unknown game: {game['name']} ({app_id}) - {score:.1f}% ({total_reviews} reviews)")
                 except Exception as e:
                     logger.error(f"❌ Error processing game {app_id}: {e}", exc_info=True)
                     skipped_games += 1
@@ -541,7 +541,7 @@ class SteamAuthService:
                     if not existing:
                         db.add(DelistedGame(app_id=app_id))
                 db.commit()
-                logger.info(f"💾 Saved {len(newly_delisted)} newly delisted games to database")
+                logger.debug(f"💾 Saved {len(newly_delisted)} newly delisted games to database")
             except Exception as e:
                 logger.error(f"❌ Error saving delisted games: {e}")
                 db.rollback()

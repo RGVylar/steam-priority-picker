@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Optional
+from typing import List, Optional, Set
 from sqlalchemy.orm import Session
 from ..models import Game
 from ..database import SessionLocal
@@ -106,10 +106,28 @@ class GameService:
         score_min: float = 0,
         score_max: float = 100,
         limit: int = None,
-        offset: int = 0
+        offset: int = 0,
+        show_played_games: bool = True,
+        show_unplayed_games: bool = True,
+        played_game_ids: Optional[Set[int]] = None,
+        sort_by: str = "name",
+        sort_order: str = "asc"
     ) -> tuple[List[dict], int]:
         """Search and filter games"""
         filtered = self.games
+        
+        # Filter by played/unplayed status
+        if played_game_ids is not None:
+            if not show_played_games and not show_unplayed_games:
+                # If both are disabled, show no games
+                filtered = []
+            elif show_played_games and not show_unplayed_games:
+                # Show only played games
+                filtered = [g for g in filtered if g.get('app_id') in played_game_ids]
+            elif not show_played_games and show_unplayed_games:
+                # Show only unplayed games
+                filtered = [g for g in filtered if g.get('app_id') not in played_game_ids]
+            # If both are True, show all games (no filtering needed)
         
         # Filter by search query
         if query:
@@ -121,6 +139,18 @@ class GameService:
         
         # Filter by score
         filtered = [g for g in filtered if score_min <= g.get('score', 0) <= score_max]
+        
+        # Sort results
+        reverse_order = sort_order.lower() == "desc"
+        if sort_by == "name":
+            filtered.sort(key=lambda x: x.get('name', '').lower(), reverse=reverse_order)
+        elif sort_by == "playtime_hours":
+            filtered.sort(key=lambda x: x.get('playtime_hours', 0), reverse=reverse_order)
+        elif sort_by == "score":
+            filtered.sort(key=lambda x: x.get('score', 0), reverse=reverse_order)
+        else:
+            # Default sort by name
+            filtered.sort(key=lambda x: x.get('name', '').lower(), reverse=reverse_order)
         
         total = len(filtered)
         games = filtered[offset:offset + limit] if limit else filtered[offset:]
