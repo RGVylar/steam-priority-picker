@@ -88,9 +88,6 @@ async def update_games_batch(games_to_update, db):
                 game.playtime_hours = 0
                 print(f"  ⚠️ Not found in HLTB: {game.name} (marked as 0)")
                 updated += 1
-            else:
-                print(f"  ⚠️ No HLTB data found for: {game.name}")
-                failed += 1
                 
         except Exception as e:
             print(f"  ❌ Error updating {game.name}: {e}")
