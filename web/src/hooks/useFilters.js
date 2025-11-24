@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { preferencesApi } from '../utils/api'
 
 export function useFilters() {
   const [playtimeMin, setPlaytimeMin] = useState(0)
@@ -18,8 +17,21 @@ export function useFilters() {
   useEffect(() => {
     const loadPreferences = async () => {
       try {
-        const prefs = await preferencesApi.get()
-        if (prefs) {
+        const token = localStorage.getItem('auth_token')
+        if (!token) {
+          setIsLoading(false)
+          return
+        }
+
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+        const response = await fetch(`${API_URL}/preferences`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        if (response.ok) {
+          const prefs = await response.json()
           // Map API fields to local state
           setPlaytimeMin(prefs.playtime_min || 0)
           setPlaytimeMax(prefs.playtime_max || Infinity)
@@ -74,18 +86,31 @@ export function useFilters() {
     if (isLoading) return // Don't save while loading
 
     try {
+      const token = localStorage.getItem('auth_token')
+      if (!token) return
+
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
       const preferences = {
         playtime_min: playtimeMin,
-        playtime_max: playtimeMax === Infinity ? 1000 : playtimeMax, // API expects number, not Infinity
+        playtime_max: playtimeMax === Infinity ? 1000 : playtimeMax,
         score_min: scoreMin,
         score_max: scoreMax,
         ...mapSortByToApi(sortBy),
         ...mapShowPlayedToApi(showPlayed),
-        // Note: reviews and showUnknown not implemented in API yet
       }
 
-      await preferencesApi.update(preferences)
-      console.log('Preferences saved successfully')
+      const response = await fetch(`${API_URL}/preferences`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(preferences)
+      })
+
+      if (response.ok) {
+        console.log('Preferences saved successfully')
+      }
     } catch (error) {
       console.error('Failed to save preferences:', error)
     }
