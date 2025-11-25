@@ -167,7 +167,7 @@ const translations = {
     'games.unplayed': '○ Played',
     'games.markAsPlayed': 'Mark as played',
     'games.markAsUnplayed': 'Mark as unplayed',
-    'games.random': '🎲 Random with this filters',
+    'games.random': '🎲 Random using these filters',
     'games.randomPick': '✨ Random Pick ✨',
     'games.reroll': '🔄 Roll again',
     'games.playOnSteam': '🎮 Play on Steam',
