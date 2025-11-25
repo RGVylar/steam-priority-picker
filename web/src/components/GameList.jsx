@@ -119,7 +119,7 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
                 : 'opacity-100 scale-100'
             }`}>
               {/* Header con X */}
-              <div className="relative">
+              <div className="relative group">
                 <button
                   onClick={closeModal}
                   className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
@@ -130,9 +130,22 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
                 <img 
                   src={selectedRandomGame.header_image} 
                   alt={selectedRandomGame.name}
-                  className="w-full h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                  className="w-full h-64 object-cover cursor-pointer transition-all duration-300"
                   onClick={() => launchGame(selectedRandomGame.app_id)}
                 />
+                
+                {/* Overlay con botón play */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+                  <button
+                    onClick={() => launchGame(selectedRandomGame.app_id)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 hover:bg-white text-gray-900 rounded-full p-4 shadow-lg transform group-hover:scale-110 transition-transform"
+                    title="Play on Steam"
+                  >
+                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               {/* Contenido */}
