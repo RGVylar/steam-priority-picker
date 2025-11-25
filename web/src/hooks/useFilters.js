@@ -7,7 +7,7 @@ export function useFilters() {
   const [scoreMax, setScoreMax] = useState(100)
   const [reviewsMin, setReviewsMin] = useState(0)
   const [reviewsMax, setReviewsMax] = useState(Infinity)
-  const [sortBy, setSortBy] = useState('score_desc')
+  const [sortBy, setSortBy] = useState('playtime_asc')
   const [searchQuery, setSearchQuery] = useState('')
   const [showPlayed, setShowPlayed] = useState('all') // 'all', 'played', 'unplayed' - default to all games
   const [showUnknown, setShowUnknown] = useState(true) // Show games with unknown HLTB time (true by default)
@@ -39,7 +39,7 @@ export function useFilters() {
           setScoreMax(prefs.score_max || 100)
           setReviewsMin(prefs.reviews_min || 0)
           setReviewsMax(prefs.reviews_max || Infinity)
-          setSortBy(mapSortByToFrontend(prefs.sort_by, prefs.sort_order) || 'score_desc')
+          setSortBy(mapSortByToFrontend(prefs.sort_by, prefs.sort_order) || 'playtime_asc')
           setShowPlayed(mapShowPlayedToFrontend(prefs.show_played_games, prefs.show_unplayed_games) || 'all')
           setShowUnknown(prefs.show_unknown !== false) // Defaults to true if not set
         }
@@ -55,7 +55,7 @@ export function useFilters() {
 
   // Helper functions to map between API and frontend formats
   const mapSortByToFrontend = (sortBy, sortOrder) => {
-    if (!sortBy) return 'score_desc'
+    if (!sortBy) return 'playtime_asc'
     return `${sortBy}_${sortOrder || 'asc'}`
   }
 

@@ -3,10 +3,43 @@ import { useInfiniteScroll } from '../hooks/useInfiniteScroll'
 import { useLanguage } from '../context/LanguageContext'
 import { useState, useEffect, useMemo } from 'react'
 
-export function GameList({ games, total, loading, filters, togglePlayed, isPlayed, onGameHover }) {
+export function GameList({ games, total, loading, filters, togglePlayed, isPlayed, onGameHover, getRandomGame, onRandomGameSelect }) {
   const { t } = useLanguage()
   const { displayedItems, hasMore, observerTarget } = useInfiniteScroll(games, 24)
+  const [selectedRandomGame, setSelectedRandomGame] = useState(null)
+  const [isClosing, setIsClosing] = useState(false)
+  const [isOpening, setIsOpening] = useState(false)
   const [previousItems, setPreviousItems] = useState([])
+
+  const handleRandomGame = () => {
+    const randomGame = getRandomGame()
+    if (randomGame) {
+      setSelectedRandomGame(randomGame)
+      setIsOpening(true)
+      setTimeout(() => {
+        setIsOpening(false)
+      }, 50) // Pequeño delay para que se aplique la transición
+      if (onRandomGameSelect) {
+        onRandomGameSelect(randomGame)
+      }
+    }
+  }
+
+  const launchGame = (appId) => {
+    // Lanzar el juego mediante Steam protocol
+    window.location.href = `steam://run/${appId}`
+  }
+
+  const closeModal = () => {
+    setIsClosing(true)
+    setTimeout(() => {
+      setSelectedRandomGame(null)
+      if (onRandomGameSelect) {
+        onRandomGameSelect(null) // Limpiar el randomGame en App
+      }
+      setIsClosing(false)
+    }, 300)
+  }
 
   // Track which games are disappearing
   const disappearingIds = useMemo(() => {
@@ -69,10 +102,122 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
 
   return (
     <>
-      <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {t('games.showing')} <span className="font-medium text-gray-900 dark:text-white">{displayedItems.length}</span> {t('games.of')} <span className="font-medium text-gray-900 dark:text-white">{games.length}</span> {t('header.games')}
-        {games.length < total && (
-          <span className="text-gray-400 dark:text-gray-500 ml-2">({total} {t('games.beforeFilters')})</span>
+      {selectedRandomGame && (
+        <>
+          {/* Overlay con animación */}
+          <div className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'}`} 
+            onClick={closeModal}
+          />
+          
+          {/* Modal con liquid glass */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+            <div className={`glass rounded-2xl shadow-2xl max-w-md w-full overflow-hidden pointer-events-auto transition-all duration-300 ${
+              isClosing 
+                ? 'opacity-0 scale-95' 
+                : isOpening
+                ? 'opacity-0 scale-95'
+                : 'opacity-100 scale-100'
+            }`}>
+              {/* Header con X */}
+              <div className="relative">
+                <button
+                  onClick={closeModal}
+                  className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                  title="Close"
+                >
+                  ✕
+                </button>
+                <img 
+                  src={selectedRandomGame.header_image} 
+                  alt={selectedRandomGame.name}
+                  className="w-full h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => launchGame(selectedRandomGame.app_id)}
+                />
+              </div>
+
+              {/* Contenido */}
+              <div className="p-6">
+                <p className="text-center text-purple-600 dark:text-purple-400 text-sm font-semibold mb-3">{t('games.randomPick')}</p>
+                
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 line-clamp-2">
+                  {selectedRandomGame.name}
+                </h2>
+
+                {/* Información del juego */}
+                <div className="space-y-3 mb-6 text-sm text-gray-600 dark:text-gray-300">
+                  {selectedRandomGame.hltb_hours > 0 && (
+                    <div className="flex items-center justify-between p-3 bg-blue-500/10 dark:bg-blue-500/20 rounded-lg backdrop-blur-sm border border-blue-200/20 dark:border-blue-400/20">
+                      <span>{t('games.timeToBeatLabel')}:</span>
+                      <span className="font-semibold text-blue-600 dark:text-blue-400">{selectedRandomGame.hltb_hours.toFixed(1)}h</span>
+                    </div>
+                  )}
+                  
+                  {selectedRandomGame.score > 0 && (
+                    <div className="flex items-center justify-between p-3 bg-yellow-500/10 dark:bg-yellow-500/20 rounded-lg backdrop-blur-sm border border-yellow-200/20 dark:border-yellow-400/20">
+                      <span>{t('games.scoreLabel')}:</span>
+                      <span className="font-semibold text-yellow-600 dark:text-yellow-400">{selectedRandomGame.score}/100</span>
+                    </div>
+                  )}
+                  
+                  {selectedRandomGame.total_reviews > 0 && (
+                    <div className="flex items-center justify-between p-3 bg-green-500/10 dark:bg-green-500/20 rounded-lg backdrop-blur-sm border border-green-200/20 dark:border-green-400/20">
+                      <span>{t('games.reviewsLabel')}:</span>
+                      <span className="font-semibold text-green-600 dark:text-green-400">{selectedRandomGame.total_reviews.toLocaleString()}</span>
+                    </div>
+                  )}
+
+                  {selectedRandomGame.playtime_hours !== undefined && selectedRandomGame.playtime_hours > 0 && (
+                    <div className="flex items-center justify-between p-3 bg-purple-500/10 dark:bg-purple-500/20 rounded-lg backdrop-blur-sm border border-purple-200/20 dark:border-purple-400/20">
+                      <span>{t('games.yourPlaytimeLabel')}:</span>
+                      <span className="font-semibold text-purple-600 dark:text-purple-400">{selectedRandomGame.playtime_hours.toFixed(1)}h</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Botones */}
+                <div className="space-y-2">
+                  <button
+                    onClick={() => launchGame(selectedRandomGame.app_id)}
+                    className="w-full px-4 py-3 glass hover-glow bg-gradient-to-r from-green-600/80 to-emerald-600/80 hover:from-green-700/90 hover:to-emerald-700/90 text-white rounded-lg transition-all font-semibold"
+                  >
+                    {t('games.playOnSteam')}
+                  </button>
+                  
+                  <button
+                    onClick={handleRandomGame}
+                    className="w-full px-4 py-2 glass hover-glow bg-gradient-to-r from-blue-600/80 to-cyan-600/80 hover:from-blue-700/90 hover:to-cyan-700/90 text-white rounded-lg transition-all font-semibold"
+                  >
+                    {t('games.reroll')}
+                  </button>
+                  
+                  <button
+                    onClick={closeModal}
+                    className="w-full px-4 py-2 glass text-gray-700 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-600/50 rounded-lg transition-colors"
+                  >
+                    {t('games.close')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+      
+      <div className="mb-4 flex justify-between items-center">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          {t('games.showing')} <span className="font-medium text-gray-900 dark:text-white">{displayedItems.length}</span> {t('games.of')} <span className="font-medium text-gray-900 dark:text-white">{games.length}</span> {t('header.games')}
+          {games.length < total && (
+            <span className="text-gray-400 dark:text-gray-500 ml-2">({total} {t('games.beforeFilters')})</span>
+          )}
+        </div>
+        {games.length > 0 && (
+          <button
+            onClick={handleRandomGame}
+            className="px-4 py-2 glass hover-glow bg-purple-600/80 text-white rounded-lg hover:bg-purple-700/90 transition-colors text-sm font-medium"
+            title="Pick a random game from filtered list"
+          >
+            {t('games.random')}
+          </button>
         )}
       </div>
       

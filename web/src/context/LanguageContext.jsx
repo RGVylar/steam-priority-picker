@@ -70,6 +70,15 @@ const translations = {
     'games.unplayed': '○ Jugado',
     'games.markAsPlayed': 'Marcar como jugado',
     'games.markAsUnplayed': 'Marcar como no jugado',
+    'games.random': '🎲 Aleatorio con estos filtros',
+    'games.randomPick': '✨ Selección Aleatoria ✨',
+    'games.reroll': '🔄 Otra tirada',
+    'games.playOnSteam': '🎮 Jugar en Steam',
+    'games.close': 'Cerrar',
+    'games.timeToBeatLabel': '⏱️ Tiempo para completar',
+    'games.scoreLabel': '⭐ Puntuación',
+    'games.reviewsLabel': '💬 Reseñas',
+    'games.yourPlaytimeLabel': '🎮 Tu tiempo de juego',
     
     // Links
     'links.hltb': 'HLTB',
@@ -158,6 +167,15 @@ const translations = {
     'games.unplayed': '○ Played',
     'games.markAsPlayed': 'Mark as played',
     'games.markAsUnplayed': 'Mark as unplayed',
+    'games.random': '🎲 Random with this filters',
+    'games.randomPick': '✨ Random Pick ✨',
+    'games.reroll': '🔄 Roll again',
+    'games.playOnSteam': '🎮 Play on Steam',
+    'games.close': 'Close',
+    'games.timeToBeatLabel': '⏱️ Time to Beat',
+    'games.scoreLabel': '⭐ Score',
+    'games.reviewsLabel': '💬 Reviews',
+    'games.yourPlaytimeLabel': '🎮 Your playtime',
     
     // Links
     'links.hltb': 'HLTB',

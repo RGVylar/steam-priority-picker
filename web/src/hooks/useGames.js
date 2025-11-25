@@ -241,5 +241,12 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
     error,
     dbTotal,
     forceRefresh,
+    getRandomGame: () => {
+      if (games && games.length > 0) {
+        const randomIndex = Math.floor(Math.random() * games.length)
+        return games[randomIndex]
+      }
+      return null
+    }
   }
 }

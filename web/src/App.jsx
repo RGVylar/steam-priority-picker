@@ -20,6 +20,7 @@ function App() {
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [hoveredGame, setHoveredGame] = useState(null)
   const [prevHoveredGame, setPrevHoveredGame] = useState(null)
+  const [randomGame, setRandomGame] = useState(null)
   const { isDark, toggle: toggleDarkMode } = useDarkMode()
   const { isGlass, toggle: toggleGlassMode } = useGlassMode()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -27,14 +28,25 @@ function App() {
   const { t } = useLanguage()
   const filters = useFilters()
   const { played, togglePlayed, isPlayed, getPlayedCount } = usePlayed()
-  const { games, total, loading, error, dbTotal, forceRefresh } = useGames(filters, played, isAuthenticated, token)
+  const { games, total, loading, error, dbTotal, forceRefresh, getRandomGame } = useGames(filters, played, isAuthenticated, token)
 
   // Handle smooth transition between background images
   useEffect(() => {
+    // Si hay un hover, siempre actualizar prevHoveredGame
     if (hoveredGame) {
       setPrevHoveredGame(hoveredGame)
+      return
     }
-  }, [hoveredGame])
+    
+    // Si se abrió un random game, limpiar hover pero mantener prevHoveredGame
+    if (randomGame) {
+      setHoveredGame(null)
+      return
+    }
+    
+    // Si se cerró todo (no hay hover ni random game), limpiar prevHoveredGame
+    setPrevHoveredGame(null)
+  }, [hoveredGame, randomGame])
 
   // Handle auth token from URL
   useEffect(() => {
@@ -71,7 +83,7 @@ function App() {
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
-              opacity: hoveredGame ? 0 : 0.15,
+              opacity: hoveredGame || randomGame ? 0 : 0.15,
               filter: 'blur(10px)',
             }}
           />
@@ -80,12 +92,14 @@ function App() {
           <div 
             className="fixed inset-0 z-0 transition-opacity duration-1000 ease-in-out"
             style={{
-              backgroundImage: prevHoveredGame 
+              backgroundImage: randomGame
+                ? `url(${randomGame.header_image || `https://cdn.cloudflare.steamstatic.com/steam/apps/${randomGame.app_id}/header.jpg`})`
+                : prevHoveredGame 
                 ? `url(${prevHoveredGame.image_url || `https://cdn.cloudflare.steamstatic.com/steam/apps/${prevHoveredGame.app_id}/header.jpg`})`
                 : 'none',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
-              opacity: hoveredGame ? 0.5 : 0,
+              opacity: randomGame ? 0.5 : (hoveredGame ? 0.5 : 0),
               filter: 'blur(30px)',
             }}
           />
@@ -215,6 +229,11 @@ function App() {
                   togglePlayed={togglePlayed}
                   isPlayed={isPlayed}
                   onGameHover={setHoveredGame}
+                  getRandomGame={getRandomGame}
+                  onRandomGameSelect={(game) => {
+                    setRandomGame(game)
+                    setHoveredGame(null) // Limpiar hover cuando se abre random
+                  }}
                 />
               </>
             )}
