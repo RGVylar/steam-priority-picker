@@ -3,6 +3,9 @@ import { useInfiniteScroll } from '../hooks/useInfiniteScroll'
 import { useLanguage } from '../context/LanguageContext'
 import { useState, useEffect, useMemo } from 'react'
 
+// Símbolos de dados unicode
+const diceSymbols = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']
+
 // Crear un sonido de spin usando Web Audio API
 const playSpinSound = () => {
   try {
@@ -71,55 +74,59 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
   const [spinningGames, setSpinningGames] = useState([])
   const [slotOffset, setSlotOffset] = useState(0)
   const [slotTransitionDuration, setSlotTransitionDuration] = useState(0)
+  const [currentDice, setCurrentDice] = useState(diceSymbols[0])
 
   const handleRandomGame = () => {
     const randomGame = getRandomGame()
     if (randomGame) {
       playSpinSound() // Reproducir sonido de spin
-      
+
       // Inicia la animación "slot machine"
       setIsSpinning(true)
-      
+
       // Crea un carrusel de juegos para el efecto visual
       const carouselGames = []
       for (let i = 0; i < 20; i++) {
         carouselGames.push(games[Math.floor(Math.random() * games.length)])
       }
       carouselGames.push(randomGame) // Añade el juego final al final (índice 20)
-      
+
       setSpinningGames(carouselGames)
       setSlotOffset(0)
       setSlotTransitionDuration(0)
-      
+
       // Duración total de la animación en ms
       const SPIN_DURATION = 2500
       const INITIAL_FRAME_DURATION = 25
       const FINAL_FRAME_DURATION = 300
       const TOTAL_ITEMS = 21 // 20 random + 1 final
-      
+
       let elapsedTime = 0
       let currentIndex = 0
       let frameCount = 0
-      
+
       const spinAnimation = () => {
         frameCount++
-        
+
+        // Actualiza el dado aleatorio
+        setCurrentDice(diceSymbols[Math.floor(Math.random() * diceSymbols.length)])
+
         // Función de easing "easeOutQuad"
         const progress = Math.min(elapsedTime / SPIN_DURATION, 1)
         const easeProgress = 1 - Math.pow(1 - progress, 2)
-        
+
         // Interpolar la duración del frame
         const currentFrameDuration = INITIAL_FRAME_DURATION + 
           (FINAL_FRAME_DURATION - INITIAL_FRAME_DURATION) * easeProgress
-        
+
         // El índice debe alcanzar TOTAL_ITEMS - 1 (20) exactamente cuando progress = 1
         const targetIndex = Math.round(easeProgress * (TOTAL_ITEMS - 1))
         currentIndex = targetIndex
-        
+
         setSlotTransitionDuration(currentFrameDuration)
         setSlotOffset(currentIndex * 256)
         elapsedTime += currentFrameDuration
-        
+
         if (progress < 1) {
           // Continuar animación
           setTimeout(spinAnimation, currentFrameDuration)
@@ -139,7 +146,7 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
           }
         }
       }
-      
+
       spinAnimation()
     }
   }
@@ -269,19 +276,33 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
                         ))}
                       </div>
                     </div>
-                    
+
+                    {/* Dado animado en el centro superior */}
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center">
+                      <span
+                        style={{
+                          fontSize: '7rem',
+                          color: 'rgba(255,255,255,0.95)',
+                          textShadow: '0 0 32px #a78bfa, 0 0 8px #6366f1',
+                          filter: 'drop-shadow(0 0 12px #6366f1)',
+                        }}
+                      >
+                        {currentDice}
+                      </span>
+                    </div>
+
                     {/* Overlay oscuro superior con degradado fuerte */}
                     <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-black/80 via-black/40 to-transparent pointer-events-none" />
-                    
+
                     {/* Overlay oscuro inferior con degradado fuerte */}
                     <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
-                    
+
                     {/* Viñeta oscura en los bordes laterales */}
                     <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30 pointer-events-none" />
-                    
+
                     {/* Efecto de brillo central */}
                     <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-white/5 pointer-events-none" />
-                    
+
                     {/* Líneas de enfoque central (opcional) */}
                     <div className="absolute top-1/2 left-0 right-0 h-20 bg-gradient-to-b from-transparent via-white/10 to-transparent transform -translate-y-1/2 pointer-events-none" />
                   </div>
