@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from .middleware.cors import setup_cors
 from .config import settings
 from .routes.games import router as games_router
@@ -8,6 +9,7 @@ from .routes.played_games import router as played_games_router
 from .routes.preferences import router as preferences_router
 from .database import engine
 from .models import Base
+from .services.health_monitor import get_health_monitor
 import logging
 
 # Version identifier for deployment tracking
@@ -24,11 +26,26 @@ logger.info(f"🔑 STEAM_API_KEY set: {'Yes' if settings.steam_api_key else 'No'
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
+# Health monitor lifecycle
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    health_monitor = get_health_monitor(settings.app_url, interval_minutes=10)
+    await health_monitor.start()
+    logger.info("🏥 Health monitor iniciado - Ping cada 10 minutos")
+    
+    yield
+    
+    # Shutdown
+    await health_monitor.stop()
+    logger.info("🏥 Health monitor detenido")
+
 # Create FastAPI app
 app = FastAPI(
     title="Steam Priority Picker API",
     description="API for Steam game priority picker web application",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # Setup CORS
