@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
 
 // Simple SVG mascot (can be replaced with a more elaborate one)
-const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEating, isPlaying, isCleaning, cleanliness }) => {
+const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEating, isPlaying, isCleaning, cleanliness, age }) => {
   // Mood: 'happy', 'neutral', 'sad', 'very-sad', 'sleepy', 'excited'
   let faceColor = isDead ? '#ccc' : 'url(#liquidGlassTint)';
   let dirtiness = (100 - cleanliness) / 100;
+  let scale = 1 + age / 200; // Bigger as it ages
   let eyeY = mood === 'happy' ? 18 : mood === 'sad' ? 22 : mood === 'very-sad' ? 24 : 20;
   let mouth;
   if (mood === 'happy') {
@@ -41,8 +42,20 @@ const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEat
     </>
   );
 
+  // Lines under eyes for old age
+  const eyeLines = age > 50 ? (
+    <>
+      {/* Left eye */}
+      <line x1="12" y1="22" x2="20" y2="22" stroke="#8B4513" strokeWidth="1" opacity={age / 100} />
+      {age >= 75 && <line x1="20" y1="22" x2="12" y2="24" stroke="#8B4513" strokeWidth="1" opacity={age / 100} />}
+      {/* Right eye */}
+      <line x1="28" y1="22" x2="36" y2="22" stroke="#8B4513" strokeWidth="1" opacity={age / 100} />
+      {age >= 75 && <line x1="28" y1="22" x2="36" y2="24" stroke="#8B4513" strokeWidth="1" opacity={age / 100} />}
+    </>
+  ) : null;
+
   return (
-    <svg width="64" height="64" viewBox="0 0 48 48" style={{filter: 'drop-shadow(0 0 16px #a78bfa) blur(0.5px)'}}>
+    <svg width="64" height="64" viewBox="0 0 48 48" style={{filter: 'drop-shadow(0 0 16px #a78bfa) blur(0.5px)', transform: `scale(${scale})`}}>
       <defs>
         <radialGradient id="liquidGlassTint" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#fff" stopOpacity="0.8" />
@@ -56,6 +69,7 @@ const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEat
       </circle>
       <circle cx="24" cy="24" r="20" fill="#8B4513" opacity={dirtiness} />
       {level >= 1 && <text x="24" y="6" fontSize="10" textAnchor="middle">👑</text>}
+      {eyeLines}
       {eyes}
       {mouth}
       <path d="M18 26 Q24 38 30 26" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'mouth-open-eating' : 'mouth-open-normal'} />
@@ -93,6 +107,7 @@ export default function MascotTamagotchi() {
   const [isDead, setIsDead] = useState(false)
   const [evolutionLevel, setEvolutionLevel] = useState(0)
   const [totalAliveTime, setTotalAliveTime] = useState(0)
+  const [age, setAge] = useState(0)
   const blinkIntervalRef = useRef(null)
   const waveTimeoutRef = useRef(null)
   const danceTimeoutRef = useRef(null)
@@ -101,12 +116,12 @@ export default function MascotTamagotchi() {
 
   useEffect(() => {
     window.logMascotStats = () => {
-      console.log(`Hunger: ${(100 - hunger)}%\nCleanliness: ${(100 - cleanliness)}%\nBoredom: ${(100 - boredom)}%\nMood: ${mood}\nLevel: ${evolutionLevel}\nAlive Time: ${totalAliveTime}s\nDead: ${isDead}`);
+      console.log(`Hunger: ${(100 - hunger)}%\nCleanliness: ${(100 - cleanliness)}%\nBoredom: ${(100 - boredom)}%\nAge: ${age}%\nMood: ${mood}\nLevel: ${evolutionLevel}\nAlive Time: ${totalAliveTime}s\nDead: ${isDead}`);
     };
     return () => {
       delete window.logMascotStats;
     };
-  }, [hunger, cleanliness, boredom, mood, evolutionLevel, totalAliveTime, isDead]);
+  }, [hunger, cleanliness, boredom, age, mood, evolutionLevel, totalAliveTime, isDead]);
 
   useEffect(() => {
     if (clicks > 20) setMood('sleepy')
@@ -130,8 +145,10 @@ export default function MascotTamagotchi() {
   useEffect(() => {
     if (hunger <= 0 && cleanliness <= 0 && boredom <= 0) {
       setIsDead(true)
+    } else if (age >= 100) {
+      setIsDead(true)
     }
-  }, [hunger, cleanliness, boredom])
+  }, [hunger, cleanliness, boredom, age])
 
   // Update mood based on stats
   useEffect(() => {
@@ -153,6 +170,11 @@ export default function MascotTamagotchi() {
     }, 1000)
     return () => clearInterval(interval)
   }, [isDead])
+
+  // Age calculation
+  useEffect(() => {
+    setAge(Math.min(100, totalAliveTime / 18))
+  }, [totalAliveTime])
 
   // Evolution check
   useEffect(() => {
@@ -254,16 +276,17 @@ export default function MascotTamagotchi() {
         <div>Hambre: {(100 - hunger)}% <div className="bg-gray-300 h-2 rounded"><div className="bg-red-500 h-2 rounded" style={{width: (100 - hunger) + '%'}}></div></div></div>
         <div>Suciedad: {(100 - cleanliness)}% <div className="bg-gray-300 h-2 rounded"><div className="bg-blue-500 h-2 rounded" style={{width: (100 - cleanliness) + '%'}}></div></div></div>
         <div>Aburrimiento: {(100 - boredom)}% <div className="bg-gray-300 h-2 rounded"><div className="bg-yellow-500 h-2 rounded" style={{width: (100 - boredom) + '%'}}></div></div></div>
+        <div>Edad: {age}% <div className="bg-gray-300 h-2 rounded"><div className="bg-purple-500 h-2 rounded" style={{width: age + '%'}}></div></div></div>
       </div>
       <div className="flex justify-center gap-1 mb-1">
         {cleanliness <= 0 && <span className="text-lg">💩</span>}
         {hunger <= 0 && <span className="text-lg">🦴</span>}
         {boredom <= 0 && <span className="text-lg">🎮</span>}
       </div>
-      <MascotSVG mood={mood} isBlinking={isBlinking} isWaving={isWaving} isDancing={isDancing} isDead={isDead} level={evolutionLevel} isEating={isEating} isPlaying={isPlaying} isCleaning={isCleaning} cleanliness={cleanliness} />
+      <MascotSVG mood={mood} isBlinking={isBlinking} isWaving={isWaving} isDancing={isDancing} isDead={isDead} level={evolutionLevel} isEating={isEating} isPlaying={isPlaying} isCleaning={isCleaning} cleanliness={cleanliness} age={age} />
       <div className="flex gap-1 mt-1">
         {isDead ? (
-          <button onClick={() => { setIsDead(false); setHunger(100); setCleanliness(100); setBoredom(100); setTotalAliveTime(0); setEvolutionLevel(0); }} className="text-lg hover:scale-110 transition">🔄</button>
+          <button onClick={() => { setIsDead(false); setHunger(100); setCleanliness(100); setBoredom(100); setTotalAliveTime(0); setEvolutionLevel(0); setAge(0); }} className="text-lg hover:scale-110 transition">🔄</button>
         ) : (
           <>
             <button onClick={feed} className="text-lg hover:scale-110 transition">🍎</button>
