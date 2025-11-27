@@ -9,15 +9,15 @@ const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEat
   let eyeY = mood === 'happy' ? 18 : mood === 'sad' ? 22 : mood === 'very-sad' ? 24 : 20;
   let mouth;
   if (mood === 'happy') {
-    mouth = <path d="M18 28 Q24 34 30 28" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'mouth-closed-eating' : 'mouth-closed-normal'} />
+    mouth = <path d="M18 28 Q24 34 30 28" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'tmg-mouth-closed-eating' : 'tmg-mouth-closed-normal'} />
   } else if (mood === 'sad') {
-    mouth = <path d="M18 32 Q24 26 30 32" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'mouth-closed-eating' : 'mouth-closed-normal'} />
+    mouth = <path d="M18 32 Q24 26 30 32" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'tmg-mouth-closed-eating' : 'tmg-mouth-closed-normal'} />
   } else if (mood === 'very-sad') {
-    mouth = <path d="M18 35 Q24 24 30 35" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'mouth-closed-eating' : 'mouth-closed-normal'} />
+    mouth = <path d="M18 35 Q24 24 30 35" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'tmg-mouth-closed-eating' : 'tmg-mouth-closed-normal'} />
   } else if (mood === 'excited') {
-    mouth = <ellipse cx="24" cy="30" rx="8" ry="4" fill="#333" className={isEating ? 'mouth-closed-eating' : 'mouth-closed-normal'} />
+    mouth = <ellipse cx="24" cy="30" rx="8" ry="4" fill="#333" className={isEating ? 'tmg-mouth-closed-eating' : 'tmg-mouth-closed-normal'} />
   } else if (mood === 'sleepy') {
-    mouth = <path d="M18 30 Q24 28 30 30" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'mouth-closed-eating' : 'mouth-closed-normal'} />
+    mouth = <path d="M18 30 Q24 28 30 30" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'tmg-mouth-closed-eating' : 'tmg-mouth-closed-normal'} />
   } else {
     mouth = null
   }
@@ -62,7 +62,7 @@ const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEat
           <stop offset="70%" stopColor="#a78bfa" stopOpacity="0.18" />
           <stop offset="100%" stopColor="#6366f1" stopOpacity="0.12" />
         </radialGradient>
-        <style>{`.cleaning-line { animation: water-fall 1s infinite; } @keyframes water-fall { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } } .eat-ball { animation: eat-ball 0.5s forwards; } @keyframes eat-ball { 0% { transform: translate(0,0); opacity: 1; } 50% { transform: translate(-11px,5px); opacity: 1; } 100% { transform: translate(-11px,5px); opacity: 0; } } .playing { animation: play 0.5s 2; } @keyframes play { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } } .hidden { display: none; } .mouth-closed-normal { opacity: 1; } .mouth-open-normal { opacity: 0; } .mouth-closed-eating { animation: mouth-closed 1s; } @keyframes mouth-closed { 0% { opacity: 1; } 25% { opacity: 0; } 50% { opacity: 1; } 75% { opacity: 0; } 100% { opacity: 1; } } .mouth-open-eating { animation: mouth-open 1s; } @keyframes mouth-open { 0% { opacity: 0; } 25% { opacity: 1; } 50% { opacity: 0; } 75% { opacity: 1; } 100% { opacity: 0; } }`}</style>
+        <style>{`.tmg-cleaning-line { animation: tmg-water-fall 1s infinite; } @keyframes tmg-water-fall { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } } .tmg-eat-ball { animation: tmg-eat-ball 0.5s forwards; } @keyframes tmg-eat-ball { 0% { transform: translate(0,0); opacity: 1; } 50% { transform: translate(-11px,5px); opacity: 1; } 100% { transform: translate(-11px,5px); opacity: 0; } } .tmg-playing { animation: tmg-play 0.5s 2; } @keyframes tmg-play { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } } .tmg-mouth-closed-normal { opacity: 1; } .tmg-mouth-open-normal { opacity: 0; } .tmg-mouth-closed-eating { animation: tmg-mouth-closed 1s; } @keyframes tmg-mouth-closed { 0% { opacity: 1; } 25% { opacity: 0; } 50% { opacity: 1; } 75% { opacity: 0; } 100% { opacity: 1; } } .tmg-mouth-open-eating { animation: tmg-mouth-open 1s; } @keyframes tmg-mouth-open { 0% { opacity: 0; } 25% { opacity: 1; } 50% { opacity: 0; } 75% { opacity: 1; } 100% { opacity: 0; } }`}</style>
       </defs>
       <circle cx="24" cy="24" r="20" fill={faceColor} stroke="#6366f1" strokeWidth="2" style={{backdropFilter: 'blur(8px)'}} className={isPlaying ? "playing" : ""}>
         {isCleaning && <animate attributeName="fill" values="url(#liquidGlassTint);#a78bfa;url(#liquidGlassTint)" dur="1s" />}
@@ -72,15 +72,15 @@ const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEat
       {eyeLines}
       {eyes}
       {mouth}
-      <path d="M18 26 Q24 38 30 26" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'mouth-open-eating' : 'mouth-open-normal'} />
-      {isEating && <circle cx="35" cy="25" r="2" fill="red" className="eat-ball" />}
+      <path d="M18 26 Q24 38 30 26" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'tmg-mouth-open-eating' : 'tmg-mouth-open-normal'} />
+      {isEating && <circle cx="35" cy="25" r="2" fill="red" className="tmg-eat-ball" />}
       {isCleaning && <>
         <polygon points="24,-5 12,5 36,5" fill="gray" />
-        <line x1="16" y1="5" x2="16" y2="22" stroke="cyan" strokeWidth="4" className="cleaning-line" />
-        <line x1="20" y1="5" x2="20" y2="22" stroke="cyan" strokeWidth="4" className="cleaning-line" />
-        <line x1="24" y1="5" x2="24" y2="22" stroke="cyan" strokeWidth="4" className="cleaning-line" />
-        <line x1="28" y1="5" x2="28" y2="22" stroke="cyan" strokeWidth="4" className="cleaning-line" />
-        <line x1="32" y1="5" x2="32" y2="22" stroke="cyan" strokeWidth="4" className="cleaning-line" />
+        <line x1="16" y1="5" x2="16" y2="22" stroke="cyan" strokeWidth="4" className="tmg-cleaning-line" />
+        <line x1="20" y1="5" x2="20" y2="22" stroke="cyan" strokeWidth="4" className="tmg-cleaning-line" />
+        <line x1="24" y1="5" x2="24" y2="22" stroke="cyan" strokeWidth="4" className="tmg-cleaning-line" />
+        <line x1="28" y1="5" x2="28" y2="22" stroke="cyan" strokeWidth="4" className="tmg-cleaning-line" />
+        <line x1="32" y1="5" x2="32" y2="22" stroke="cyan" strokeWidth="4" className="tmg-cleaning-line" />
       </>}
       {isWaving && <animateTransform attributeName="transform" type="rotate" values="0 24 24;-10 24 24;0 24 24" dur="1s" repeatCount="1" />}
       {isDancing && <>
