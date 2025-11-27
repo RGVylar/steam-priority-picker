@@ -1,21 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react'
 
 // Simple SVG mascot (can be replaced with a more elaborate one)
-const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level }) => {
+const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEating, isPlaying, isCleaning, cleanliness }) => {
   // Mood: 'happy', 'neutral', 'sad', 'very-sad', 'sleepy', 'excited'
   let faceColor = isDead ? '#ccc' : 'url(#liquidGlassTint)';
+  let dirtiness = (100 - cleanliness) / 100;
   let eyeY = mood === 'happy' ? 18 : mood === 'sad' ? 22 : mood === 'very-sad' ? 24 : 20;
-  let mouth = mood === 'happy'
-    ? <path d="M18 28 Q24 34 30 28" stroke="#333" strokeWidth="2" fill="none" />
-    : mood === 'sad'
-    ? <path d="M18 32 Q24 26 30 32" stroke="#333" strokeWidth="2" fill="none" />
-    : mood === 'very-sad'
-    ? <path d="M18 35 Q24 24 30 35" stroke="#333" strokeWidth="2" fill="none" />
-    : mood === 'excited'
-    ? <ellipse cx="24" cy="30" rx="8" ry="4" fill="#333" />
-    : mood === 'sleepy'
-    ? <path d="M18 30 Q24 28 30 30" stroke="#333" strokeWidth="2" fill="none" />
-    : <ellipse cx="24" cy="30" rx="6" ry="2" fill="#333" />;
+  let mouth;
+  if (mood === 'happy') {
+    mouth = <path d="M18 28 Q24 34 30 28" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'mouth-closed-eating' : 'mouth-closed-normal'} />
+  } else if (mood === 'sad') {
+    mouth = <path d="M18 32 Q24 26 30 32" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'mouth-closed-eating' : 'mouth-closed-normal'} />
+  } else if (mood === 'very-sad') {
+    mouth = <path d="M18 35 Q24 24 30 35" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'mouth-closed-eating' : 'mouth-closed-normal'} />
+  } else if (mood === 'excited') {
+    mouth = <ellipse cx="24" cy="30" rx="8" ry="4" fill="#333" className={isEating ? 'mouth-closed-eating' : 'mouth-closed-normal'} />
+  } else if (mood === 'sleepy') {
+    mouth = <path d="M18 30 Q24 28 30 30" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'mouth-closed-eating' : 'mouth-closed-normal'} />
+  } else {
+    mouth = null
+  }
   
   // Eyes: blink or normal, or dead
   const eyes = isDead ? (
@@ -38,18 +42,37 @@ const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level }) => 
   );
 
   return (
-    <svg width="64" height="64" viewBox="0 0 48 48" style={{filter: 'drop-shadow(0 0 16px #a78bfa) blur(0.5px)', transform: isWaving ? 'rotate(-10deg)' : isDancing ? 'scale(1.1) rotate(5deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease'}}>
+    <svg width="64" height="64" viewBox="0 0 48 48" style={{filter: 'drop-shadow(0 0 16px #a78bfa) blur(0.5px)'}}>
       <defs>
         <radialGradient id="liquidGlassTint" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#fff" stopOpacity="0.8" />
           <stop offset="70%" stopColor="#a78bfa" stopOpacity="0.18" />
           <stop offset="100%" stopColor="#6366f1" stopOpacity="0.12" />
         </radialGradient>
+        <style>{`.cleaning-line { animation: water-fall 1s infinite; } @keyframes water-fall { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } } .eat-ball { animation: eat-ball 0.5s forwards; } @keyframes eat-ball { 0% { transform: translate(0,0); opacity: 1; } 50% { transform: translate(-11px,5px); opacity: 1; } 100% { transform: translate(-11px,5px); opacity: 0; } } .playing { animation: play 0.5s 2; } @keyframes play { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } } .hidden { display: none; } .mouth-closed-normal { opacity: 1; } .mouth-open-normal { opacity: 0; } .mouth-closed-eating { animation: mouth-closed 1s; } @keyframes mouth-closed { 0% { opacity: 1; } 25% { opacity: 0; } 50% { opacity: 1; } 75% { opacity: 0; } 100% { opacity: 1; } } .mouth-open-eating { animation: mouth-open 1s; } @keyframes mouth-open { 0% { opacity: 0; } 25% { opacity: 1; } 50% { opacity: 0; } 75% { opacity: 1; } 100% { opacity: 0; } }`}</style>
       </defs>
-      <circle cx="24" cy="24" r="20" fill={faceColor} stroke="#6366f1" strokeWidth="2" style={{backdropFilter: 'blur(8px)'}} />
+      <circle cx="24" cy="24" r="20" fill={faceColor} stroke="#6366f1" strokeWidth="2" style={{backdropFilter: 'blur(8px)'}} className={isPlaying ? "playing" : ""}>
+        {isCleaning && <animate attributeName="fill" values="url(#liquidGlassTint);#a78bfa;url(#liquidGlassTint)" dur="1s" />}
+      </circle>
+      <circle cx="24" cy="24" r="20" fill="#8B4513" opacity={dirtiness} />
       {level >= 1 && <text x="24" y="6" fontSize="10" textAnchor="middle">👑</text>}
       {eyes}
       {mouth}
+      <path d="M18 26 Q24 38 30 26" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'mouth-open-eating' : 'mouth-open-normal'} />
+      {isEating && <circle cx="35" cy="25" r="2" fill="red" className="eat-ball" />}
+      {isCleaning && <>
+        <polygon points="24,-5 12,5 36,5" fill="gray" />
+        <line x1="16" y1="5" x2="16" y2="22" stroke="cyan" strokeWidth="4" className="cleaning-line" />
+        <line x1="20" y1="5" x2="20" y2="22" stroke="cyan" strokeWidth="4" className="cleaning-line" />
+        <line x1="24" y1="5" x2="24" y2="22" stroke="cyan" strokeWidth="4" className="cleaning-line" />
+        <line x1="28" y1="5" x2="28" y2="22" stroke="cyan" strokeWidth="4" className="cleaning-line" />
+        <line x1="32" y1="5" x2="32" y2="22" stroke="cyan" strokeWidth="4" className="cleaning-line" />
+      </>}
+      {isWaving && <animateTransform attributeName="transform" type="rotate" values="0 24 24;-10 24 24;0 24 24" dur="1s" repeatCount="1" />}
+      {isDancing && <>
+        <animateTransform attributeName="transform" type="scale" values="1 1;1.05 1.05;1.1 1.1;1.05 1.05;1 1" dur="1s" repeatCount="1" additive="sum" />
+        <animateTransform attributeName="transform" type="rotate" values="0 24 24;2 24 24;5 24 24;2 24 24;0 24 24" dur="1s" repeatCount="1" additive="sum" />
+      </>}
     </svg>
   )
 }
@@ -60,6 +83,9 @@ export default function MascotTamagotchi() {
   const [isBlinking, setIsBlinking] = useState(false)
   const [isWaving, setIsWaving] = useState(false)
   const [isDancing, setIsDancing] = useState(false)
+  const [isEating, setIsEating] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [isCleaning, setIsCleaning] = useState(false)
   const [hunger, setHunger] = useState(100)
   const [cleanliness, setCleanliness] = useState(100)
   const [boredom, setBoredom] = useState(100)
@@ -72,6 +98,15 @@ export default function MascotTamagotchi() {
   const danceTimeoutRef = useRef(null)
   const clickCountRef = useRef(0)
   const clickTimeoutRef = useRef(null)
+
+  useEffect(() => {
+    window.logMascotStats = () => {
+      console.log(`Hunger: ${(100 - hunger)}%\nCleanliness: ${(100 - cleanliness)}%\nBoredom: ${(100 - boredom)}%\nMood: ${mood}\nLevel: ${evolutionLevel}\nAlive Time: ${totalAliveTime}s\nDead: ${isDead}`);
+    };
+    return () => {
+      delete window.logMascotStats;
+    };
+  }, [hunger, cleanliness, boredom, mood, evolutionLevel, totalAliveTime, isDead]);
 
   useEffect(() => {
     if (clicks > 20) setMood('sleepy')
@@ -193,14 +228,20 @@ export default function MascotTamagotchi() {
   const feed = () => {
     setHunger(Math.min(100, hunger + 20))
     setBoredom(Math.min(100, boredom + 10))
+    setIsEating(true)
+    setTimeout(() => setIsEating(false), 1000)
   }
 
   const clean = () => {
     setCleanliness(100)
+    setIsCleaning(true)
+    setTimeout(() => setIsCleaning(false), 1000)
   }
 
   const play = () => {
     setBoredom(Math.min(100, boredom + 20))
+    setIsPlaying(true)
+    setTimeout(() => setIsPlaying(false), 1000)
   }
 
   return visible && (
@@ -210,16 +251,16 @@ export default function MascotTamagotchi() {
       title="¡Soy tu mascota!"
     >
       <div className="mb-1 flex flex-col gap-1 text-xs" style={{display: 'none'}}>
-        <div>Hambre: {hunger}% <div className="bg-gray-300 h-2 rounded"><div className="bg-red-500 h-2 rounded" style={{width: (100 - hunger) + '%'}}></div></div></div>
-        <div>Suciedad: {cleanliness}% <div className="bg-gray-300 h-2 rounded"><div className="bg-blue-500 h-2 rounded" style={{width: (100 - cleanliness) + '%'}}></div></div></div>
-        <div>Aburrimiento: {boredom}% <div className="bg-gray-300 h-2 rounded"><div className="bg-yellow-500 h-2 rounded" style={{width: (100 - boredom) + '%'}}></div></div></div>
+        <div>Hambre: {(100 - hunger)}% <div className="bg-gray-300 h-2 rounded"><div className="bg-red-500 h-2 rounded" style={{width: (100 - hunger) + '%'}}></div></div></div>
+        <div>Suciedad: {(100 - cleanliness)}% <div className="bg-gray-300 h-2 rounded"><div className="bg-blue-500 h-2 rounded" style={{width: (100 - cleanliness) + '%'}}></div></div></div>
+        <div>Aburrimiento: {(100 - boredom)}% <div className="bg-gray-300 h-2 rounded"><div className="bg-yellow-500 h-2 rounded" style={{width: (100 - boredom) + '%'}}></div></div></div>
       </div>
       <div className="flex justify-center gap-1 mb-1">
         {cleanliness <= 0 && <span className="text-lg">💩</span>}
         {hunger <= 0 && <span className="text-lg">🦴</span>}
         {boredom <= 0 && <span className="text-lg">🎮</span>}
       </div>
-      <MascotSVG mood={mood} isBlinking={isBlinking} isWaving={isWaving} isDancing={isDancing} isDead={isDead} level={evolutionLevel} />
+      <MascotSVG mood={mood} isBlinking={isBlinking} isWaving={isWaving} isDancing={isDancing} isDead={isDead} level={evolutionLevel} isEating={isEating} isPlaying={isPlaying} isCleaning={isCleaning} cleanliness={cleanliness} />
       <div className="flex gap-1 mt-1">
         {isDead ? (
           <button onClick={() => { setIsDead(false); setHunger(100); setCleanliness(100); setBoredom(100); setTotalAliveTime(0); setEvolutionLevel(0); }} className="text-lg hover:scale-110 transition">🔄</button>
