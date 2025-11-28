@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 from app.models import Game, User, UserGame
 
 # Configuration
-DATABASE_URL = os.getenv('DATABASE_URL')
+DATABASE_URL = os.getenv('DATABASE_URL_PROD')
 STEAM_API_KEY = os.getenv('STEAM_API_KEY')
 
 if not DATABASE_URL:
