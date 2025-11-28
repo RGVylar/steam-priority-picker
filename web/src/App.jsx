@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Header from './components/Header'
 import FilterPanel from './components/FilterPanel'
 import GameList from './components/GameList'
@@ -31,6 +31,50 @@ function App() {
   const filters = useFilters()
   const { played, togglePlayed, isPlayed, getPlayedCount } = usePlayed()
   const { games, total, loading, error, dbTotal, forceRefresh, getRandomGame } = useGames(filters, played, isAuthenticated, token)
+  const audioCtxRef = useRef(null)
+
+  const ensureAudio = () => {
+    if (!audioCtxRef.current) {
+      const AC = window.AudioContext || window.webkitAudioContext
+      try {
+        audioCtxRef.current = new AC()
+      } catch (e) {
+        console.warn('AudioContext not available', e)
+        audioCtxRef.current = null
+      }
+    }
+    return audioCtxRef.current
+  }
+
+  const playTone = (freq = 440, duration = 0.2, type = 'sine', gain = 0.06) => {
+    const ctx = ensureAudio()
+    if (!ctx) return
+    const o = ctx.createOscillator()
+    const g = ctx.createGain()
+    o.type = type
+    o.frequency.value = freq
+    g.gain.value = 0.0001
+    o.connect(g)
+    g.connect(ctx.destination)
+    const now = ctx.currentTime
+    g.gain.setValueAtTime(0.0001, now)
+    g.gain.exponentialRampToValueAtTime(gain, now + 0.01)
+    o.start(now)
+    g.gain.exponentialRampToValueAtTime(0.0001, now + duration)
+    o.stop(now + duration + 0.02)
+  }
+
+  const playKonamiSound = () => {
+    const ctx = ensureAudio()
+    if (!ctx) return
+    if (ctx.state === 'suspended' && typeof ctx.resume === 'function') ctx.resume()
+    // Play a short ascending arpeggio + sparkle to convey "you found something" surprise
+    // Use small delays between tones
+    const seq = [440, 660, 880]
+    seq.forEach((f, i) => setTimeout(() => playTone(f, 0.12, i === seq.length - 1 ? 'triangle' : 'sine', 0.08), i * 120))
+    // sparkle
+    setTimeout(() => playTone(1320, 0.18, 'sine', 0.05), seq.length * 120 + 40)
+  }
 
   // Handle smooth transition between background images
   useEffect(() => {
@@ -96,6 +140,8 @@ function App() {
         if (keyIndex === konamiCode.length) {
           // eslint-disable-next-line no-console
           console.info('Konami code entered — toggling mascot')
+          // play a short konami surprise sound
+          try { playKonamiSound() } catch(e) {}
           setShowMascot(s => !s)
           keyIndex = 0
         }

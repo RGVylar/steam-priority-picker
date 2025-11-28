@@ -91,7 +91,7 @@ const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEat
   )
 }
 
-export default function MascotTamagotchi({ inline = false, startVisible = false }) {
+export default function MascotTamagotchi({ inline = false, startVisible = false, soundEnabled = true }) {
   const [mood, setMood] = useState('happy')
   const [clicks, setClicks] = useState(0)
   const [isBlinking, setIsBlinking] = useState(false)
@@ -113,6 +113,7 @@ export default function MascotTamagotchi({ inline = false, startVisible = false 
   const danceTimeoutRef = useRef(null)
   const clickCountRef = useRef(0)
   const clickTimeoutRef = useRef(null)
+  const audioCtxRef = useRef(null)
 
   useEffect(() => {
     window.logMascotStats = () => {
@@ -149,6 +150,14 @@ export default function MascotTamagotchi({ inline = false, startVisible = false 
       setIsDead(true)
     }
   }, [hunger, cleanliness, boredom, age])
+
+  // Play death sound when isDead becomes true; play revive sound when revived
+  useEffect(() => {
+    if (isDead) {
+      // low sad tone
+      playTone(180, 0.8, 'sine', 0.08)
+    }
+  }, [isDead])
 
   // Update mood based on stats
   useEffect(() => {
@@ -200,6 +209,40 @@ export default function MascotTamagotchi({ inline = false, startVisible = false 
   // Note: Konami detection is handled by App.jsx (global). This component
   // accepts `startVisible` and `inline` to control initial visibility and placement.
 
+  // --- Audio helpers (WebAudio synth) ---
+  const ensureAudio = () => {
+    if (!soundEnabled) return null
+    if (!audioCtxRef.current) {
+      const AC = window.AudioContext || window.webkitAudioContext
+      try {
+        audioCtxRef.current = new AC()
+      } catch (e) {
+        console.warn('AudioContext not available', e)
+        audioCtxRef.current = null
+      }
+    }
+    return audioCtxRef.current
+  }
+
+  const playTone = (freq = 440, duration = 0.2, type = 'sine', gain = 0.06) => {
+    const ctx = ensureAudio()
+    if (!ctx) return
+    const o = ctx.createOscillator()
+    const g = ctx.createGain()
+    o.type = type
+    o.frequency.value = freq
+    g.gain.value = 0.0001
+    o.connect(g)
+    g.connect(ctx.destination)
+    const now = ctx.currentTime
+    g.gain.setValueAtTime(0.0001, now)
+    g.gain.exponentialRampToValueAtTime(gain, now + 0.01)
+    o.start(now)
+    g.gain.exponentialRampToValueAtTime(0.0001, now + duration)
+    o.stop(now + duration + 0.02)
+  }
+
+
   const handleClick = () => {
     setClicks(c => c + 1)
     setIsWaving(true)
@@ -229,18 +272,24 @@ export default function MascotTamagotchi({ inline = false, startVisible = false 
     setHunger(Math.min(100, hunger + 20))
     setBoredom(Math.min(100, boredom + 10))
     setIsEating(true)
+    // sound: gentle chime
+    playTone(880, 0.18, 'sine', 0.06)
     setTimeout(() => setIsEating(false), 1000)
   }
 
   const clean = () => {
     setCleanliness(100)
     setIsCleaning(true)
+    // sound: short triangle sparkle
+    playTone(740, 0.12, 'triangle', 0.05)
     setTimeout(() => setIsCleaning(false), 1000)
   }
 
   const play = () => {
     setBoredom(Math.min(100, boredom + 20))
     setIsPlaying(true)
+    // sound: playful short tone
+    playTone(660, 0.15, 'square', 0.08)
     setTimeout(() => setIsPlaying(false), 1000)
   }
 
@@ -270,7 +319,7 @@ export default function MascotTamagotchi({ inline = false, startVisible = false 
       <MascotSVG mood={mood} isBlinking={isBlinking} isWaving={isWaving} isDancing={isDancing} isDead={isDead} level={evolutionLevel} isEating={isEating} isPlaying={isPlaying} isCleaning={isCleaning} cleanliness={cleanliness} age={age} />
       <div className="flex gap-1 mt-1">
         {isDead ? (
-          <button onClick={() => { setIsDead(false); setHunger(100); setCleanliness(100); setBoredom(100); setTotalAliveTime(0); setEvolutionLevel(0); setAge(0); }} className="text-lg hover:scale-110 transition">🔄</button>
+          <button onClick={() => { setIsDead(false); setHunger(100); setCleanliness(100); setBoredom(100); setTotalAliveTime(0); setEvolutionLevel(0); setAge(0); playTone(880,0.25,'sine',0.08); }} className="text-lg hover:scale-110 transition">🔄</button>
         ) : (
           <>
             <button onClick={feed} className="text-lg hover:scale-110 transition">🍎</button>
