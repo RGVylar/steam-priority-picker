@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react'
 // Simple SVG mascot (can be replaced with a more elaborate one)
 const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEating, isPlaying, isCleaning, cleanliness, age }) => {
   // Mood: 'happy', 'neutral', 'sad', 'very-sad', 'sleepy', 'excited'
-  let faceColor = isDead ? '#ccc' : 'url(#liquidGlassTint)';
+  let faceColor = isDead ? '#f3f4f6' : 'url(#liquidGlassTint)';
   let dirtiness = (100 - cleanliness) / 100;
   let scale = 1 + age / 200; // Bigger as it ages
   let eyeY = mood === 'happy' ? 18 : mood === 'sad' ? 22 : mood === 'very-sad' ? 24 : 20;
@@ -64,7 +64,7 @@ const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEat
         </radialGradient>
         <style>{`.tmg-cleaning-line { animation: tmg-water-fall 1s infinite; } @keyframes tmg-water-fall { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } } .tmg-eat-ball { animation: tmg-eat-ball 0.5s forwards; } @keyframes tmg-eat-ball { 0% { transform: translate(0,0); opacity: 1; } 50% { transform: translate(-11px,5px); opacity: 1; } 100% { transform: translate(-11px,5px); opacity: 0; } } .tmg-playing { animation: tmg-play 0.5s 2; } @keyframes tmg-play { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } } .tmg-mouth-closed-normal { opacity: 1; } .tmg-mouth-open-normal { opacity: 0; } .tmg-mouth-closed-eating { animation: tmg-mouth-closed 1s; } @keyframes tmg-mouth-closed { 0% { opacity: 1; } 25% { opacity: 0; } 50% { opacity: 1; } 75% { opacity: 0; } 100% { opacity: 1; } } .tmg-mouth-open-eating { animation: tmg-mouth-open 1s; } @keyframes tmg-mouth-open { 0% { opacity: 0; } 25% { opacity: 1; } 50% { opacity: 0; } 75% { opacity: 1; } 100% { opacity: 0; } }`}</style>
       </defs>
-      <circle cx="24" cy="24" r="20" fill={faceColor} stroke="#6366f1" strokeWidth="2" style={{backdropFilter: 'blur(8px)'}} className={isPlaying ? "tmg-playing" : ""}>
+      <circle cx="24" cy="24" r="20" fill={faceColor} stroke={isDead ? '#999' : '#6366f1'} strokeWidth="2" style={{backdropFilter: 'blur(8px)'}} className={isPlaying ? "tmg-playing" : ""}>
         {isCleaning && <animate attributeName="fill" values="url(#liquidGlassTint);#a78bfa;url(#liquidGlassTint)" dur="1s" />}
       </circle>
       <circle cx="24" cy="24" r="20" fill="#8B4513" opacity={dirtiness} />
@@ -262,10 +262,10 @@ export default function MascotTamagotchi({ inline = false, startVisible = false 
         <div>Aburrimiento: {(100 - boredom)}% <div className="bg-gray-300 h-2 rounded"><div className="bg-yellow-500 h-2 rounded" style={{width: (100 - boredom) + '%'}}></div></div></div>
         <div>Edad: {age}% <div className="bg-gray-300 h-2 rounded"><div className="bg-purple-500 h-2 rounded" style={{width: age + '%'}}></div></div></div>
       </div>
-      <div className="flex justify-center gap-1 mb-1">
-        {cleanliness <= 0 && <span className="text-lg">💩</span>}
-        {hunger <= 0 && <span className="text-lg">🦴</span>}
-        {boredom <= 0 && <span className="text-lg">🎮</span>}
+      <div className="flex justify-center items-center gap-1 mb-1 h-6" style={{minHeight: '1.5rem'}}>
+        {(100 - cleanliness) >= 25 && <span className="text-lg">💩</span>}
+        {(100 - hunger) >= 25 && <span className="text-lg">🦴</span>}
+        {(100 - boredom) >= 25 && <span className="text-lg">🎮</span>}
       </div>
       <MascotSVG mood={mood} isBlinking={isBlinking} isWaving={isWaving} isDancing={isDancing} isDead={isDead} level={evolutionLevel} isEating={isEating} isPlaying={isPlaying} isCleaning={isCleaning} cleanliness={cleanliness} age={age} />
       <div className="flex gap-1 mt-1">
