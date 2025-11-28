@@ -19,6 +19,7 @@ import MascotTamagotchi from './components/MascotTamagotchi'
 
 function App() {
   const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const [showMascot, setShowMascot] = useState(false)
   const [hoveredGame, setHoveredGame] = useState(null)
   const [prevHoveredGame, setPrevHoveredGame] = useState(null)
   const [randomGame, setRandomGame] = useState(null)
@@ -68,7 +69,47 @@ function App() {
     }
   }, [searchParams, setSearchParams])
 
+  // Konami code detection (only when authenticated). Toggle mascot visibility.
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setShowMascot(false)
+      return
+    }
+
+    const konamiCode = ['arrowup','arrowup','arrowdown','arrowdown','arrowleft','arrowright','arrowleft','arrowright','b','a']
+    let keyIndex = 0
+
+    const handleKeyDown = (e) => {
+      // Normalize key: prefer e.key, fallback to keyCode mapping
+      let key = (e.key || '').toLowerCase()
+      if (!key && e.keyCode) {
+        const map = {37: 'arrowleft', 38: 'arrowup', 39: 'arrowright', 40: 'arrowdown', 65: 'a', 66: 'b'}
+        key = map[e.keyCode] || ''
+      }
+
+      // Debugging: show progressed key
+      // eslint-disable-next-line no-console
+      console.debug('Konami key:', key, 'expected:', konamiCode[keyIndex])
+
+      if (key === konamiCode[keyIndex]) {
+        keyIndex++
+        if (keyIndex === konamiCode.length) {
+          // eslint-disable-next-line no-console
+          console.info('Konami code entered — toggling mascot')
+          setShowMascot(s => !s)
+          keyIndex = 0
+        }
+      } else {
+        keyIndex = 0
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isAuthenticated])
+
   return (
+    <>
     <div className="min-h-screen bg-gray-100 dark:bg-slate-900 relative overflow-hidden">
       {/* Subtle gradient overlay for depth */}
       <div className="fixed inset-0 z-0 bg-gradient-to-br from-white/30 via-transparent to-gray-200/30 dark:from-slate-800/20 dark:via-transparent dark:to-slate-950/40" />
@@ -117,8 +158,7 @@ function App() {
         className="relative z-10"
       />
       
-      <main className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 relative z-10">
-          <div className="flex">
+        <div className="flex">
             {/* Filter Panel - Only show when authenticated */}
             {isAuthenticated && (
               <div className={`
@@ -134,6 +174,8 @@ function App() {
                   filters={filters}
                   onClose={() => setShowMobileFilters(false)}
                   played={played}
+                  showMascot={showMascot}
+                  setShowMascot={setShowMascot}
                 />
               </div>
             )}
@@ -253,10 +295,10 @@ function App() {
           
           {/* Ko-fi Support Button */}
           <KofiButton />
-        </main>
 
-        <MascotTamagotchi />
-    </div>
+          {/* Mascot is rendered inline inside FilterPanel when `showMascot` is true */}
+      </div>
+    </>
   )
 }
 

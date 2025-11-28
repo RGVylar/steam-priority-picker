@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
+import MascotTamagotchi from './MascotTamagotchi'
 import { useLanguage } from '../context/LanguageContext'
 
-export function FilterPanel({ filters, onClose, played }) {
+export function FilterPanel({ filters, onClose, played, showMascot, setShowMascot }) {
   const { t } = useLanguage()
   const [expandedSections, setExpandedSections] = useState({
     playtime: true,
@@ -283,6 +284,12 @@ export function FilterPanel({ filters, onClose, played }) {
           {t('filter.reset')}
         </button>
       </div>
+      {/* Inline Mascot (show inside the filter panel) */}
+      {showMascot && (
+        <div className="p-4">
+          <MascotTamagotchi inline startVisible={true} />
+        </div>
+      )}
     </div>
   )
 }

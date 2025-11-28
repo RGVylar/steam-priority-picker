@@ -64,7 +64,7 @@ const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEat
         </radialGradient>
         <style>{`.tmg-cleaning-line { animation: tmg-water-fall 1s infinite; } @keyframes tmg-water-fall { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } } .tmg-eat-ball { animation: tmg-eat-ball 0.5s forwards; } @keyframes tmg-eat-ball { 0% { transform: translate(0,0); opacity: 1; } 50% { transform: translate(-11px,5px); opacity: 1; } 100% { transform: translate(-11px,5px); opacity: 0; } } .tmg-playing { animation: tmg-play 0.5s 2; } @keyframes tmg-play { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } } .tmg-mouth-closed-normal { opacity: 1; } .tmg-mouth-open-normal { opacity: 0; } .tmg-mouth-closed-eating { animation: tmg-mouth-closed 1s; } @keyframes tmg-mouth-closed { 0% { opacity: 1; } 25% { opacity: 0; } 50% { opacity: 1; } 75% { opacity: 0; } 100% { opacity: 1; } } .tmg-mouth-open-eating { animation: tmg-mouth-open 1s; } @keyframes tmg-mouth-open { 0% { opacity: 0; } 25% { opacity: 1; } 50% { opacity: 0; } 75% { opacity: 1; } 100% { opacity: 0; } }`}</style>
       </defs>
-      <circle cx="24" cy="24" r="20" fill={faceColor} stroke="#6366f1" strokeWidth="2" style={{backdropFilter: 'blur(8px)'}} className={isPlaying ? "playing" : ""}>
+      <circle cx="24" cy="24" r="20" fill={faceColor} stroke="#6366f1" strokeWidth="2" style={{backdropFilter: 'blur(8px)'}} className={isPlaying ? "tmg-playing" : ""}>
         {isCleaning && <animate attributeName="fill" values="url(#liquidGlassTint);#a78bfa;url(#liquidGlassTint)" dur="1s" />}
       </circle>
       <circle cx="24" cy="24" r="20" fill="#8B4513" opacity={dirtiness} />
@@ -91,7 +91,7 @@ const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEat
   )
 }
 
-export default function MascotTamagotchi() {
+export default function MascotTamagotchi({ inline = false, startVisible = false }) {
   const [mood, setMood] = useState('happy')
   const [clicks, setClicks] = useState(0)
   const [isBlinking, setIsBlinking] = useState(false)
@@ -103,7 +103,7 @@ export default function MascotTamagotchi() {
   const [hunger, setHunger] = useState(100)
   const [cleanliness, setCleanliness] = useState(100)
   const [boredom, setBoredom] = useState(100)
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(startVisible)
   const [isDead, setIsDead] = useState(false)
   const [evolutionLevel, setEvolutionLevel] = useState(0)
   const [totalAliveTime, setTotalAliveTime] = useState(0)
@@ -197,30 +197,8 @@ export default function MascotTamagotchi() {
     }
   }, [])
 
-  // Konami code detection
-  useEffect(() => {
-    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a']
-    let keyIndex = 0
-    let lastKeys = []
-
-    const handleKeyDown = (e) => {
-      lastKeys.push(e.key)
-      lastKeys = lastKeys.slice(-10)
-
-      if (e.key === konamiCode[keyIndex]) {
-        keyIndex++
-        if (keyIndex === konamiCode.length) {
-          setVisible(true)
-          keyIndex = 0
-        }
-      } else {
-        keyIndex = 0
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  // Note: Konami detection is handled by App.jsx (global). This component
+  // accepts `startVisible` and `inline` to control initial visibility and placement.
 
   const handleClick = () => {
     setClicks(c => c + 1)
@@ -266,9 +244,15 @@ export default function MascotTamagotchi() {
     setTimeout(() => setIsPlaying(false), 1000)
   }
 
-  return visible && (
+  if (!visible) return null
+
+  const containerClass = inline
+    ? 'mt-4 flex flex-col items-center w-full'
+    : 'fixed bottom-4 left-4 z-50 flex flex-col items-center w-40'
+
+  return (
     <div
-      className="fixed bottom-4 left-4 z-50 flex flex-col items-center w-40"
+      className={containerClass}
       style={{ userSelect: 'none' }}
       title="¡Soy tu mascota!"
     >

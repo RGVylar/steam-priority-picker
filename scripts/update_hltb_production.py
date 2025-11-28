@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 from app.models import Game
 
 # Get database URL from environment
-DATABASE_URL = os.getenv('DATABASE_URL')
+DATABASE_URL = os.getenv('DATABASE_URL_PROD')
 
 if not DATABASE_URL:
     print("❌ Error: DATABASE_URL not found in environment variables!")
@@ -103,7 +103,7 @@ async def main():
         print("\n📊 Checking for games that need HLTB data...")
         
         games_needing_update = db.query(Game).filter(
-            Game.playtime_hours == None
+            Game.playtime_hours == 0
         ).all()
         
         total = len(games_needing_update)
