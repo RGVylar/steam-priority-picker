@@ -7,6 +7,8 @@ const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEat
   let dirtiness = (100 - cleanliness) / 100;
   let scale = 1 + age / 200; // Bigger as it ages
   let eyeY = mood === 'happy' ? 18 : mood === 'sad' ? 22 : mood === 'very-sad' ? 24 : 20;
+  // make sleepy eyes more closed
+  let eyeRY = mood === 'sleepy' ? 1.2 : 3;
   let mouth;
   if (mood === 'happy') {
     mouth = <path d="M18 28 Q24 34 30 28" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'tmg-mouth-closed-eating' : 'tmg-mouth-closed-normal'} />
@@ -19,7 +21,8 @@ const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEat
   } else if (mood === 'sleepy') {
     mouth = <path d="M18 30 Q24 28 30 30" stroke="#333" strokeWidth="2" fill="none" className={isEating ? 'tmg-mouth-closed-eating' : 'tmg-mouth-closed-normal'} />
   } else {
-    mouth = null
+    // Neutral face: flat mouth line
+    mouth = <line x1="16" y1="30" x2="32" y2="30" stroke="#333" strokeWidth="2" strokeLinecap="round" className={isEating ? 'tmg-mouth-closed-eating' : 'tmg-mouth-closed-normal'} />
   }
   
   // Eyes: blink or normal, or dead
@@ -35,10 +38,10 @@ const MascotSVG = ({ mood, isBlinking, isWaving, isDancing, isDead, level, isEat
       <ellipse cx="16" cy={eyeY + 2} rx="2" ry="0.5" fill="#333" />
       <ellipse cx="32" cy={eyeY + 2} rx="2" ry="0.5" fill="#333" />
     </>
-  ) : (
+      ) : (
     <>
-      <ellipse cx="16" cy={eyeY} rx="2" ry="3" fill="#333" />
-      <ellipse cx="32" cy={eyeY} rx="2" ry="3" fill="#333" />
+      <ellipse cx="16" cy={eyeY} rx="2" ry={eyeRY} fill="#333" />
+      <ellipse cx="32" cy={eyeY} rx="2" ry={eyeRY} fill="#333" />
     </>
   );
 
