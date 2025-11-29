@@ -5,6 +5,7 @@ import GameList from './components/GameList'
 import SearchBar from './components/SearchBar'
 import { BackendStatus } from './components/BackendStatus'
 import { KofiButton } from './components/KofiButton'
+import ReportBugButton from './components/ReportBugButton'
 import { useGames } from './hooks/useGames'
 import { useFilters } from './hooks/useFilters'
 import { useDarkMode } from './hooks/useDarkMode'
@@ -338,9 +339,11 @@ function App() {
 
           {/* Backend Status Indicator */}
           <BackendStatus />
-          
-          {/* Ko-fi Support Button */}
-          <KofiButton />
+          {/* Action buttons (Report + Ko-fi) grouped to avoid overlap */}
+          <div className="fixed right-4 bottom-16 flex flex-col gap-2 z-40">
+            <ReportBugButton />
+            <KofiButton />
+          </div>
 
           {/* Mascot is rendered inline inside FilterPanel when `showMascot` is true */}
       </div>
