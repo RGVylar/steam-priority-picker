@@ -101,6 +101,11 @@ const translations = {
     
     // Ko-fi
     'kofi.supportUs': 'Invítame una',
+    'report.button':  'Reportar bug',
+
+    // Bug report
+    'report.title':  '[Error] Describe el problema',
+    'report.body':  `**¿Cuál es el problema?**:\n\nDescribe el problema que estás reportando.\n\n**Pasos para reproducir**:\n1. \n2. \n3. \n\n**Comportamiento esperado**:\n\n**Información adicional**:\n\n---\nUser Agent: ${navigator.userAgent}\nURL: ${window.location.href}`,
   },
   en: {
     // Header
@@ -199,6 +204,11 @@ const translations = {
     
     // Ko-fi
     'kofi.supportUs': 'Buy me beer',
+    'report.button':  'Report bug',
+
+    // Bug report
+    'report.title':  '[Bug] Describe the problem',
+    'report.body':  `**Describe the bug**:\n\n**Steps to reproduce**:\n1. \n2. \n3. \n\n**Expected behavior**:\n\n**Additional information**:\n\n---\nUser Agent: ${navigator.userAgent}\nURL: ${window.location.href}`,
   }
 }
 

@@ -1,10 +1,12 @@
 import React from 'react'
+import { useLanguage } from '../context/LanguageContext'
 
 export default function ReportBugButton({ repo = 'RGVylar/steam-priority-picker' }) {
+  const { t } = useLanguage()
   const handleClick = () => {
     try {
-      const title = encodeURIComponent('[Bug] Describe the problem')
-      const body = encodeURIComponent(`**Describe the bug**:\n\n**Steps to reproduce**:\n1. \n2. \n3. \n\n**Expected behavior**:\n\n**Additional information**:\n\n---\nUser Agent: ${navigator.userAgent}\nURL: ${window.location.href}`)
+      const title = encodeURIComponent(t('report.title'))
+      const body = encodeURIComponent(t('report.body'))
       const url = `https://github.com/${repo}/issues/new?title=${title}&body=${body}`
       window.open(url, '_blank')
     } catch (e) {
@@ -20,8 +22,8 @@ export default function ReportBugButton({ repo = 'RGVylar/steam-priority-picker'
       aria-label="Report a bug"
       title="Report a bug"
     >
-      <span className="text-base">🐞</span>
-      <span>Report</span>
+      <span>🐞</span>
+      <span>{t('report.button')}</span>
     </button>
   )
 }
