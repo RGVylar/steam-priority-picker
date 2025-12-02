@@ -132,3 +132,35 @@ async def logout(
         raise HTTPException(status_code=400, detail="Logout failed")
     
     return {"message": "Logged out successfully"}
+
+@router.get("/stats/users-count")
+async def get_users_count(
+    authorization: str = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Get total number of registered users (admin only)"""
+    
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    # Extract token from "Bearer <token>"
+    try:
+        token = authorization.split(" ")[1]
+    except IndexError:
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    
+    user = auth_service.verify_token(db, token)
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    
+    # Check if user is admin (compare with ADMIN_ID from config)
+    if str(user.steam_id) != settings.admin_steam_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Count total users
+    total_users = db.query(User).count()
+    
+    return {
+        "total_users": total_users
+    }

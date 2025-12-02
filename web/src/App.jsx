@@ -31,7 +31,7 @@ function App() {
   const { t } = useLanguage()
   const filters = useFilters()
   const { played, togglePlayed, isPlayed, getPlayedCount } = usePlayed()
-  const { games, total, loading, error, dbTotal, forceRefresh, getRandomGame } = useGames(filters, played, isAuthenticated, token)
+  const { games, total, loading, error, dbTotal, usersCount, forceRefresh, getRandomGame } = useGames(filters, played, isAuthenticated, token)
   const audioCtxRef = useRef(null)
 
   const ensureAudio = () => {
@@ -200,6 +200,7 @@ function App() {
         isGlassMode={isGlass}
         dbTotal={dbTotal}
         userTotal={total}
+        usersCount={usersCount}
         onRefresh={forceRefresh}
         isRefreshing={loading}
         className="relative z-10"

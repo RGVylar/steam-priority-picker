@@ -3,7 +3,7 @@ import { LoginButton } from './LoginButton'
 import { useAuthContext } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 
-export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, onGlassModeToggle, isGlassMode, dbTotal = 0, userTotal = 0, onRefresh, isRefreshing = false }) {
+export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, onGlassModeToggle, isGlassMode, dbTotal = 0, userTotal = 0, usersCount = 0, onRefresh, isRefreshing = false }) {
   const { isAuthenticated } = useAuthContext()
   const { language, toggleLanguage, t } = useLanguage()
   return (
@@ -99,7 +99,7 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, onGlassModeT
         </div>
 
         {/* Bottom row: Stats (only when authenticated) */}
-        {isAuthenticated && (userTotal > 0 || dbTotal > 0) && (
+        {isAuthenticated && (userTotal > 0 || dbTotal > 0 || usersCount > 0) && (
           <div className="flex items-center gap-3 lg:gap-4 mt-2 flex-wrap">
             {userTotal > 0 && (
               <p className="text-xs text-green-600 dark:text-green-400 font-medium">
@@ -109,6 +109,11 @@ export function Header({ onMenuClick, onDarkModeToggle, isDarkMode, onGlassModeT
             {dbTotal > 0 && (
               <p className="text-xs text-blue-500 dark:text-blue-400 font-medium">
                 {t('header.catalog')}: {dbTotal.toLocaleString()} {t('header.games')}
+              </p>
+            )}
+            {usersCount > 0 && (
+              <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">
+                👥 {usersCount.toLocaleString()} {usersCount === 1 ? 'usuario' : 'usuarios'}
               </p>
             )}
           </div>

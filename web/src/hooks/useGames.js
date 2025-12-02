@@ -8,6 +8,27 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
   const [error, setError] = useState(null)
   const [total, setTotal] = useState(0)
   const [dbTotal, setDbTotal] = useState(0)
+  const [usersCount, setUsersCount] = useState(0)
+
+  // Fetch users count if authenticated (used by admin)
+  const fetchUsersCount = async (authToken) => {
+    try {
+      const response = await fetch(`${API_URL.replace('/api', '')}/auth/stats/users-count`, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setUsersCount(data.total_users)
+      } else {
+        // Not admin or error, just silently ignore
+        setUsersCount(0)
+      }
+    } catch (err) {
+      console.debug('Users count not available (not admin)')
+      setUsersCount(0)
+    }
+  }
 
   // Force refresh function to clear cache and refetch
   const forceRefresh = async () => {
@@ -32,6 +53,9 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
       setAllGames(data.games)
       setTotal(data.total)
       setDbTotal(data.db_total || 0)
+      
+      // Fetch users count
+      await fetchUsersCount(token)
       
       localStorage.setItem('steam_games_cache', JSON.stringify({
         games: data.games,
@@ -107,6 +131,9 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
         setAllGames(data.games)
         setTotal(data.total)
         setDbTotal(data.db_total || 0)
+        
+        // Fetch users count
+        await fetchUsersCount(token)
         
         // Save to cache
         localStorage.setItem('steam_games_cache', JSON.stringify({
@@ -240,6 +267,7 @@ export function useGames(filters, played, isAuthenticated = false, token = null)
     loading,
     error,
     dbTotal,
+    usersCount,
     forceRefresh,
     getRandomGame: () => {
       if (games && games.length > 0) {

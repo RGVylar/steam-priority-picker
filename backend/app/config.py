@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     app_url: str = "http://localhost:5173"
     api_url: str = "http://localhost:8000"
     
+    # Admin
+    admin_steam_id: str = ""
+    
     # Database
     database_url: str = "sqlite:///./steam_priority_picker.db"
     
@@ -42,3 +45,5 @@ if os.getenv("DATABASE_URL"):
     settings.database_url = os.getenv("DATABASE_URL")
 if os.getenv("JWT_SECRET_KEY"):
     settings.jwt_secret_key = os.getenv("JWT_SECRET_KEY")
+if os.getenv("ADMIN_STEAM_ID"):
+    settings.admin_steam_id = os.getenv("ADMIN_STEAM_ID")
