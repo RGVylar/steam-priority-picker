@@ -162,6 +162,26 @@ Free tier: 1 project, 3 branches, 100k rows
 Get free connection string from neon.tech
 ```
 
+## 🤖 GitHub Actions
+
+### Keep Backend Alive Workflow
+The repository includes a GitHub Action that pings the backend every 5 minutes to keep it responsive on free-tier hosting platforms that sleep after inactivity.
+
+**Features:**
+- ⏰ Runs automatically every 5 minutes
+- 🔄 Can be triggered manually
+- 🛡️ Fault-tolerant design
+
+**Setup:**
+1. Go to **Settings** → **Secrets and variables** → **Actions**
+2. Add a secret named `BACKEND_URL` with your backend URL (e.g., `https://your-backend.onrender.com`)
+
+**View workflow runs:**
+- Visit: `https://github.com/RGVylar/steam-priority-picker/actions/workflows/keep-alive.yml`
+- Or click the **Actions** tab in GitHub and select **"Keep Backend Alive"**
+
+📖 **Full documentation:** [.github/workflows/README.md](.github/workflows/README.md)
+
 ## 🐛 Troubleshooting
 
 ### Frontend won't start
