@@ -14,5 +14,5 @@ jobs:
         env:
           BACKEND_URL: ${{ secrets.BACKEND_URL }}
         run: |
-          curl -f ${{ env.BACKEND_URL }}/health || true
+          curl -f "${BACKEND_URL}/health" || true
         continue-on-error: true
