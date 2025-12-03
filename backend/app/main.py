@@ -11,9 +11,11 @@ from .database import engine
 from .models import Base
 from .services.health_monitor import get_health_monitor
 import logging
+from datetime import datetime
 
 # Version identifier for deployment tracking
 APP_VERSION = "2025-11-24-v1.0.0"
+APP_START_TIME = datetime.utcnow()
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -60,10 +62,16 @@ app.include_router(preferences_router)
 # Health check endpoint
 @app.get("/health")
 async def health_check():
+    uptime_seconds = (datetime.utcnow() - APP_START_TIME).total_seconds()
+    hours = int(uptime_seconds // 3600)
+    minutes = int((uptime_seconds % 3600) // 60)
+    
     return {
         "status": "ok",
         "service": "Steam Priority Picker API",
-        "version": "0.1.0"
+        "version": "0.1.0",
+        "uptime_seconds": int(uptime_seconds),
+        "uptime_formatted": f"{hours}h {minutes}m"
     }
 
 @app.get("/")

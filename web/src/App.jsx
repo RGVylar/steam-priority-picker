@@ -6,6 +6,7 @@ import SearchBar from './components/SearchBar'
 import { BackendStatus } from './components/BackendStatus'
 import { KofiButton } from './components/KofiButton'
 import ReportBugButton from './components/ReportBugButton'
+import { UptimeIndicator } from './components/UptimeIndicator'
 import { useGames } from './hooks/useGames'
 import { useFilters } from './hooks/useFilters'
 import { useDarkMode } from './hooks/useDarkMode'
@@ -345,6 +346,9 @@ function App() {
             <ReportBugButton />
             <KofiButton />
           </div>
+
+          {/* Uptime Indicator */}
+          <UptimeIndicator />
 
           {/* Mascot is rendered inline inside FilterPanel when `showMascot` is true */}
       </div>

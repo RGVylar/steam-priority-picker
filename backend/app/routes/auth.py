@@ -164,3 +164,29 @@ async def get_users_count(
     return {
         "total_users": total_users
     }
+
+@router.get("/is-admin")
+async def is_admin(
+    authorization: str = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Check if current user is admin"""
+    
+    if not authorization:
+        return {"is_admin": False}
+    
+    # Extract token from "Bearer <token>"
+    try:
+        token = authorization.split(" ")[1]
+    except IndexError:
+        return {"is_admin": False}
+    
+    user = auth_service.verify_token(db, token)
+    
+    if not user:
+        return {"is_admin": False}
+    
+    # Check if user is admin
+    is_admin = str(user.steam_id) == settings.admin_steam_id
+    
+    return {"is_admin": is_admin}
