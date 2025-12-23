@@ -14,5 +14,12 @@ jobs:
         env:
           BACKEND_URL: ${{ secrets.BACKEND_URL }}
         run: |
-          curl -f ${{ env.BACKEND_URL }}/health || true
+          echo "🔄 Pinging backend at: ${BACKEND_URL}/health"
+          if curl -f -s -o /tmp/response.txt "${BACKEND_URL}/health"; then
+            echo "✅ Backend is alive!"
+            cat /tmp/response.txt
+          else
+            echo "⚠️ Backend did not respond or returned an error"
+            echo "This is expected on free-tier hosting when the backend is sleeping"
+          fi
         continue-on-error: true
