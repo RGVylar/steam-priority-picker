@@ -67,7 +67,7 @@ export function GameCard({ game, isPlayed, onTogglePlayed, onMouseEnter, onMouse
             ⏱️ {badge.text}
           </span>
           <span className="px-2 py-1 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
-            ⭐ {game.score}%
+            ⭐ {game.score.toFixed(1)}%
           </span>
         </div>
 

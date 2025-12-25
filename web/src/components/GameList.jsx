@@ -367,7 +367,7 @@ export function GameList({ games, total, loading, filters, togglePlayed, isPlaye
                       {selectedRandomGame.score > 0 && (
                         <div className="flex items-center justify-between p-3 bg-yellow-500/10 dark:bg-yellow-500/20 rounded-lg backdrop-blur-sm border border-yellow-200/20 dark:border-yellow-400/20">
                           <span>{t('games.scoreLabel')}:</span>
-                          <span className="font-semibold text-yellow-600 dark:text-yellow-400">{selectedRandomGame.score}/100</span>
+                          <span className="font-semibold text-yellow-600 dark:text-yellow-400">{selectedRandomGame.score.toFixed(1)}/100</span>
                         </div>
                       )}
                       
